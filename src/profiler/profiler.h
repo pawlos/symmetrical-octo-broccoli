@@ -1,6 +1,7 @@
 #pragma once
 #include "cor.h"
 #include "corprof.h"
+#include <stdio.h>
 
 class MyProfiler : public ICorProfilerCallback2 {
 	// Inherited via ICorProfilerCallback2

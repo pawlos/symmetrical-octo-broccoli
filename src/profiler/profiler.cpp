@@ -17,6 +17,7 @@ ULONG __stdcall MyProfiler::Release(void)
 
 HRESULT __stdcall MyProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
+	printf("Profiler initialized...");
 	return S_OK;
 }
 
