@@ -17,12 +17,12 @@ ULONG __stdcall MyProfiler::Release(void)
 
 HRESULT __stdcall MyProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT __stdcall MyProfiler::Shutdown(void)
 {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT __stdcall MyProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
