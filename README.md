@@ -12,4 +12,16 @@ Some reference links about the topic:
 - https://github.com/dotnet/samples/tree/main/core/profiling
 - https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/profiling/
 
-# Architecture #
+# Plan #
+
+## Profiler ##
+
+Minimum plan:
+- implement profiler class that can be used as a profiler for .NET based applications
+- gather informations about stack traces dduring the excution of the program
+- implement basic flame-graph to visualize the execution timelime
+
+## Debugger ##
+
+Minimum plan:
+- TBD
