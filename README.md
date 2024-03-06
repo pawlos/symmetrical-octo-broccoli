@@ -12,6 +12,9 @@ Some reference links about the topic:
 - https://github.com/dotnet/samples/tree/main/core/profiling
 - https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/profiling/
 
+## Flame graph ##
+- https://brendangregg.com/flamegraphs.html
+
 # Plan #
 
 ## Profiler ##
