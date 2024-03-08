@@ -17,6 +17,9 @@ ULONG __stdcall MyProfiler::Release(void)
 
 HRESULT __stdcall MyProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
+	ICorProfilerInfo* pInfo;
+	pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (void**)&pInfo);
+	pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
 	printf("Profiler initialized...");
 	return S_OK;
 }
