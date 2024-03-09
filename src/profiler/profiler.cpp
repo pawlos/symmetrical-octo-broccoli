@@ -17,9 +17,13 @@ ULONG __stdcall MyProfiler::Release(void)
 
 HRESULT __stdcall MyProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	ICorProfilerInfo* pInfo;
 	pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (void**)&pInfo);
-	pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
+	HRESULT hr = pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
+	if (hr != S_OK)
+	{
+		printf("Error setting the event mask.");
+		return S_OK;
+	}
 	printf("Profiler initialized...");
 	return S_OK;
 }

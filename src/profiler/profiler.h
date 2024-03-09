@@ -4,6 +4,9 @@
 #include <stdio.h>
 
 class MyProfiler : public ICorProfilerCallback2 {
+private:
+	ICorProfilerInfo* pInfo;
+public:
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef(void) override;

@@ -15,6 +15,10 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 		return E_FAIL;
 	}
 
+	auto profiler = new MyProfiler();
+
+	profiler->QueryInterface(riid, ppv);
+
 	// for now return S_OK
 	return S_OK;
 }
