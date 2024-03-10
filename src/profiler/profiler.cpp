@@ -30,6 +30,8 @@ HRESULT __stdcall MyProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 
 HRESULT __stdcall MyProfiler::Shutdown(void)
 {
+	pInfo->Release();
+	printf("Profiler shutdown...");
 	return S_OK;
 }
 
