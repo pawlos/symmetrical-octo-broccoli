@@ -1,4 +1,4 @@
-#include "profiler.h"
+#include "octoprofiler.h"
 
 BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
@@ -15,7 +15,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 		return E_FAIL;
 	}
 
-	auto profiler = new MyProfiler();
+	auto profiler = new OctoProfiler();
 
 	profiler->QueryInterface(riid, ppv);
 

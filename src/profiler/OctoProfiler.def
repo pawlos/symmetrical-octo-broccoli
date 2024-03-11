@@ -1,0 +1,3 @@
+LIBRARY OctoProfiler
+EXPORTS
+    DllGetClassObject             private
