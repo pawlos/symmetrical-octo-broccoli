@@ -1,5 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+Console.WriteLine("Waiting for a key");
+Console.ReadKey();
 Console.WriteLine("Start");
 await Function1();
 Console.WriteLine("Done");

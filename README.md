@@ -25,6 +25,12 @@ Minimum plan:
 - gather informations about stack traces dduring the excution of the program
 - implement basic flame-graph to visualize the execution timelime
 
+## Debugging ##
+
+Issues found during development:
+
+- Loading profiler failed.  There was an unhandled exception while trying to instantiate the profiler COM object.  Please ensure the CLSID is associated with a valid profiler designed to work with this version of the runtime.  Profiler CLSID: '{DC27BF80-3A36-40D4-9278-6415508C4ED6}'.
+
 ## Debugger ##
 
 Minimum plan:
