@@ -2,7 +2,9 @@
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
-	return E_NOTIMPL;
+	printf("OctoProfiler::QueryInterface\n");
+	*ppvObject = NULL;
+	return S_OK;
 }
 
 ULONG __stdcall OctoProfiler::AddRef(void)
@@ -17,21 +19,24 @@ ULONG __stdcall OctoProfiler::Release(void)
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (void**)&pInfo);
-	HRESULT hr = pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (void**)&pInfo);
+	if (FAILED(hr)) {
+		return E_FAIL;
+	}
+	hr = pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
 	if (hr != S_OK)
 	{
-		printf("Error setting the event mask.");
-		return S_OK;
+		printf("Error setting the event mask.\n");
+		return E_FAIL;
 	}
-	printf("Profiler initialized...");
+	printf("OctoProfiler::Initialize initialized...\n");
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {
 	pInfo->Release();
-	printf("Profiler shutdown...");
+	printf("OctoProfiler::Shutdown...\n");
 	return S_OK;
 }
 

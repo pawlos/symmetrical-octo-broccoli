@@ -4,7 +4,7 @@ BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	return TRUE;
 }
-
+static OctoProfiler *profiler;
 extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppv)
 {
 	// {DC27BF80-3A36-40D4-9278-6415508C4ED6}
@@ -15,9 +15,11 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 		return E_FAIL;
 	}
 
-	auto profiler = new OctoProfiler();
+	profiler = new OctoProfiler();
 
 	profiler->QueryInterface(riid, ppv);
+
+	*ppv = &profiler;
 
 	// for now return S_OK
 	return S_OK;
