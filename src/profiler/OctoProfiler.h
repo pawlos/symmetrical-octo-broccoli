@@ -3,7 +3,7 @@
 #include "corprof.h"
 #include <stdio.h>
 
-class OctoProfiler : public ICorProfilerCallback2, public ICorProfilerCallback {
+class OctoProfiler : public ICorProfilerCallback2 {
 private:
 	ICorProfilerInfo* pInfo;
 public:
