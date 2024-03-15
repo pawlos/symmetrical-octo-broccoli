@@ -3,13 +3,13 @@
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
 	printf("OctoProfiler::QueryInterface\n");
-	*ppvObject = NULL;
+	ppvObject = NULL;
 	return S_OK;
 }
 
 ULONG __stdcall OctoProfiler::AddRef(void)
 {
-	return 0;
+	return 1;
 }
 
 ULONG __stdcall OctoProfiler::Release(void)
@@ -19,12 +19,12 @@ ULONG __stdcall OctoProfiler::Release(void)
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (void**)&pInfo);
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo7, (void**)&pInfo);
 	if (FAILED(hr)) {
 		return E_FAIL;
 	}
 	hr = pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
-	if (hr != S_OK)
+	if (FAILED(hr))
 	{
 		printf("Error setting the event mask.\n");
 		return E_FAIL;
@@ -287,7 +287,8 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	return E_NOTIMPL;
+	printf("OctoProfiler::ExceptionThrown");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ExceptionSearchFunctionEnter(FunctionID functionId)

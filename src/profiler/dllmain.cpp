@@ -18,9 +18,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 	profiler = new OctoProfiler();
 
 	profiler->QueryInterface(riid, ppv);
-
-	*ppv = &profiler;
-
+	
 	// for now return S_OK
 	return S_OK;
 }

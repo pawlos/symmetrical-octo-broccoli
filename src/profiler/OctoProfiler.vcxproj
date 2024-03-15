@@ -135,9 +135,11 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="OctoProfiler.cpp" />
+    <ClCompile Include="OctoProfilerFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OctoProfiler.h" />
+    <ClInclude Include="OctoProfilerFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OctoProfiler.def" />
