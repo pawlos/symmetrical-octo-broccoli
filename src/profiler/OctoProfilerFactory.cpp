@@ -1,14 +1,15 @@
 #include "OctoProfilerFactory.h"
 
 HRESULT __stdcall OctoProfileFactory::QueryInterface(REFIID riid, void** ppvObject)
-{
-	static const GUID CLSID_Profiler = { 0xdc27bf80, 0x3a36, 0x40d4, { 0x92, 0x78, 0x64, 0x15, 0x50, 0x8c, 0x4e, 0xd6 } };
-	printf("OctoProfileFactory::QueryInterface");
-	if (riid == CLSID_Profiler)
+{	
+	static const GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+	printf("OctoProfileFactory::QueryInterface\n");
+	if (riid == CLSID_ClassFactoryGuid)
 	{
-		*ppvObject = &_profiler;
+		*ppvObject = &profiler;
 		return S_OK;
-	}
+	}	
+	*ppvObject = NULL;
 	return E_NOTIMPL;
 }
 
@@ -24,12 +25,13 @@ ULONG __stdcall OctoProfileFactory::Release(void)
 
 HRESULT __stdcall OctoProfileFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 {
-	printf("OctoProfileFactory::CreateInstance");
-	_profiler = new OctoProfiler();
+	printf("OctoProfileFactory::CreateInstance\n");
+	profiler = new OctoProfiler();
+	*ppvObject = profiler;
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfileFactory::LockServer(BOOL fLock)
 {
-	return E_NOTIMPL;
+	return S_OK;
 }

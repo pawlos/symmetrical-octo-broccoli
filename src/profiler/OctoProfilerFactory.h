@@ -5,7 +5,9 @@
 
 class OctoProfileFactory : public IClassFactory
 {
-	OctoProfiler* _profiler;
+public:
+	OctoProfiler* profiler;
+private:	
 	// Inherited via IClassFactory
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef(void) override;

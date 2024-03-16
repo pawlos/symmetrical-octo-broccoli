@@ -29,9 +29,13 @@ Minimum plan:
 
 Issues found during development:
 
-- Loading profiler failed.  There was an unhandled exception while trying to instantiate the profiler COM object.  Please ensure the CLSID is associated with a valid profiler designed to work with this version of the runtime.  Profiler CLSID: '{DC27BF80-3A36-40D4-9278-6415508C4ED6}'.
+> Loading profiler failed.  There was an unhandled exception while trying to instantiate the profiler COM object.  Please ensure the CLSID is associated with a valid profiler designed to work with this version of the runtime.  Profiler CLSID: '{DC27BF80-3A36-40D4-9278-6415508C4ED6}'.
 
-- It can be debugged with a native debugger. Setting a breakpoint at DllGetClassObject (`bp OctoProfiler!DllGetClassObject`) or `OctoProfiler::Initialize` (`bp OctoProfiler!OctoProfiler::Initialize`).
+> Loading profiler failed.   The profiler that was configured to load was designed for an older version of the CLR.  You can use the COMPlus_ProfAPI_ProfilerCompatibilitySetting environment variable to allow older profilers to be loaded by the current version of the CLR.  Please consult the documentation for information on how to use this environment variable, and the risks associated with it.  Profiler CLSID: '{8A8CC829-CCF2-49FE-BBAE-0F022228071A}'.
+
+> Loading profiler failed.  COR_PROFILER is set to a CLSID of a COM object that does not implement the interface GUID (IID) requested by the CLR.  This often indicates that the profiler does not support this version of the CLR.  Profiler CLSID: '{8a8cc829-ccf2-49fe-bbae-0f022228071a}'.  Requested IID: '{8A8CC829-CCF2-49FE-BBAE-0F022228071A}'.
+
+It can be debugged with a native debugger. Setting a breakpoint at DllGetClassObject (`bp OctoProfiler!DllGetClassObject`) or `OctoProfiler::Initialize` (`bp OctoProfiler!OctoProfiler::Initialize`).
 
 ## Debugger ##
 

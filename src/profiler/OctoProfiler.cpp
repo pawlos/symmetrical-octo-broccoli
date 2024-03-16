@@ -2,9 +2,15 @@
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
-	printf("OctoProfiler::QueryInterface\n");
-	ppvObject = NULL;
-	return S_OK;
+	static const GUID CLSID_ProfilerCallback2 = { 0x8A8CC829, 0xCCF2, 0x49FE, { 0xBB, 0xAE, 0x0F, 0x02, 0x22, 0x28, 0x07, 0x1A } };
+	if (riid == CLSID_ProfilerCallback2)
+	{
+		printf("OctoProfiler::QueryInterface\n");
+		*ppvObject = this;
+		return S_OK;
+	}
+		
+	return E_NOTIMPL;
 }
 
 ULONG __stdcall OctoProfiler::AddRef(void)
@@ -19,7 +25,7 @@ ULONG __stdcall OctoProfiler::Release(void)
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo7, (void**)&pInfo);
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (void**)&pInfo);
 	if (FAILED(hr)) {
 		return E_FAIL;
 	}
@@ -287,7 +293,7 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	printf("OctoProfiler::ExceptionThrown");
+	printf("OctoProfiler::ExceptionThrown\n");
 	return S_OK;
 }
 
