@@ -29,7 +29,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	if (FAILED(hr)) {
 		return E_FAIL;
 	}
-	hr = pInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT);
+	hr = pInfo->SetEventMask(COR_PRF_ALL);
 	if (FAILED(hr))
 	{
 		printf("Error setting the event mask.\n");
@@ -273,7 +273,8 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
-	return E_NOTIMPL;
+	printf("OctoProfiler::ObjectAllocated\n");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ObjectsAllocatedByClass(ULONG cClassCount, ClassID classIds[], ULONG cObjects[])
@@ -389,7 +390,8 @@ HRESULT __stdcall OctoProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchNa
 
 HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
 {
-	return E_NOTIMPL;
+	printf("OctoProfiler::GarbageCollectionStarted\n");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::SurvivingReferences(ULONG cSurvivingObjectIDRanges, ObjectID objectIDRangeStart[], ULONG cObjectIDRangeLength[])
