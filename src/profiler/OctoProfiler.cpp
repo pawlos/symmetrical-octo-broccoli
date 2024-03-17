@@ -42,6 +42,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {
 	pInfo->Release();
+	printf("Total allocated bytes: %ld [B]\n", totalAllocatedBytes);
 	printf("OctoProfiler::Shutdown...\n");
 	return S_OK;
 }
@@ -68,7 +69,13 @@ HRESULT __stdcall OctoProfiler::AppDomainShutdownFinished(AppDomainID appDomainI
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 {
-	return E_NOTIMPL;
+	WCHAR name[255];
+	ULONG outNameLen;
+	AppDomainID appDomainId;
+	ModuleID moduleId;	
+	pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
+	printf("OctoProfiler::AssemblyLoadStarted: %ls\n", name);
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
@@ -273,8 +280,41 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
-	printf("OctoProfiler::ObjectAllocated\n");
-	return S_OK;
+	ULONG bytesAllocated;
+	auto hr = pInfo->GetObjectSize(objectId, &bytesAllocated);
+	if (SUCCEEDED(hr))
+	{
+		ModuleID moduleId;
+		mdTypeDef defToken;
+		totalAllocatedBytes += bytesAllocated;
+		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+		if (SUCCEEDED(hr))
+		{
+			IMetaDataImport *pIMDImport;
+			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+			if (SUCCEEDED(hr))
+			{
+				WCHAR typeName[255];
+				hr = pIMDImport->GetMethodProps(defToken,
+					NULL,
+					typeName,
+					254,
+					0,
+					0,
+					NULL,
+					NULL,
+					NULL,
+					NULL);
+				printf("OctoProfiler::ObjectAllocated %ld [B] for %ls\n", bytesAllocated, typeName);
+			}
+			else
+			{
+				printf("OctoProfiler::ObjectAllocated %ld [B]\n", bytesAllocated);
+			}
+		}
+		return S_OK;
+	}	
+	return E_FAIL;
 }
 
 HRESULT __stdcall OctoProfiler::ObjectsAllocatedByClass(ULONG cClassCount, ClassID classIds[], ULONG cObjects[])
