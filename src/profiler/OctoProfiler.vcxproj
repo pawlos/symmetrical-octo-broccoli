@@ -134,6 +134,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="log.cpp" />
+    <ClCompile Include="log.h" />
     <ClCompile Include="OctoProfiler.cpp" />
     <ClCompile Include="OctoProfilerFactory.cpp" />
   </ItemGroup>

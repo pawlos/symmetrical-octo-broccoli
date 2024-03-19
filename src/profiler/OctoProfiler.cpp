@@ -1,11 +1,12 @@
 #include "OctoProfiler.h"
+#include "log.h"
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
 	static const GUID CLSID_ProfilerCallback2 = { 0x8A8CC829, 0xCCF2, 0x49FE, { 0xBB, 0xAE, 0x0F, 0x02, 0x22, 0x28, 0x07, 0x1A } };
 	if (riid == CLSID_ProfilerCallback2)
 	{
-		printf("OctoProfiler::QueryInterface\n");
+		Logger::DoLog("OctoProfiler::QueryInterface");
 		*ppvObject = this;
 		return S_OK;
 	}
@@ -32,18 +33,18 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	hr = pInfo->SetEventMask(COR_PRF_ALL);
 	if (FAILED(hr))
 	{
-		printf("Error setting the event mask.\n");
+		Logger::DoLog("Error setting the event mask.\n");
 		return E_FAIL;
 	}
-	printf("OctoProfiler::Initialize initialized...\n");
+	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {
 	pInfo->Release();
-	printf("Total allocated bytes: %ld [B]\n", totalAllocatedBytes);
-	printf("OctoProfiler::Shutdown...\n");
+	Logger::DoLog("Total allocated bytes: %ld [B]", totalAllocatedBytes);
+	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
 }
 
@@ -74,7 +75,7 @@ HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 	AppDomainID appDomainId;
 	ModuleID moduleId;	
 	pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
-	printf("OctoProfiler::AssemblyLoadStarted: %ls\n", name);
+	Logger::DoLog("OctoProfiler::AssemblyLoadStarted: %ls", name);
 	return S_OK;
 }
 
@@ -305,11 +306,11 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 					NULL,
 					NULL,
 					NULL);
-				printf("OctoProfiler::ObjectAllocated %ld [B] for %ls\n", bytesAllocated, typeName);
+				Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B] for %ls", bytesAllocated, typeName);
 			}
 			else
 			{
-				printf("OctoProfiler::ObjectAllocated %ld [B]\n", bytesAllocated);
+				Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B]", bytesAllocated);
 			}
 		}
 		return S_OK;
@@ -334,7 +335,7 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	printf("OctoProfiler::ExceptionThrown\n");
+	Logger::DoLog("OctoProfiler::ExceptionThrown\n");
 	return S_OK;
 }
 
@@ -430,7 +431,7 @@ HRESULT __stdcall OctoProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchNa
 
 HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
 {
-	printf("OctoProfiler::GarbageCollectionStarted\n");
+	Logger::DoLog("OctoProfiler::GarbageCollectionStarted\n");
 	return S_OK;
 }
 
