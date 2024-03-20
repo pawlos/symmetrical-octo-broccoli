@@ -7,7 +7,7 @@ BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 static OctoProfileFactory *factory;
 extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppv)
 {
-	printf("OctoProfiler::DllGetClassObject\n");
+	Logger::DoLog("OctoProfiler::DllGetClassObject");
 
 	if (ppv == nullptr)
 	{

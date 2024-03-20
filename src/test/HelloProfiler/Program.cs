@@ -21,7 +21,7 @@ WaitForAKey();
 Console.WriteLine("Profiler - Exceptions test");
 try
 {
-    throw new Exception("testing");
+    throw new ArgumentException("testing");
 }
 catch
 {

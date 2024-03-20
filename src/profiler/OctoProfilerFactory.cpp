@@ -3,7 +3,7 @@
 HRESULT __stdcall OctoProfileFactory::QueryInterface(REFIID riid, void** ppvObject)
 {	
 	static const GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
-	printf("OctoProfileFactory::QueryInterface\n");
+	Logger::DoLog("OctoProfileFactory::QueryInterface");
 	if (riid == CLSID_ClassFactoryGuid)
 	{
 		*ppvObject = &profiler;
@@ -25,7 +25,7 @@ ULONG __stdcall OctoProfileFactory::Release(void)
 
 HRESULT __stdcall OctoProfileFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 {
-	printf("OctoProfileFactory::CreateInstance\n");
+	Logger::DoLog("OctoProfileFactory::CreateInstance");
 	profiler = new OctoProfiler();
 	*ppvObject = profiler;
 	return S_OK;

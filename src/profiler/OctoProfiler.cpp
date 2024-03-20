@@ -33,7 +33,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	hr = pInfo->SetEventMask(COR_PRF_ALL);
 	if (FAILED(hr))
 	{
-		Logger::DoLog("Error setting the event mask.\n");
+		Logger::DoLog("Error setting the event mask.");
 		return E_FAIL;
 	}
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
@@ -176,12 +176,18 @@ HRESULT __stdcall OctoProfiler::JITInlining(FunctionID callerId, FunctionID call
 
 HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 {
-	return E_NOTIMPL;
+	DWORD win32ThreadId;	
+	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId))) {
+		return E_FAIL;
+	}
+	Logger::DoLog("OctoProfiler::ThreadCreated [%d]", win32ThreadId);
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 {
-	return E_NOTIMPL;
+	Logger::DoLog("OctoProfiler::ThreadDestroyed");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId)
@@ -335,8 +341,35 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	Logger::DoLog("OctoProfiler::ExceptionThrown\n");
-	return S_OK;
+	ClassID classId;
+	auto hr = pInfo->GetClassFromObject(thrownObjectId, &classId);
+	if (SUCCEEDED(hr))
+	{
+		ModuleID moduleId;
+		mdTypeDef defToken;
+		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+		if (SUCCEEDED(hr))
+		{
+			IMetaDataImport* pIMDImport;
+			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+			if (SUCCEEDED(hr))
+			{
+				ULONG typedefnamesize;
+				DWORD typedefflags;
+				mdToken extends;
+				WCHAR typeName[255];
+				hr = pIMDImport->GetTypeDefProps(defToken,					
+					typeName,
+					254,
+					&typedefnamesize,
+					&typedefflags,
+					&extends);
+				Logger::DoLog("OctoProfiler::ExceptionThrown %ls", typeName);
+				return S_OK;
+			}			
+		}
+	}
+	return E_FAIL;
 }
 
 HRESULT __stdcall OctoProfiler::ExceptionSearchFunctionEnter(FunctionID functionId)
@@ -431,7 +464,7 @@ HRESULT __stdcall OctoProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchNa
 
 HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
 {
-	Logger::DoLog("OctoProfiler::GarbageCollectionStarted\n");
+	Logger::DoLog("OctoProfiler::GarbageCollectionStarted");
 	return S_OK;
 }
 
@@ -442,7 +475,8 @@ HRESULT __stdcall OctoProfiler::SurvivingReferences(ULONG cSurvivingObjectIDRang
 
 HRESULT __stdcall OctoProfiler::GarbageCollectionFinished(void)
 {
-	return E_NOTIMPL;
+	Logger::DoLog("OctoProfiler::GarbageCollectionFinished");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID)
