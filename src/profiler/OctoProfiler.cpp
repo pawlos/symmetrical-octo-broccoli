@@ -293,38 +293,14 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
+
+	auto typeName = nameResolver->ResolveTypeNameByObjectId(objectId);
 	ULONG bytesAllocated;
 	auto hr = pInfo->GetObjectSize(objectId, &bytesAllocated);
 	if (SUCCEEDED(hr))
 	{
-		ModuleID moduleId;
-		mdTypeDef defToken;
 		totalAllocatedBytes += bytesAllocated;
-		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
-		if (SUCCEEDED(hr))
-		{
-			IMetaDataImport* pIMDImport = nullptr;
-			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
-			if (SUCCEEDED(hr))
-			{
-				WCHAR typeName[255];
-				hr = pIMDImport->GetMethodProps(defToken,
-					NULL,
-					typeName,
-					254,
-					0,
-					0,
-					NULL,
-					NULL,
-					NULL,
-					NULL);
-				Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B] for %ls", bytesAllocated, typeName);
-			}
-			else
-			{
-				Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B]", bytesAllocated);
-			}
-		}
+		Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B] for %ls", bytesAllocated, typeName.value_or(L"<<no info>>").c_str());
 		return S_OK;
 	}
 	return E_FAIL;
@@ -347,34 +323,8 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	ClassID classId;
-	auto hr = pInfo->GetClassFromObject(thrownObjectId, &classId);
-	if (SUCCEEDED(hr))
-	{
-		ModuleID moduleId;
-		mdTypeDef defToken;
-		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
-		if (SUCCEEDED(hr))
-		{
-			IMetaDataImport* pIMDImport = nullptr;
-			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
-			if (SUCCEEDED(hr))
-			{
-				ULONG typedefnamesize;
-				DWORD typedefflags;
-				mdToken extends;
-				WCHAR typeName[255];
-				hr = pIMDImport->GetTypeDefProps(defToken,
-					typeName,
-					254,
-					&typedefnamesize,
-					&typedefflags,
-					&extends);
-				Logger::DoLog("OctoProfiler::ExceptionThrown %ls", typeName);
-				return S_OK;
-			}
-		}
-	}
+	auto typeName = nameResolver->ResolveTypeNameByObjectId(thrownObjectId);
+	Logger::DoLog("OctoProfiler::ExceptionThrown %ls", typeName.value_or(L"<<no info>>").c_str());
 	return E_FAIL;
 }
 

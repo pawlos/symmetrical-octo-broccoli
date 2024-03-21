@@ -57,3 +57,35 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 
 	return std::optional<std::wstring>(std::wstring(appDomainName));
 }
+
+std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID objectId) const {
+	ClassID classId;
+	auto hr = pInfo->GetClassFromObject(objectId, &classId);
+	if (SUCCEEDED(hr))
+	{
+		ModuleID moduleId;
+		mdTypeDef defToken;
+		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+		if (SUCCEEDED(hr))
+		{
+			IMetaDataImport* pIMDImport = nullptr;
+			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+			if (SUCCEEDED(hr))
+			{
+				ULONG typedefnamesize;
+				DWORD typedefflags;
+				mdToken extends;
+				WCHAR typeName[255];
+				hr = pIMDImport->GetTypeDefProps(defToken,
+					typeName,
+					254,
+					&typedefnamesize,
+					&typedefflags,
+					&extends);
+
+				return std::optional<std::wstring>(std::wstring(typeName));
+			}
+		}
+	}
+	return{};
+}

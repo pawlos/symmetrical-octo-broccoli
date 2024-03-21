@@ -11,6 +11,7 @@ public:
 	std::optional<std::wstring> ResolveFunctionName(FunctionID functionId) const;
 	std::optional<std::wstring> ResolveAssemblyName(AssemblyID assemblyId) const;
 	std::optional<std::wstring> ResolveAppDomainName(AppDomainID appDomainId) const;
+	std::optional<std::wstring> ResolveTypeNameByObjectId(ObjectID objectId) const;
 private:
 	ICorProfilerInfo2* pInfo;
 };
