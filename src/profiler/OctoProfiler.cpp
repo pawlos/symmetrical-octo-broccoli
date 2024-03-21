@@ -81,7 +81,13 @@ HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
 {
-	return E_NOTIMPL;
+	WCHAR name[255];
+	ULONG outNameLen;
+	AppDomainID appDomainId;
+	ModuleID moduleId;
+	pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
+	Logger::DoLog("OctoProfiler::AssemblyLoadFinished: %ls", name);
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AssemblyUnloadStarted(AssemblyID assemblyId)
@@ -146,12 +152,14 @@ HRESULT __stdcall OctoProfiler::FunctionUnloadStarted(FunctionID functionId)
 
 HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock)
 {
-	return E_NOTIMPL;
+	Logger::DoLog("OctoProfiler::JITCompilationStarted");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
 {
-	return E_NOTIMPL;
+	Logger::DoLog("OctoProfiler::JITCompilationFinished");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::JITCachedFunctionSearchStarted(FunctionID functionId, BOOL* pbUseCachedFunction)
