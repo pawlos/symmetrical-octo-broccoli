@@ -2,10 +2,13 @@
 #include "cor.h"
 #include "corprof.h"
 #include <stdio.h>
+#include "log.h"
+#include "NameResolver.h"
 
 class OctoProfiler : public ICorProfilerCallback2 {
 private:
 	ICorProfilerInfo2* pInfo;
+	NameResolver* nameResolver;
 	ULONG totalAllocatedBytes;
 public:	
 	// Inherited via ICorProfilerCallback2

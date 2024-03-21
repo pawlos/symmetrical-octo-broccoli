@@ -1,5 +1,4 @@
 #include "OctoProfiler.h"
-#include "log.h"
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
@@ -10,7 +9,7 @@ HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 		*ppvObject = this;
 		return S_OK;
 	}
-		
+
 	return E_NOTIMPL;
 }
 
@@ -36,6 +35,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 		Logger::DoLog("Error setting the event mask.");
 		return E_FAIL;
 	}
+	this->nameResolver = new NameResolver(pInfo);
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }
@@ -43,14 +43,24 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {
 	pInfo->Release();
-	Logger::DoLog("Total allocated bytes: %ld [B]", totalAllocatedBytes);
+	Logger::DoLog("OctoProfiler::Total allocated bytes: %ld [B]", totalAllocatedBytes);
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
 {
-	return E_NOTIMPL;
+	DWORD appDomainNameCount;
+	WCHAR appDomainName[255];
+	ProcessID processId;
+	auto hr = pInfo->GetAppDomainInfo(appDomainId, 255, &appDomainNameCount, appDomainName, &processId);
+	if (FAILED(hr))
+	{
+		Logger::DoLog("Unable to retrive AppDomain info");
+		return E_FAIL;
+	}
+	Logger::DoLog("OctoProfiler::App domain creation started: %ls", appDomainName);
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AppDomainCreationFinished(AppDomainID appDomainId, HRESULT hrStatus)
@@ -70,23 +80,15 @@ HRESULT __stdcall OctoProfiler::AppDomainShutdownFinished(AppDomainID appDomainI
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 {
-	WCHAR name[255];
-	ULONG outNameLen;
-	AppDomainID appDomainId;
-	ModuleID moduleId;	
-	pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
-	Logger::DoLog("OctoProfiler::AssemblyLoadStarted: %ls", name);
+	auto assemblyName = nameResolver->ResolveAssemblyName(assemblyId);
+	Logger::DoLog("OctoProfiler::AssemblyLoadStarted: %ls", assemblyName.value_or(L"<<no info>>").c_str());
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
 {
-	WCHAR name[255];
-	ULONG outNameLen;
-	AppDomainID appDomainId;
-	ModuleID moduleId;
-	pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
-	Logger::DoLog("OctoProfiler::AssemblyLoadFinished: %ls", name);
+	auto assemblyName = nameResolver->ResolveAssemblyName(assemblyId);
+	Logger::DoLog("OctoProfiler::AssemblyLoadFinished: %ls", assemblyName.value_or(L"<<no info>>").c_str());
 	return S_OK;
 }
 
@@ -152,7 +154,9 @@ HRESULT __stdcall OctoProfiler::FunctionUnloadStarted(FunctionID functionId)
 
 HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock)
 {
-	Logger::DoLog("OctoProfiler::JITCompilationStarted");
+	auto functionName = nameResolver->ResolveFunctionName(functionId);
+
+	Logger::DoLog("OctoProfiler::JITCompilationStarted %ls", functionName.value_or(L"<<no info>>").c_str());
 	return S_OK;
 }
 
@@ -184,7 +188,7 @@ HRESULT __stdcall OctoProfiler::JITInlining(FunctionID callerId, FunctionID call
 
 HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 {
-	DWORD win32ThreadId;	
+	DWORD win32ThreadId;
 	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId))) {
 		return E_FAIL;
 	}
@@ -305,7 +309,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
 		if (SUCCEEDED(hr))
 		{
-			IMetaDataImport *pIMDImport;
+			IMetaDataImport* pIMDImport;
 			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
 			if (SUCCEEDED(hr))
 			{
@@ -328,7 +332,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 			}
 		}
 		return S_OK;
-	}	
+	}
 	return E_FAIL;
 }
 
@@ -366,7 +370,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 				DWORD typedefflags;
 				mdToken extends;
 				WCHAR typeName[255];
-				hr = pIMDImport->GetTypeDefProps(defToken,					
+				hr = pIMDImport->GetTypeDefProps(defToken,
 					typeName,
 					254,
 					&typedefnamesize,
@@ -374,7 +378,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 					&extends);
 				Logger::DoLog("OctoProfiler::ExceptionThrown %ls", typeName);
 				return S_OK;
-			}			
+			}
 		}
 	}
 	return E_FAIL;
