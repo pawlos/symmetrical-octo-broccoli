@@ -2,7 +2,6 @@
 #include "unknwn.h"
 #include "OctoProfiler.h"
 #include <stdio.h>
-#include "log.h"
 
 class OctoProfileFactory : public IClassFactory
 {

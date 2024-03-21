@@ -50,15 +50,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 
 HRESULT __stdcall OctoProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
 {
-	DWORD appDomainNameCount;
-	WCHAR appDomainName[255];
-	ProcessID processId;
-	auto hr = pInfo->GetAppDomainInfo(appDomainId, 255, &appDomainNameCount, appDomainName, &processId);
-	if (FAILED(hr))
-	{
-		Logger::DoLog("Unable to retrive AppDomain info");
-		return E_FAIL;
-	}
+	auto appDomainName = nameResolver->ResolveAppDomainName(appDomainId);
 	Logger::DoLog("OctoProfiler::App domain creation started: %ls", appDomainName);
 	return S_OK;
 }
@@ -162,7 +154,9 @@ HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOO
 
 HRESULT __stdcall OctoProfiler::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
 {
-	Logger::DoLog("OctoProfiler::JITCompilationFinished");
+	auto functionName = nameResolver->ResolveFunctionName(functionId);
+
+	Logger::DoLog("OctoProfiler::JITCompilationFinished %ls", functionName.value_or(L"<<no info>>").c_str());
 	return S_OK;
 }
 
@@ -309,7 +303,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
 		if (SUCCEEDED(hr))
 		{
-			IMetaDataImport* pIMDImport;
+			IMetaDataImport* pIMDImport = nullptr;
 			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
 			if (SUCCEEDED(hr))
 			{
@@ -362,7 +356,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
 		if (SUCCEEDED(hr))
 		{
-			IMetaDataImport* pIMDImport;
+			IMetaDataImport* pIMDImport = nullptr;
 			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
 			if (SUCCEEDED(hr))
 			{

@@ -1,4 +1,5 @@
 #include "OctoProfilerFactory.h"
+#include "log.h"
 
 BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
