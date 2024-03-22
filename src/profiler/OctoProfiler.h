@@ -7,10 +7,10 @@
 
 class OctoProfiler : public ICorProfilerCallback2 {
 private:
-	ICorProfilerInfo2* pInfo;
-	NameResolver* nameResolver;
-	ULONG totalAllocatedBytes;
-public:	
+	ICorProfilerInfo2* pInfo{};
+	NameResolver* nameResolver {};
+	ULONG totalAllocatedBytes = 0;	
+public:		
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef(void) override;
