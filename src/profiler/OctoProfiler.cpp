@@ -35,14 +35,13 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 		Logger::DoLog("Error setting the event mask.");
 		return E_FAIL;
 	}
-	this->nameResolver = new NameResolver(pInfo);
+	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown(void)
-{
-	pInfo->Release();
+{	
 	Logger::DoLog("OctoProfiler::Total allocated bytes: %ld [B]", totalAllocatedBytes);
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
