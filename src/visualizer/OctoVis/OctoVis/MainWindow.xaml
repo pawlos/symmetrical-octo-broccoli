@@ -4,9 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OctoVis"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center"/>
+        <lvc:CartesianChart DataContext="{Binding .}"
+                            Series="{Binding Memory}"
+                            ZoomMode="Both"
+                            Grid.Row="1">
+        </lvc:CartesianChart>
     </Grid>
 </Window>
