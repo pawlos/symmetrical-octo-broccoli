@@ -25,6 +25,16 @@ Minimum plan:
 - gather informations about stack traces during the excution of the program
 - implement basic flame-graph to visualize the execution timelime
 
+## Current state ##
+
+Profiler reacts to events
+
+![CLI](img/cli.png)
+
+Visualization
+
+![GUI](img/gui.png)
+
 ## Debugging ##
 
 Issues found during development:
