@@ -22,7 +22,7 @@ Some reference links about the topic:
 
 Minimum plan:
 - implement profiler class that can be used as a profiler for .NET based applications
-- gather informations about stack traces dduring the excution of the program
+- gather informations about stack traces during the excution of the program
 - implement basic flame-graph to visualize the execution timelime
 
 ## Debugging ##
