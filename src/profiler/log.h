@@ -2,8 +2,9 @@
 
 #include <windows.h>
 #include <iostream>
-#include <string>
 #include <cstdarg>
+#include <chrono>
+#include <iostream>
 
 class Logger {	
 public:

@@ -1,25 +1,17 @@
 #include "log.h"
+#include <mutex>
 
-const std::string GetLogTime()
-{
-	SYSTEMTIME st;
-
-	GetSystemTime(&st);
-
-	char currentTime[84] = "";
-
-	sprintf_s(currentTime, "%.4d%.2d%.2d%.2d%.2d%.2d%.4d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-
-	return std::string(currentTime);
-}
-
+std::mutex m;
 void Logger::DoLog(const char* format, ...)
 {
 	va_list args;
 
 	va_start(args, format);
-	printf("[%s] ", GetLogTime().c_str());
+	auto now = std::chrono::high_resolution_clock::now();
+	m.lock();
+	std::cout << "[" << now.time_since_epoch() << "] ";
 	vprintf(format, args);
-	printf("\n");
+	std::cout << std::endl;
+	m.unlock();
 	va_end(args);
 }
