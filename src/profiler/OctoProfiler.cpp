@@ -50,7 +50,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 HRESULT __stdcall OctoProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
 {
 	auto appDomainName = nameResolver->ResolveAppDomainName(appDomainId);
-	Logger::DoLog("OctoProfiler::App domain creation started: %ls", appDomainName);
+	Logger::DoLog("OctoProfiler::App domain creation started: %ls", appDomainName.value_or(L"<<no info>>").c_str());
 	return S_OK;
 }
 
