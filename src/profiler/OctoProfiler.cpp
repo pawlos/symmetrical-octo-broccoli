@@ -29,7 +29,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	if (FAILED(hr)) {
 		return E_FAIL;
 	}
-	hr = pInfo->SetEventMask(COR_PRF_ALL);
+	hr = pInfo->SetEventMask(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT);
 	if (FAILED(hr))
 	{
 		Logger::DoLog("Error setting the event mask.");
@@ -42,6 +42,9 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {	
+	std::condition_variable cv;
+	std::unique_lock<std::mutex> lk(stackWalkMutex);
+	cv.wait_for(lk, std::chrono::seconds(2));
 	Logger::DoLog("OctoProfiler::Total allocated bytes: %ld [B]", totalAllocatedBytes);
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
@@ -290,9 +293,24 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 	return E_NOTIMPL;
 }
 
+HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAME_INFO frameInfo, ULONG32 contextSize, BYTE context[], void* clientData)
+{	
+	if (!funcId)
+	{
+		Logger::DoLog("OctoProfiler::<<Native frame>>");
+	}
+	else
+	{
+		NameResolver* nameResolver = reinterpret_cast<NameResolver*>(clientData);
+		auto functionName = nameResolver->ResolveFunctionName(funcId);
+		Logger::DoLog("OctoProfiler::Managed frame %ls %x", functionName.value_or(L"<<no info>>").c_str(), ip);
+	}
+
+	return S_OK;
+}
+
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
-
 	auto typeName = nameResolver->ResolveTypeNameByObjectId(objectId);
 	ULONG bytesAllocated;
 	auto hr = pInfo->GetObjectSize(objectId, &bytesAllocated);
@@ -300,10 +318,15 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 	{
 		totalAllocatedBytes += bytesAllocated;
 		Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B] for %ls", bytesAllocated, typeName.value_or(L"<<no info>>").c_str());
+		stackWalkMutex.lock();
+		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), NULL, 0);
+		stackWalkMutex.unlock();
 		return S_OK;
-	}
+	}	
 	return E_FAIL;
 }
+
+
 
 HRESULT __stdcall OctoProfiler::ObjectsAllocatedByClass(ULONG cClassCount, ClassID classIds[], ULONG cObjects[])
 {

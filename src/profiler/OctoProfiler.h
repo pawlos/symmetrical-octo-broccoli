@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include "log.h"
 #include "NameResolver.h"
+#include <mutex>
 
 class OctoProfiler : public ICorProfilerCallback2 {
 private:
 	CComQIPtr<ICorProfilerInfo2> pInfo;
 	std::unique_ptr<NameResolver> nameResolver {};
-	ULONG totalAllocatedBytes = 0;	
+	ULONG totalAllocatedBytes = 0;
+	std::mutex stackWalkMutex;
 public:		
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
