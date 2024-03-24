@@ -1,23 +1,21 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using LiveChartsCore.Defaults;
+using OctoVis.Model;
 
 namespace OctoVis.Parser;
 
 public static class LogParser
 {
-    public static (ObservablePoint[], ObservablePoint[], Dictionary<double, string>)? ParseFile(string fileName)
+    public static ProfilerDataModel? ParseFile(string fileName)
     {
         if (!File.Exists(fileName))
         {
-            throw new Exception();
+            return null;
         }
 
         uint totalMemoryAllocated = 0;
-        var memoryData = new List<ObservablePoint>();
-        var exceptionData = new List<ObservablePoint>();
-        var exceptionInfo = new Dictionary<double, string>();
-        var typeAllocationInfo = new Dictionary<string, uint>();
+        ProfilerDataModel model = new();
         ulong? startTicks = null;
         foreach (var line in File.ReadAllLines(fileName))
         {
@@ -30,28 +28,28 @@ public static class LogParser
                 var currentTicks = ParseTimestamp(line);
                 (string type, uint bytes) = ParseTypeAndBytesAllocated(line);
                 totalMemoryAllocated += bytes;
-                if (typeAllocationInfo.TryGetValue(type, out uint v))
+                if (model.TypeAllocationInfo.TryGetValue(type, out uint v))
                 {
-                    typeAllocationInfo[type] = v + bytes;
+                    model.TypeAllocationInfo[type] = v + bytes;
                 }
                 else
                 {
-                    typeAllocationInfo.Add(type, bytes);
+                    model.TypeAllocationInfo.Add(type, bytes);
                 }
-                memoryData.Add(new ObservablePoint(CalculateTimestamp(currentTicks, startTicks!.Value), totalMemoryAllocated));
+                model.MemoryData.Add(new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value), totalMemoryAllocated));
             }
             else if (line.Contains("OctoProfiler::ExceptionThrown"))
             {
                 var currentTicks = ParseTimestamp(line);
                 var exceptionType = ParseException(line);
 
-                var point = new ObservablePoint(CalculateTimestamp(currentTicks, startTicks!.Value), 0);
-                exceptionData.Add(point);
-                exceptionInfo.Add(point.X!.Value, exceptionType);
+                var point = new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value), 0);
+                model.ExceptionData.Add(point);
+                model.ExceptionInfo.Add(point.Time, exceptionType);
             }
         }
 
-        return (memoryData.ToArray(), exceptionData.ToArray(), exceptionInfo);
+        return model;
     }
 
     private static ulong ParseTimestamp(string line)

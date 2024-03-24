@@ -3,20 +3,32 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:OctoVis"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center"/>
-        <lvc:CartesianChart DataContext="{Binding .}"
-                            Series="{Binding Memory}"
-                            ZoomMode="Both"
-                            Grid.Row="1">
-        </lvc:CartesianChart>
+        <Grid Visibility="{Binding LogParsed, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center" />
+            <lvc:CartesianChart DataContext="{Binding .}"
+                                Series="{Binding Timeline}"
+                                ZoomMode="Both"
+                                Grid.Row="1"
+                                Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}">
+            </lvc:CartesianChart>
+            <lvc:PieChart Grid.Row="2" DataContext="{Binding .}"
+                          Series="{Binding MemoryByType}"
+                          LegendPosition="Right"
+                          Title="{Binding Top20AllocationsTitle}">
+
+            </lvc:PieChart>
+        </Grid>
+        <Button Margin="20"
+                Click="ButtonBase_OnClick" Content="Pick a log"
+                Visibility="{Binding LogNotParsed, Converter={StaticResource BooleanToVisibilityConverter}}" />
     </Grid>
 </Window>
