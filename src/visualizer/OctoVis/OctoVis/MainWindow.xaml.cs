@@ -27,7 +27,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         var profilerViewModel = new ProfilerViewModel();
-        var data = LogParser.ParseFile("log.txt");
+        var data = LogParser.ParseFile("log2.txt");
         if (data is null)
         {
             return;
