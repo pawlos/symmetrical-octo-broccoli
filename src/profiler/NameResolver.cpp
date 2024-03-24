@@ -75,10 +75,10 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID obj
 				ULONG typedefnamesize;
 				DWORD typedefflags;
 				mdToken extends;
-				WCHAR typeName[255];
+				WCHAR typeName[512];
 				hr = pIMDImport->GetTypeDefProps(defToken,
 					typeName,
-					254,
+					510,
 					&typedefnamesize,
 					&typedefflags,
 					&extends);
