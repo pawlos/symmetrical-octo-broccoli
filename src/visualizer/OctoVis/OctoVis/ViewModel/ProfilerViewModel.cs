@@ -33,6 +33,8 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     };
     public ISeries[] Timeline { get; set; } = null!;
     public ISeries?[] MemoryByType { get; set; } = null!;
+
+    public RectangularSection[] GcSections { get; set; } = null!;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -9,4 +9,6 @@ public class ProfilerDataModel
     public List<DataPoint> ExceptionData { get; set; } = new();
 
     public List<DataPoint> MemoryData { get; set; } = new();
+
+    public List<RangeDataPoint> GcData { get; set; } = new();
 }

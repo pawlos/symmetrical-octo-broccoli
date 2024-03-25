@@ -16,9 +16,10 @@
             <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center" />
             <lvc:CartesianChart DataContext="{Binding .}"
                                 Series="{Binding Timeline}"
-                                ZoomMode="Both"
+                                ZoomMode="PanX"
                                 Grid.Row="1"
-                                Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}">
+                                Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}"
+                                Sections="{Binding GcSections}">
             </lvc:CartesianChart>
             <lvc:PieChart Grid.Row="2" DataContext="{Binding .}"
                           Series="{Binding MemoryByType}"

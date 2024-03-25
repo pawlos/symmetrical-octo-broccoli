@@ -23,13 +23,13 @@ public partial class MainWindow : Window
 
     private void ParseFile(string fileName)
     {
-        var profilerViewModel = new ProfilerViewModel();
         var data = LogParser.ParseFile(fileName);
         if (data is null)
         {
             return;
         }
 
+        var profilerViewModel = new ProfilerViewModel();
         profilerViewModel.Timeline = new[]
         {
             new LineSeries<ObservablePoint>
@@ -43,6 +43,16 @@ public partial class MainWindow : Window
                 Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
             }
         };
+        var gcSections = data.GcData.Select(gc => new RectangularSection
+        {
+            Xi = gc.TimeStart,
+            Xj = gc.TimeStart + gc.Duration,
+            Fill = new SolidColorPaint {Color = SKColors.Orange.WithAlpha(80) },
+            Stroke = new SolidColorPaint {Color = SKColors.Orange, StrokeThickness = 3},
+            Label = "GC",
+            LabelSize = 200
+        }).ToArray();
+        profilerViewModel.GcSections = gcSections;
         var series = data.TypeAllocationInfo
             .OrderByDescending(x=>x.Value)
             .Take(20)

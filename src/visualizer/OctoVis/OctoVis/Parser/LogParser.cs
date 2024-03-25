@@ -17,6 +17,7 @@ public static class LogParser
         uint totalMemoryAllocated = 0;
         ProfilerDataModel model = new();
         ulong? startTicks = null;
+        ulong? gcStartEventTicks = null;
         foreach (var line in File.ReadAllLines(fileName))
         {
             if (line.Contains("OctoProfiler::QueryInterface"))
@@ -37,6 +38,21 @@ public static class LogParser
                     model.TypeAllocationInfo.Add(type, bytes);
                 }
                 model.MemoryData.Add(new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value), totalMemoryAllocated));
+            }
+            else if (line.Contains("OctoProfiler::GarbageCollection"))
+            {
+                var time = ParseTimestamp(line);
+                if (line.Contains("OctoProfiler::GarbageCollectionStarted"))
+                {
+                    gcStartEventTicks = time;
+                }
+                else if (line.Contains("OctoProfiler::GarbageCollectionFinished") && gcStartEventTicks.HasValue)
+                {
+                    var gcEnd = time;
+                    var gcStartTime = CalculateTimestamp(gcStartEventTicks.Value, startTicks!.Value);
+                    var duration = CalculateTimestamp(gcEnd, startTicks.Value) - gcStartTime;
+                    model.GcData.Add(new RangeDataPoint(gcStartTime, duration));
+                }
             }
             else if (line.Contains("OctoProfiler::ExceptionThrown"))
             {
