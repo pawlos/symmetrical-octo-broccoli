@@ -442,7 +442,11 @@ HRESULT __stdcall OctoProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchNa
 
 HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
 {
-	Logger::DoLog("OctoProfiler::GarbageCollectionStarted");
+	auto gen0 = generationCollected[COR_PRF_GC_GEN_0] ? "GEN0" : "";
+	auto gen1 = generationCollected[COR_PRF_GC_GEN_1] ? "GEN1" : "";
+	auto gen2 = generationCollected[COR_PRF_GC_GEN_2] ? "GEN2" : "";
+	auto genLoh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";	
+	Logger::DoLog("OctoProfiler::GarbageCollectionStarted [%s] [%s] [%s] [%s]", gen0, gen1, gen2, genLoh);
 	return S_OK;
 }
 
