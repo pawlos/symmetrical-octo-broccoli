@@ -28,7 +28,7 @@ public static class LogParser
             {
                 var currentTicks = ParseTimestamp(line);
                 (string type, uint bytes) = ParseTypeAndBytesAllocated(line);
-                totalMemoryAllocated += bytes;
+                totalMemoryAllocated += bytes / 1024;
                 if (model.TypeAllocationInfo.TryGetValue(type, out uint v))
                 {
                     model.TypeAllocationInfo[type] = v + bytes;

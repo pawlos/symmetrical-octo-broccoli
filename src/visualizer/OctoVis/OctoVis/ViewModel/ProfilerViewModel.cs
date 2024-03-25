@@ -28,7 +28,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     {
         new Axis
         {
-            Name = "Total memory allocations [B]"
+            Name = "Total memory allocations [kB]",
         }
     };
     public ISeries[] Timeline { get; set; } = null!;
