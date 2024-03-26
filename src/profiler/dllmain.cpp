@@ -25,9 +25,10 @@ BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 static OctoProfileFactory *factory;
 extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppv)
 {
-	auto fileToLog = GetEnv("OCTO_PROFILER_FILE");
-	Logger::DoLog("Log file: %s", fileToLog.value_or("console").c_str());
-
+	auto fileToLog = GetEnv("OCTO_PROFILER_FILE");	
+	auto logger = fileToLog.has_value() ? static_cast<Logger *>(new FileLogger(fileToLog.value())) : static_cast<Logger *>(new StdOutLogger());		
+	Logger::Initialize(logger);
+	Logger::DoLog(std::format("Log file: {0}", fileToLog.value_or("console")));
 	Logger::DoLog("OctoProfiler::DllGetClassObject");
 
 	if (ppv == nullptr)

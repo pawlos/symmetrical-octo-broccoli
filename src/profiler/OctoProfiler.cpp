@@ -45,7 +45,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 	std::condition_variable cv;
 	std::unique_lock<std::mutex> lk(stackWalkMutex);
 	cv.wait_for(lk, std::chrono::seconds(2));
-	Logger::DoLog("OctoProfiler::Total allocated bytes: %ld [B]", totalAllocatedBytes);
+	Logger::DoLog(std::format("OctoProfiler::Total allocated bytes: {0} [B]", totalAllocatedBytes));
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
 }
@@ -53,7 +53,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 HRESULT __stdcall OctoProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
 {
 	auto appDomainName = nameResolver->ResolveAppDomainName(appDomainId);
-	Logger::DoLog("OctoProfiler::App domain creation started: %ls", appDomainName.value_or(L"<<no info>>").c_str());
+	Logger::DoLog(std::format(L"OctoProfiler::App domain creation started: {0}", appDomainName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -75,14 +75,14 @@ HRESULT __stdcall OctoProfiler::AppDomainShutdownFinished(AppDomainID appDomainI
 HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 {
 	auto assemblyName = nameResolver->ResolveAssemblyName(assemblyId);
-	Logger::DoLog("OctoProfiler::AssemblyLoadStarted: %ls", assemblyName.value_or(L"<<no info>>").c_str());
+	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadStarted: {0}", assemblyName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
 {
 	auto assemblyName = nameResolver->ResolveAssemblyName(assemblyId);
-	Logger::DoLog("OctoProfiler::AssemblyLoadFinished: %ls", assemblyName.value_or(L"<<no info>>").c_str());
+	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadFinished: {0}", assemblyName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -150,7 +150,7 @@ HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOO
 {
 	auto functionName = nameResolver->ResolveFunctionName(functionId);
 
-	Logger::DoLog("OctoProfiler::JITCompilationStarted %ls", functionName.value_or(L"<<no info>>").c_str());
+	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationStarted {0}", functionName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -158,7 +158,7 @@ HRESULT __stdcall OctoProfiler::JITCompilationFinished(FunctionID functionId, HR
 {
 	auto functionName = nameResolver->ResolveFunctionName(functionId);
 
-	Logger::DoLog("OctoProfiler::JITCompilationFinished %ls", functionName.value_or(L"<<no info>>").c_str());
+	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationFinished {0}", functionName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -188,7 +188,7 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId))) {
 		return E_FAIL;
 	}
-	Logger::DoLog("OctoProfiler::ThreadCreated [%d]", win32ThreadId);
+	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0}]", win32ThreadId));
 	return S_OK;
 }
 
@@ -303,7 +303,7 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 	{
 		NameResolver* nameResolver = reinterpret_cast<NameResolver*>(clientData);
 		auto functionName = nameResolver->ResolveFunctionName(funcId);
-		Logger::DoLog("OctoProfiler::Managed frame %ls %x", functionName.value_or(L"<<no info>>").c_str(), ip);
+		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:X}", functionName.value_or(L"<<no info>>"), ip));
 	}
 
 	return S_OK;
@@ -317,7 +317,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 	if (SUCCEEDED(hr))
 	{
 		totalAllocatedBytes += bytesAllocated;
-		Logger::DoLog("OctoProfiler::ObjectAllocated %ld [B] for %ls", bytesAllocated, typeName.value_or(L"<<no info>>").c_str());
+		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytesAllocated, typeName.value_or(L"<<no info>>")));
 		stackWalkMutex.lock();
 		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), NULL, 0);
 		stackWalkMutex.unlock();
@@ -346,7 +346,7 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
 	auto typeName = nameResolver->ResolveTypeNameByObjectId(thrownObjectId);
-	Logger::DoLog("OctoProfiler::ExceptionThrown %ls", typeName.value_or(L"<<no info>>").c_str());
+	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0}", typeName.value_or(L"<<no info>>")));
 	return E_FAIL;
 }
 
@@ -446,7 +446,7 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL 
 	auto gen1 = generationCollected[COR_PRF_GC_GEN_1] ? "GEN1" : "";
 	auto gen2 = generationCollected[COR_PRF_GC_GEN_2] ? "GEN2" : "";
 	auto genLoh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";	
-	Logger::DoLog("OctoProfiler::GarbageCollectionStarted [%s] [%s] [%s] [%s]", gen0, gen1, gen2, genLoh);
+	Logger::DoLog(std::format("OctoProfiler::GarbageCollectionStarted [{0}] [{1}] [{2}] [{3}]", gen0, gen1, gen2, genLoh));
 	return S_OK;
 }
 

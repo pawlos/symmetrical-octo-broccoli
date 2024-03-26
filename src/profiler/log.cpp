@@ -2,16 +2,25 @@
 #include <mutex>
 
 std::mutex m;
-void Logger::DoLog(const char* format, ...)
+static Logger* g_logger;
+void Logger::Initialize(Logger* instance)
 {
-	va_list args;
+    g_logger = instance;
+}
 
-	va_start(args, format);
-	auto now = std::chrono::high_resolution_clock::now();
-	m.lock();
-	std::cout << "[" << now.time_since_epoch() << "] ";
-	vprintf(format, args);
-	std::cout << std::endl;
-	m.unlock();
-	va_end(args);
+void Logger::DoLog(const std::string& _s)
+{
+    auto now = std::chrono::high_resolution_clock::now();
+    m.lock();
+    (*g_logger->m_os) << "[" << now.time_since_epoch() << "] ";
+    (*g_logger->m_os) << _s;
+    (*g_logger->m_os) << std::endl;
+    g_logger->m_os->flush();
+    m.unlock();
+}
+
+void Logger::DoLog(const std::wstring& _s)
+{
+    const std::string s(_s.begin(), _s.end());
+    Logger::DoLog(s);
 }
