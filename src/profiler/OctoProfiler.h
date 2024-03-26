@@ -12,7 +12,7 @@ private:
 	CComQIPtr<ICorProfilerInfo2> pInfo;
 	std::unique_ptr<NameResolver> nameResolver {};
 	ULONG totalAllocatedBytes = 0;
-	std::mutex stackWalkMutex;
+	std::mutex stackWalkMutex{};
 public:		
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
