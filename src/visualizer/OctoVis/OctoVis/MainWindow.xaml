@@ -5,31 +5,51 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="OctoProfiler" Height="800" Width="1600">
     <Grid>
-        <Grid Visibility="{Binding LogParsed, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center" />
-            <lvc:CartesianChart DataContext="{Binding .}"
-                                Series="{Binding Timeline}"
-                                ZoomMode="PanX"
-                                Grid.Row="1"
-                                Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}"
-                                Sections="{Binding GcSections}">
-            </lvc:CartesianChart>
-            <lvc:PieChart Grid.Row="2" DataContext="{Binding .}"
-                          Series="{Binding MemoryByType}"
-                          LegendPosition="Right"
-                          Title="{Binding Top20AllocationsTitle}">
+        <TabControl Visibility="{Binding LogParsed, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TabItem>
+                <TabItem.Header>
+                    <Label Content="Summary" FontWeight="Bold" />
+                </TabItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center" />
+                    <lvc:CartesianChart DataContext="{Binding .}"
+                                        Series="{Binding Timeline}"
+                                        ZoomMode="PanX"
+                                        Grid.Row="1"
+                                        Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}"
+                                        Sections="{Binding GcSections}">
+                    </lvc:CartesianChart>
+                    <lvc:PieChart Grid.Row="2" DataContext="{Binding .}"
+                                  Series="{Binding MemoryByType}"
+                                  LegendPosition="Right"
+                                  Title="{Binding Top20AllocationsTitle}">
 
-            </lvc:PieChart>
-        </Grid>
+                    </lvc:PieChart>
+                </Grid>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <Label Content="Allocations" FontWeight="Bold" />
+                </TabItem.Header>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <Label Content="Settings" FontWeight="Bold" />
+                </TabItem.Header>
+            </TabItem>
+        </TabControl>
         <Button Margin="20"
-                Click="ButtonBase_OnClick" Content="Pick a log"
+                Click="ButtonBase_OnClick"
+                Content="Pick a log"
+                FontWeight="Bold"
+                FontSize="20"
                 Visibility="{Binding LogNotParsed, Converter={StaticResource BooleanToVisibilityConverter}}" />
     </Grid>
 </Window>
