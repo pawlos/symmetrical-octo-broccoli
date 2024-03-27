@@ -1,15 +1,19 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using LiveChartsCore;
+using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.VisualElements;
+using OctoVis.Model;
 using SkiaSharp;
 
 namespace OctoVis.ViewModel;
 
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
+    public record TypeAllocationsTable(string Name, uint TotalAllocations, uint Count);
+
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
     {
         Text = "Timeline - memory allocations/exceptions",
@@ -50,6 +54,55 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         return true;
     }
 
+    public TypeAllocationsTable[] TypeAllocationInfo { get; set; }
+
     public bool LogParsed { get; set; }= false;
     public bool LogNotParsed { get; set; } = true;
+
+    public static ProfilerViewModel FromDataModel(
+        ProfilerDataModel data,
+        SettingsDataModel settings)
+    {
+        var profilerViewModel = new ProfilerViewModel();
+        profilerViewModel.Timeline = new[]
+        {
+            new LineSeries<ObservablePoint>
+            {
+                Values = data.MemoryData.Select(x => new ObservablePoint(x.Time, x.Value))
+            } as ISeries<ObservablePoint>,
+            new ScatterSeries<ObservablePoint>
+            {
+                Values = data.ExceptionData.Select(x=> new ObservablePoint(x.Time, x.Value)),
+                YToolTipLabelFormatter = point =>  data.ExceptionInfo[point.Model!.X!.Value],
+                Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
+            }
+        };
+        var gcSections = data.GcData.Select(gc => new RectangularSection
+        {
+            Xi = gc.TimeStart,
+            Xj = gc.TimeStart + gc.Duration,
+            Fill = new SolidColorPaint {Color = SKColors.Orange.WithAlpha(80) },
+            Stroke = new SolidColorPaint {Color = SKColors.Orange, StrokeThickness = 3},
+            Label = "GC",
+            LabelSize = 200
+        }).ToArray();
+        profilerViewModel.GcSections = gcSections;
+        var series = data.TypeAllocationInfo
+            .OrderByDescending(x=>x.Value)
+            .Take(20)
+            .Select(x => new PieSeries<double>
+            {
+                Values = new [] { (double)(x.Value.TotalMemory) },
+                Name = x.Key
+            }).ToArray();
+        profilerViewModel.MemoryByType = series as ISeries?[];
+        profilerViewModel.LogParsed = true;
+        profilerViewModel.LogNotParsed = false;
+
+        profilerViewModel.TypeAllocationInfo =
+            data.TypeAllocationInfo
+                .Select(x => new TypeAllocationsTable(x.Key, x.Value.TotalMemory, x.Value.Count))
+                .ToArray();
+        return profilerViewModel;
+    }
 }

@@ -29,13 +29,14 @@ public static class LogParser
                 var currentTicks = ParseTimestamp(line);
                 (string type, uint bytes) = ParseTypeAndBytesAllocated(line);
                 totalMemoryAllocated += bytes / 1024;
-                if (model.TypeAllocationInfo.TryGetValue(type, out uint v))
+                if (model.TypeAllocationInfo.TryGetValue(type, out var v))
                 {
-                    model.TypeAllocationInfo[type] = v + bytes;
+                    var (oldMemory, oldCount) = v;
+                    model.TypeAllocationInfo[type] = (oldMemory + bytes, oldCount + 1);
                 }
                 else
                 {
-                    model.TypeAllocationInfo.Add(type, bytes);
+                    model.TypeAllocationInfo.Add(type, (bytes, 1));
                 }
                 model.MemoryData.Add(new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value), totalMemoryAllocated));
             }

@@ -1,6 +1,13 @@
 namespace OctoVis.Model;
 
-public class SettingsViewModel
+public class SettingsDataModel
 {
-    public DataSize TimelineYAxis
+    public enum DataSize
+    {
+        Bytes,
+        KiloBytes,
+        MegaBytes
+    }
+
+    public DataSize TimelineYAxis { get; set; }
 }

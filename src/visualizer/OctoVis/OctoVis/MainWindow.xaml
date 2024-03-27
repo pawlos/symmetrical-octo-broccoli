@@ -38,6 +38,13 @@
                 <TabItem.Header>
                     <Label Content="Allocations" FontWeight="Bold" />
                 </TabItem.Header>
+                <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TypeAllocationInfo}" DataContext="{Binding .}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" />
+                        <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true"/>
+                        <DataGridTextColumn Header="Total memory" Binding="{Binding TotalAllocations}" IsReadOnly="true"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </TabItem>
             <TabItem>
                 <TabItem.Header>

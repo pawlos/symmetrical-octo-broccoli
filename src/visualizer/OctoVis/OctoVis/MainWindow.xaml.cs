@@ -4,6 +4,7 @@ using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.Win32;
+using OctoVis.Model;
 using OctoVis.Parser;
 using OctoVis.ViewModel;
 using SkiaSharp;
@@ -15,6 +16,7 @@ namespace OctoVis;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private ProfilerDataModel _data = new();
     public MainWindow()
     {
         InitializeComponent();
@@ -29,42 +31,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        var profilerViewModel = new ProfilerViewModel();
-        profilerViewModel.Timeline = new[]
-        {
-            new LineSeries<ObservablePoint>
-            {
-                Values = data.MemoryData.Select(x => new ObservablePoint(x.Time, x.Value))
-            } as ISeries<ObservablePoint>,
-            new ScatterSeries<ObservablePoint>
-            {
-                Values = data.ExceptionData.Select(x=> new ObservablePoint(x.Time, x.Value)),
-                YToolTipLabelFormatter = point =>  data.ExceptionInfo[point.Model!.X!.Value],
-                Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
-            }
-        };
-        var gcSections = data.GcData.Select(gc => new RectangularSection
-        {
-            Xi = gc.TimeStart,
-            Xj = gc.TimeStart + gc.Duration,
-            Fill = new SolidColorPaint {Color = SKColors.Orange.WithAlpha(80) },
-            Stroke = new SolidColorPaint {Color = SKColors.Orange, StrokeThickness = 3},
-            Label = "GC",
-            LabelSize = 200
-        }).ToArray();
-        profilerViewModel.GcSections = gcSections;
-        var series = data.TypeAllocationInfo
-            .OrderByDescending(x=>x.Value)
-            .Take(20)
-            .Select(x => new PieSeries<double>
-            {
-                Values = new [] { (double)x.Value },
-                Name = x.Key
-            }).ToArray();
-        profilerViewModel.MemoryByType = series as ISeries?[];
-        profilerViewModel.LogParsed = true;
-        profilerViewModel.LogNotParsed = false;
-        DataContext = profilerViewModel;
+        _data = data;
+        DataContext = ProfilerViewModel.FromDataModel(_data, new SettingsDataModel());
     }
 
 
