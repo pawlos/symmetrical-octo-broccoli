@@ -89,3 +89,13 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID obj
 	}
 	return{};
 }
+
+std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) const {
+	WCHAR moduleName[512];
+	AssemblyID assemblyId;
+	LPCBYTE baseLoadAddress;
+	ULONG size;
+	auto hr = pInfo->GetModuleInfo(moduleId, &baseLoadAddress, 510, &size, moduleName, &assemblyId);
+
+	return std::optional<std::wstring>(std::wstring(moduleName));
+}
