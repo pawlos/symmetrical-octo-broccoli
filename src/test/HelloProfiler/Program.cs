@@ -1,10 +1,20 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using HelloProfiler;
+
 Console.WriteLine("Profile test program - start");
 WaitForAKey();
 
 Console.WriteLine("Profiler - GC collect test");
 GC.Collect();
+WaitForAKey();
+
+Console.WriteLine("Profiler - GC allocations test");
+var allocations = new List<TestClass>();
+for (int i = 0; i < 40000; i++)
+{
+    allocations.Add(new TestClass());
+}
 WaitForAKey();
 
 Console.WriteLine("Profiler - Call stack test");
@@ -19,13 +29,19 @@ Console.WriteLine("Print value {0} {1}", test[0], test2["test"]);
 
 WaitForAKey();
 Console.WriteLine("Profiler - Exceptions test");
-try
+for (int i = 0; i < 10; i++)
 {
-    throw new ArgumentException("testing");
-}
-catch
-{
-    // swallow
+    try
+    {
+        if (i % 2 == 0)
+            throw new ArgumentException("testing");
+        await Task.Delay(200);
+        throw new InvalidOperationException();
+    }
+    catch
+    {
+        // swallow
+    }
 }
 
 WaitForAKey();
