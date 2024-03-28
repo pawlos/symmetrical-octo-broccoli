@@ -24,6 +24,11 @@ public static class LogParser
             {
                 startTicks = ParseTimestamp(line);
             }
+            else if (line.Contains("OctoProfiler::Shutdown..."))
+            {
+                var endTicks = ParseTimestamp(line);
+                model.TotalTime = TimeSpan.FromMicroseconds(endTicks - startTicks!.Value);
+            }
             else if (line.Contains("OctoProfiler::ObjectAllocated"))
             {
                 var currentTicks = ParseTimestamp(line);
@@ -53,6 +58,7 @@ public static class LogParser
                     var gcStartTime = CalculateTimestamp(gcStartEventTicks.Value, startTicks!.Value);
                     var duration = CalculateTimestamp(gcEnd, startTicks.Value) - gcStartTime;
                     model.GcData.Add(new RangeDataPoint(gcStartTime, duration));
+                    model.TotalGcTime += TimeSpan.FromMicroseconds(duration);
                 }
             }
             else if (line.Contains("OctoProfiler::ExceptionThrown"))

@@ -11,4 +11,8 @@ public class ProfilerDataModel
     public List<DataPoint> MemoryData { get; set; } = new();
 
     public List<RangeDataPoint> GcData { get; set; } = new();
+
+    public TimeSpan TotalTime { get; set; }
+
+    public TimeSpan TotalGcTime { get; set; }
 }

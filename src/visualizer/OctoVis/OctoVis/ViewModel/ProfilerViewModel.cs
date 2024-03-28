@@ -54,8 +54,11 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         return true;
     }
 
-    public TypeAllocationsTable[] TypeAllocationInfo { get; set; }
+    public TypeAllocationsTable[] TypeAllocationInfo { get; set; } = null!;
 
+    public string TotalTime { get; set; } = string.Empty;
+
+    public string TotalGcTime { get; set; } = string.Empty;
     public bool LogParsed { get; set; }= false;
     public bool LogNotParsed { get; set; } = true;
 
@@ -63,18 +66,20 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         ProfilerDataModel data,
         SettingsDataModel settings)
     {
-        var profilerViewModel = new ProfilerViewModel();
-        profilerViewModel.Timeline = new[]
+        var profilerViewModel = new ProfilerViewModel
         {
-            new LineSeries<ObservablePoint>
+            Timeline = new[]
             {
-                Values = data.MemoryData.Select(x => new ObservablePoint(x.Time, x.Value))
-            } as ISeries<ObservablePoint>,
-            new ScatterSeries<ObservablePoint>
-            {
-                Values = data.ExceptionData.Select(x=> new ObservablePoint(x.Time, x.Value)),
-                YToolTipLabelFormatter = point =>  data.ExceptionInfo[point.Model!.X!.Value],
-                Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
+                new LineSeries<ObservablePoint>
+                {
+                    Values = data.MemoryData.Select(x => new ObservablePoint(x.Time, x.Value))
+                } as ISeries<ObservablePoint>,
+                new ScatterSeries<ObservablePoint>
+                {
+                    Values = data.ExceptionData.Select(x=> new ObservablePoint(x.Time, x.Value)),
+                    XToolTipLabelFormatter = point =>  data.ExceptionInfo[point.Model!.X!.Value],
+                    Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
+                }
             }
         };
         var gcSections = data.GcData.Select(gc => new RectangularSection
@@ -89,6 +94,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         profilerViewModel.GcSections = gcSections;
         var series = data.TypeAllocationInfo
             .OrderByDescending(x=>x.Value)
+            .SkipWhile(x=>x.Key == "<<no info>>")
             .Take(20)
             .Select(x => new PieSeries<double>
             {
@@ -96,6 +102,8 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 Name = x.Key
             }).ToArray();
         profilerViewModel.MemoryByType = series as ISeries?[];
+        profilerViewModel.TotalGcTime = data.TotalGcTime.ToString();
+        profilerViewModel.TotalTime = data.TotalTime.ToString();
         profilerViewModel.LogParsed = true;
         profilerViewModel.LogNotParsed = false;
 

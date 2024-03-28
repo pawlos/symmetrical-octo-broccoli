@@ -15,18 +15,35 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="40" />
+                        <RowDefinition Height="100" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock Text="Profiler data" FontWeight="Bold" FontSize="30" TextAlignment="Center" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Label Content="Total time:" />
+                        <Label Grid.Column="0" Grid.Row="1" Content="Total GC time:" />
+                        <Label Grid.Column="1" Grid.Row="0" Content="{Binding TotalTime}" />
+                        <Label Grid.Column="1" Grid.Row="1" Content="{Binding TotalGcTime}" />
+                    </Grid>
                     <lvc:CartesianChart DataContext="{Binding .}"
                                         Series="{Binding Timeline}"
-                                        ZoomMode="PanX"
-                                        Grid.Row="1"
+                                        ZoomMode="X"
+                                        ZoomingSpeed="5"
+                                        Grid.Row="2"
+                                        TooltipPosition="Auto"
                                         Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}"
                                         Sections="{Binding GcSections}">
                     </lvc:CartesianChart>
-                    <lvc:PieChart Grid.Row="2" DataContext="{Binding .}"
+                    <lvc:PieChart Grid.Row="3" DataContext="{Binding .}"
                                   Series="{Binding MemoryByType}"
                                   LegendPosition="Right"
                                   Title="{Binding Top20AllocationsTitle}">
