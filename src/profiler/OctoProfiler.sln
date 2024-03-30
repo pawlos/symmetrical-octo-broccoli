@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OctoProfiler", "OctoProfiler.vcxproj", "{6B011FA6-1108-4997-9495-E6B74D4890D5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OctoAttach", "..\profiler-attach\OctoAttach\OctoAttach.vcxproj", "{6AEEDF50-CA63-42A2-8A99-030993B9CB21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{6B011FA6-1108-4997-9495-E6B74D4890D5}.Release|x64.Build.0 = Release|x64
 		{6B011FA6-1108-4997-9495-E6B74D4890D5}.Release|x86.ActiveCfg = Release|Win32
 		{6B011FA6-1108-4997-9495-E6B74D4890D5}.Release|x86.Build.0 = Release|Win32
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Debug|x64.ActiveCfg = Debug|x64
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Debug|x64.Build.0 = Debug|x64
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Debug|x86.ActiveCfg = Debug|Win32
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Debug|x86.Build.0 = Debug|Win32
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Release|x64.ActiveCfg = Release|x64
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Release|x64.Build.0 = Release|x64
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Release|x86.ActiveCfg = Release|Win32
+		{6AEEDF50-CA63-42A2-8A99-030993B9CB21}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
