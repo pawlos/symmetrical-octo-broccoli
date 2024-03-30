@@ -2,10 +2,10 @@
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
-	static const GUID CLSID_ProfilerCallback2 = { 0x8A8CC829, 0xCCF2, 0x49FE, { 0xBB, 0xAE, 0x0F, 0x02, 0x22, 0x28, 0x07, 0x1A } };
-	if (riid == CLSID_ProfilerCallback2)
+	static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
+	if (riid == CLSID_ProfilerCallback3)
 	{
-		Logger::DoLog("OctoProfiler::QueryInterface");
+		Logger::DoLog("OctoProfiler::QueryInterface - ProfilerCallback3");
 		*ppvObject = this;
 		return S_OK;
 	}
@@ -477,6 +477,21 @@ HRESULT __stdcall OctoProfiler::HandleCreated(GCHandleID handleId, ObjectID init
 }
 
 HRESULT __stdcall OctoProfiler::HandleDestroyed(GCHandleID handleId)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) 
+{
+	return E_NOTIMPL;
+}
+
+HRESULT __stdcall OctoProfiler::ProfilerAttachComplete()
+{
+	return E_NOTIMPL;
+}
+
+HRESULT __stdcall OctoProfiler::ProfilerDetachSucceeded()
 {
 	return E_NOTIMPL;
 }

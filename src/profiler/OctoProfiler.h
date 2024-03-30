@@ -7,9 +7,9 @@
 #include "NameResolver.h"
 #include <mutex>
 
-class OctoProfiler : public ICorProfilerCallback2 {
+class OctoProfiler : public ICorProfilerCallback3 {
 private:
-	CComQIPtr<ICorProfilerInfo2> pInfo;
+	CComQIPtr<ICorProfilerInfo3> pInfo;
 	std::unique_ptr<NameResolver> nameResolver {};
 	ULONG totalAllocatedBytes = 0;
 	std::mutex stackWalkMutex{};
@@ -95,4 +95,9 @@ public:
 	HRESULT __stdcall RootReferences2(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[], COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[]) override;
 	HRESULT __stdcall HandleCreated(GCHandleID handleId, ObjectID initialObjectId) override;
 	HRESULT __stdcall HandleDestroyed(GCHandleID handleId) override;
+
+	// inherited via ICorProfilerCallback3
+	HRESULT __stdcall InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) override;
+	HRESULT __stdcall ProfilerAttachComplete() override;
+	HRESULT __stdcall ProfilerDetachSucceeded() override;
 };

@@ -1,6 +1,8 @@
 #include "OctoProfilerFactory.h"
 #include "log.h"
 
+static OctoProfileFactory* factory;
+
 inline std::optional<std::string> GetEnv(const char* key) {
 	if (key == nullptr) {
 		throw std::invalid_argument("Null pointer passed as environment variable name");
@@ -22,8 +24,8 @@ BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	return TRUE;
 }
-static OctoProfileFactory *factory;
-extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppv)
+
+extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
 {
 	auto fileToLog = GetEnv("OCTO_PROFILER_FILE");	
 	auto logger = fileToLog.has_value() ? static_cast<Logger *>(new FileLogger(fileToLog.value())) : static_cast<Logger *>(new StdOutLogger());		
