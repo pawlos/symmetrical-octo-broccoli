@@ -9,7 +9,7 @@
 
 class OctoProfiler : public ICorProfilerCallback3 {
 private:
-	CComQIPtr<ICorProfilerInfo3> pInfo;
+	CComQIPtr<ICorProfilerInfo5> pInfo;
 	std::unique_ptr<NameResolver> nameResolver {};
 	ULONG totalAllocatedBytes = 0;
 	std::mutex stackWalkMutex{};

@@ -2,8 +2,10 @@
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
-	static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
-	if (riid == CLSID_ProfilerCallback3)
+	static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };	
+	static const GUID CLSID_ProfilerGuid = { 0x8A8CC829, 0xCCF2, 0x49FE, {0xBB, 0xAE, 0x0F, 0x02, 0x22, 0x28, 0x07, 0x1A} };
+	
+	if (riid == CLSID_ProfilerCallback3 || riid == CLSID_ProfilerGuid  )
 	{
 		Logger::DoLog("OctoProfiler::QueryInterface - ProfilerCallback3");
 		*ppvObject = this;
@@ -25,11 +27,12 @@ ULONG __stdcall OctoProfiler::Release(void)
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (void**)&pInfo);
+	Logger::DoLog("OctoProfiler::Initialize started...");
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
 	if (FAILED(hr)) {
 		return E_FAIL;
 	}
-	hr = pInfo->SetEventMask(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT);
+	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
 	if (FAILED(hr))
 	{
 		Logger::DoLog("Error setting the event mask.");
@@ -482,16 +485,31 @@ HRESULT __stdcall OctoProfiler::HandleDestroyed(GCHandleID handleId)
 }
 
 HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) 
-{
-	return E_NOTIMPL;
+{	
+	Logger::DoLog("OctoProfiler::InitializeForAttach");
+	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
+	if (FAILED(hr)) {
+		return E_FAIL;
+	}
+	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
+	if (FAILED(hr))
+	{
+		Logger::DoLog("Error setting the event mask.");
+		return E_FAIL;
+	}
+	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
+	Logger::DoLog("OctoProfiler::Initialize initialized...");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ProfilerAttachComplete()
-{
-	return E_NOTIMPL;
+{	
+	Logger::DoLog("OctoProfiler::ProfilerAttachComplete");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ProfilerDetachSucceeded()
-{
-	return E_NOTIMPL;
+{	
+	Logger::DoLog("OctoProfiler::ProfilerDetachSucceeded");
+	return S_OK;
 }
