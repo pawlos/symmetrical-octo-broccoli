@@ -25,9 +25,9 @@ Some reference links about the topic:
 ## Profiler ##
 
 Minimum plan:
-- implement profiler class that can be used as a profiler for .NET based applications
-- gather informations about stack traces during the excution of the program
-- implement basic flame-graph to visualize the execution timelime
+- [x] implement profiler class that can be used as a profiler for .NET based applications
+- [ ] gather informations about stack traces during the excution of the program
+- [ ] implement basic flame-graph to visualize the execution timelime
 
 ## Current state ##
 
@@ -54,6 +54,6 @@ It can be debugged with a native debugger. Setting a breakpoint at DllGetClassOb
 ## Debugger ##
 
 Minimum plan:
-- starting a binary
-- attaching
-- setting a breakpoint
+- [ ] starting a binary
+- [ ] attaching
+- [ ] setting a breakpoint
