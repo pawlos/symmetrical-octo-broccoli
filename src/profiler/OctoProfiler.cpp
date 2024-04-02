@@ -35,7 +35,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
 	if (FAILED(hr))
 	{
-		Logger::DoLog("Error setting the event mask.");
+		Logger::DoLog(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
 	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
@@ -491,10 +491,10 @@ HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUn
 	if (FAILED(hr)) {
 		return E_FAIL;
 	}
-	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
+	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
 	if (FAILED(hr))
 	{
-		Logger::DoLog("Error setting the event mask.");
+		Logger::DoLog(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
 	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
