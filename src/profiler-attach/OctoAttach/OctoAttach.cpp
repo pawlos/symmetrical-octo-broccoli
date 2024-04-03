@@ -11,13 +11,16 @@
 int main(int argc, char* argv[])
 {
     std::cout << "OctoAttach .NET Framework!\n";
+    int pid = 0;
     if (argc <= 1)
     {
-        std::cout << "Invalid argument count\n";
-        return -1;
+        std::cout << "Provide pid: ";
+        std::cin >> pid;
     }
-
-    auto pid = std::stoi(argv[1]);
+    else
+    {
+        pid = std::stoi(argv[1]);
+    }
 
     std::cout << "PID: " << pid << "\n";
     auto handle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pid);
