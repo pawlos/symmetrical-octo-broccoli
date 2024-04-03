@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         std::cout << "Could not attach profiler" << std::endl;
         return -6;
     }
-
+    WaitForSingleObject(handle, INFINITE);
     return 0;
 
 }
