@@ -29,7 +29,8 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
 	Logger::DoLog("OctoProfiler::Initialize started...");
 	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		return E_FAIL;
 	}
 	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
@@ -188,7 +189,8 @@ HRESULT __stdcall OctoProfiler::JITInlining(FunctionID callerId, FunctionID call
 HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 {
 	DWORD win32ThreadId;
-	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId))) {
+	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId)))
+	{
 		return E_FAIL;
 	}
 	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0}]", win32ThreadId));
@@ -485,10 +487,11 @@ HRESULT __stdcall OctoProfiler::HandleDestroyed(GCHandleID handleId)
 }
 
 HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) 
-{	
+{
 	Logger::DoLog("OctoProfiler::InitializeForAttach");
 	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		return E_FAIL;
 	}
 	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
