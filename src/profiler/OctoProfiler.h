@@ -13,6 +13,7 @@ private:
 	std::unique_ptr<NameResolver> nameResolver {};
 	ULONG totalAllocatedBytes = 0;
 	std::mutex stackWalkMutex{};
+	std::optional<std::wstring> ResolveNetRuntimeVersion() const;
 public:		
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;

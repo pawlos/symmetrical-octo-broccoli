@@ -33,7 +33,9 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	{
 		return E_FAIL;
 	}
-	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
+	auto versionString = ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
+	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::DoLog(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
@@ -42,6 +44,35 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
+}
+
+std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
+{
+	USHORT clrRuntimeId{ 0 };
+	COR_PRF_RUNTIME_TYPE pRuntimeType{};
+	USHORT pMajorVerion{ 0 };
+	USHORT pMinorVersion{ 0 };
+	USHORT pBuildNumber{ 0 };
+	USHORT pQFEVersion{ 0 };
+	ULONG pVersionStringLen{ 0 };
+	WCHAR versionString[256];
+	auto hr = pInfo->GetRuntimeInformation(
+		&clrRuntimeId,
+		&pRuntimeType,
+		&pMajorVerion,
+		&pMinorVersion,
+		&pBuildNumber,
+		&pQFEVersion,
+		255,
+		&pVersionStringLen,
+		versionString);
+	if (FAILED(hr))
+	{
+		Logger::DoLog(std::format("OctoProfiler::Initialize - Error getting .NET information. HRESULT: {0:x}", hr));
+		return {};
+	}
+
+	return std::optional<std::wstring>(std::wstring(versionString));
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown(void)
