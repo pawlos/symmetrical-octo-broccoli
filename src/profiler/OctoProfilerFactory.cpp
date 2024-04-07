@@ -7,10 +7,11 @@ HRESULT __stdcall OctoProfileFactory::QueryInterface(REFIID riid, void** ppvObje
 	if (riid == CLSID_ClassFactoryGuid)
 	{
 		*ppvObject = &profiler;
+		this->AddRef();
 		return S_OK;
 	}	
-	*ppvObject = NULL;
-	return E_NOTIMPL;
+	*ppvObject = nullptr;
+	return E_NOINTERFACE;
 }
 
 ULONG __stdcall OctoProfileFactory::AddRef(void)

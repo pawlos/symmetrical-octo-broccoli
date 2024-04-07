@@ -2,17 +2,18 @@
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
-	static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };	
-	static const GUID CLSID_ProfilerGuid = { 0x8A8CC829, 0xCCF2, 0x49FE, {0xBB, 0xAE, 0x0F, 0x02, 0x22, 0x28, 0x07, 0x1A} };
-	
-	if (riid == CLSID_ProfilerCallback3 || riid == CLSID_ProfilerGuid  )
+	if (riid == IID_ICorProfilerCallback3 ||
+		riid == IID_ICorProfilerCallback2 ||
+		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog("OctoProfiler::QueryInterface - ProfilerCallback3");
+		Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0:8x}", riid.Data1));
 		*ppvObject = this;
+		this->AddRef();
 		return S_OK;
 	}
 
-	return E_NOTIMPL;
+	*ppvObject = nullptr;
+	return E_NOINTERFACE;
 }
 
 ULONG __stdcall OctoProfiler::AddRef(void)
@@ -525,7 +526,9 @@ HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUn
 	{
 		return E_FAIL;
 	}
-	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_ALLOWABLE_AFTER_ATTACH);
+	auto versionString = ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
+	hr = pInfo->SetEventMask2(COR_PRF_MONITOR_EXCEPTIONS | COR_PRF_MONITOR_GC, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::InitializeForAttach - Error setting the event mask. HRESULT: {0:x}", hr));
