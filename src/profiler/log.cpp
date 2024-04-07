@@ -24,3 +24,18 @@ void Logger::DoLog(const std::wstring& _s)
     const std::string s(_s.begin(), _s.end());
     Logger::DoLog(s);
 }
+
+void Logger::Error(const std::string& _s)
+{
+    auto now = std::chrono::high_resolution_clock::now();
+    std::cerr << "[" << now.time_since_epoch() << "] ";
+    std::cerr << "\033[31m" << _s << "\033[0m";
+    std::cerr << std::endl;
+    std::cerr.flush();
+}
+
+void Logger::Error(const std::wstring& _s)
+{
+    const std::string s(_s.begin(), _s.end());
+    Logger::DoLog(s);
+}

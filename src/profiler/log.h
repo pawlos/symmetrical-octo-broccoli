@@ -14,6 +14,8 @@ public:
     static void Initialize(Logger* instance);
     static void DoLog(const std::string& _s);
     static void DoLog(const std::wstring& _s);
+    static void Error(const std::string& _s);
+    static void Error(const std::wstring& _s);
 };
 
 class FileLogger : public Logger
