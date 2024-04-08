@@ -104,6 +104,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         profilerViewModel.MemoryByType = series as ISeries?[];
         profilerViewModel.TotalGcTime = data.TotalGcTime.ToString();
         profilerViewModel.TotalTime = data.TotalTime.ToString();
+        profilerViewModel.NetVersion = data.NetVersion;
         profilerViewModel.LogParsed = true;
         profilerViewModel.LogNotParsed = false;
 
@@ -113,4 +114,6 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 .ToArray();
         return profilerViewModel;
     }
+
+    public string NetVersion { get; set; }
 }

@@ -28,11 +28,14 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Label Content="Total time:" />
                         <Label Grid.Column="0" Grid.Row="1" Content="Total GC time:" />
+                        <Label Grid.Column="0" Grid.Row="2" Content=".NET version:"></Label>
                         <Label Grid.Column="1" Grid.Row="0" Content="{Binding TotalTime}" />
                         <Label Grid.Column="1" Grid.Row="1" Content="{Binding TotalGcTime}" />
+                        <Label Grid.Column="1" Grid.Row="2" Content="{Binding NetVersion}" />
                     </Grid>
                     <lvc:CartesianChart DataContext="{Binding .}"
                                         Series="{Binding Timeline}"

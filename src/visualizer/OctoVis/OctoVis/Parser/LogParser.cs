@@ -29,6 +29,11 @@ public static class LogParser
                 var endTicks = ParseTimestamp(line);
                 model.TotalTime = TimeSpan.FromMicroseconds(endTicks - startTicks!.Value);
             }
+            else if (line.Contains("OctoProfiler::Detected"))
+            {
+                var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::Detected (.+)");
+                model.NetVersion = match.Groups[1].Value;
+            }
             else if (line.Contains("OctoProfiler::ObjectAllocated"))
             {
                 var currentTicks = ParseTimestamp(line);

@@ -15,4 +15,6 @@ public class ProfilerDataModel
     public TimeSpan TotalTime { get; set; }
 
     public TimeSpan TotalGcTime { get; set; }
+
+    public string NetVersion { get; set; }
 }
