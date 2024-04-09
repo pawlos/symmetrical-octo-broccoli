@@ -223,6 +223,7 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 	DWORD win32ThreadId;
 	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId)))
 	{
+		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
 	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0}]", win32ThreadId));
@@ -231,13 +232,26 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 
 HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 {
-	Logger::DoLog("OctoProfiler::ThreadDestroyed");
+	DWORD win32ThreadId;
+	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId)))
+	{
+		Logger::Error("Could not resolve thread ID");
+		return E_FAIL;
+	}
+	Logger::DoLog(std::format("OctoProfiler::ThreadDestroyed [{0}]", win32ThreadId));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId)
 {
-	return E_NOTIMPL;
+	DWORD win32ThreadId;
+	if (FAILED(pInfo->GetThreadInfo(managedThreadId, &win32ThreadId)))
+	{
+		Logger::Error("Could not resolve thread ID");
+		return E_FAIL;
+	}
+	Logger::DoLog(std::format("OctoProfiler::ThreadAssignedToOSThread [{0}]", win32ThreadId));
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::RemotingClientInvocationStarted(void)
