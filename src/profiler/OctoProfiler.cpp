@@ -348,7 +348,7 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 {	
 	if (!funcId)
 	{
-		Logger::DoLog("OctoProfiler::<<Native frame>>");
+		Logger::DoLog(std::format("OctoProfiler::Native frame {0:X}", ip));
 	}
 	else
 	{
@@ -372,6 +372,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 		stackWalkMutex.lock();
 		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), NULL, 0);
 		stackWalkMutex.unlock();
+		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 		return S_OK;
 	}	
 	return E_FAIL;
