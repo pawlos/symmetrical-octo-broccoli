@@ -11,6 +11,8 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 		return {};
 	}
 
+	auto className = this->ResolveTypeNameByClassId(classId);	
+
 	IMetaDataImport* pIMDImport = nullptr;
 	hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
 	if (SUCCEEDED(hr))
@@ -29,7 +31,14 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 
 		if (SUCCEEDED(hr))
 		{						
-			return std::optional<std::wstring>(std::wstring(functionName));
+			if (className)
+			{
+				return std::optional<std::wstring>(className.value_or(L"") + std::wstring(functionName));
+			}
+			else
+			{
+				return std::optional<std::wstring>(std::wstring(functionName));
+			}
 		}
 	}
 
@@ -58,34 +67,40 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 	return std::optional<std::wstring>(std::wstring(appDomainName));
 }
 
+std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const 
+{
+	ModuleID moduleId;
+	mdTypeDef defToken;
+	auto hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+	if (SUCCEEDED(hr))
+	{
+		IMetaDataImport* pIMDImport = nullptr;
+		hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+		if (SUCCEEDED(hr))
+		{
+			ULONG typedefnamesize;
+			DWORD typedefflags;
+			mdToken extends;
+			WCHAR typeName[512];
+			hr = pIMDImport->GetTypeDefProps(defToken,
+				typeName,
+				510,
+				&typedefnamesize,
+				&typedefflags,
+				&extends);
+
+			return std::optional<std::wstring>(std::wstring(typeName));
+		}
+	}	
+	return {};
+}
+
 std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID objectId) const {
 	ClassID classId;
 	auto hr = pInfo->GetClassFromObject(objectId, &classId);
 	if (SUCCEEDED(hr))
 	{
-		ModuleID moduleId;
-		mdTypeDef defToken;
-		hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
-		if (SUCCEEDED(hr))
-		{
-			IMetaDataImport* pIMDImport = nullptr;
-			hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
-			if (SUCCEEDED(hr))
-			{
-				ULONG typedefnamesize;
-				DWORD typedefflags;
-				mdToken extends;
-				WCHAR typeName[512];
-				hr = pIMDImport->GetTypeDefProps(defToken,
-					typeName,
-					510,
-					&typedefnamesize,
-					&typedefflags,
-					&extends);
-
-				return std::optional<std::wstring>(std::wstring(typeName));
-			}
-		}
+		return this->ResolveTypeNameByClassId(classId);
 	}
 	return{};
 }

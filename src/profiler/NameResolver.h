@@ -13,6 +13,7 @@ public:
 	std::optional<std::wstring> ResolveAppDomainName(AppDomainID appDomainId) const;
 	std::optional<std::wstring> ResolveTypeNameByObjectId(ObjectID objectId) const;
 	std::optional<std::wstring> ResolveModuleName(ModuleID moduleId) const;
+	std::optional<std::wstring> ResolveTypeNameByClassId(ClassID classId) const;
 private:
 	ICorProfilerInfo2* pInfo;
 };
