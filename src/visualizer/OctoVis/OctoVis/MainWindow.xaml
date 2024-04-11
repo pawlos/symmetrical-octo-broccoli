@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
-        Title="OctoProfiler" Height="800" Width="1600">
+        Title="OctoProfiler" Height="800" Width="1600" d:DataContext="{d:DesignInstance}">
     <Grid>
         <TabControl Visibility="{Binding LogParsed, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TabItem>
@@ -58,11 +58,13 @@
                 <TabItem.Header>
                     <Label Content="Allocations" FontWeight="Bold" />
                 </TabItem.Header>
-                <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TypeAllocationInfo}" DataContext="{Binding .}">
+                <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TypeAllocationInfo}"
+                          DataContext="{Binding .}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" />
-                        <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true"/>
-                        <DataGridTextColumn Header="Total memory" Binding="{Binding TotalAllocations}" IsReadOnly="true"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" FontSize="12" />
+                        <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true" FontSize="12" />
+                        <DataGridTextColumn Header="Total memory (B)" Binding="{Binding TotalAllocations}"
+                                            IsReadOnly="true" FontSize="12" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

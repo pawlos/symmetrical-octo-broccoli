@@ -18,8 +18,12 @@ public static class LogParser
         ProfilerDataModel model = new();
         ulong? startTicks = null;
         ulong? gcStartEventTicks = null;
-        foreach (var line in File.ReadAllLines(fileName))
+
+        using var stream = File.OpenText(fileName);
+
+        while (!stream.EndOfStream)
         {
+            var line = stream.ReadLine();
             if (line.Contains("OctoProfiler::QueryInterface"))
             {
                 startTicks = ParseTimestamp(line);
@@ -48,7 +52,20 @@ public static class LogParser
                 {
                     model.TypeAllocationInfo.Add(type, (bytes, 1));
                 }
-                model.MemoryData.Add(new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value), totalMemoryAllocated));
+
+                model.MemoryData.Add(new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value),
+                    totalMemoryAllocated));
+
+                var allocationStack = new List<ProfilerDataModel.AllocationStackFrame>();
+                var stackFrame = stream.ReadLine();
+                while (!stackFrame.Contains("OctoProfiler::DoStackSnapshot end"))
+                {
+                    allocationStack.Add(new ProfilerDataModel.AllocationStackFrame(ParseFrame(stackFrame)));
+                    stackFrame = stream.ReadLine();
+                }
+
+                model.ObjectAllocationPath.Add(Guid.NewGuid(), (type, allocationStack));
+
             }
             else if (line.Contains("OctoProfiler::GarbageCollection"))
             {
@@ -80,6 +97,12 @@ public static class LogParser
         return model;
     }
 
+    private static string ParseFrame(string stackFrameLine)
+    {
+        var match = Regex.Match(stackFrameLine, @"\[(\d+)ns\] OctoProfiler::(Native|Managed) frame (.*)");
+        return match.Groups[3].Value;
+    }
+
     private static ulong ParseTimestamp(string line)
     {
         var match = Regex.Match(line, @"\[(\d+)ns\].*");
@@ -104,12 +127,12 @@ public static class LogParser
     }
 
     public static void Deconstruct(this (ObservablePoint[], ObservablePoint[], Dictionary<double, string>) p,
-            out ObservablePoint[] memoryData,
-            out ObservablePoint[] exceptionData,
-            out Dictionary<double,string> exceptionInfo)
-        {
-            memoryData = p.Item1;
-            exceptionData = p.Item2;
-            exceptionInfo = p.Item3;
-        }
+        out ObservablePoint[] memoryData,
+        out ObservablePoint[] exceptionData,
+        out Dictionary<double, string> exceptionInfo)
+    {
+        memoryData = p.Item1;
+        exceptionData = p.Item2;
+        exceptionInfo = p.Item3;
+    }
 }
