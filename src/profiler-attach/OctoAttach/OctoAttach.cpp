@@ -86,7 +86,9 @@ int main(int argc, char* argv[])
 
     static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
 
-    hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, L"c:\\work\\100commitow\\symmetrical-octo-broccoli\\src\\profiler\\x64\\Debug\\OctoProfiler.dll", NULL, 0);
+    std::wstring path = L"c:\\work\\100commitow\\symmetrical-octo-broccoli\\src\\profiler\\x64\\Debug\\OctoProfiler.dll";
+
+    hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), NULL, 0);
     if (FAILED(hr))
     {
         Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
