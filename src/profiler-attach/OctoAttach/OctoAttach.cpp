@@ -4,9 +4,17 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <format>
 #include <metahost.h>
 #pragma comment(lib, "mscoree.lib")
 #include <wchar.h>
+
+void Error(const std::string& _s)
+{
+    std::cerr << "\033[31m" << _s << "\033[0m";
+    std::cerr << std::endl;
+    std::cerr.flush();
+}
 
 int main(int argc, char* argv[])
 {
@@ -26,14 +34,14 @@ int main(int argc, char* argv[])
     auto handle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pid);
     if (!handle)
     {
-        std::cout << "Could not oper process ID: " << pid << std::endl;
+        Error(std::format("Could not oper process ID: {}", pid));
         return -2;
     }
     ICLRMetaHost* _metahost = nullptr;
     HRESULT hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (LPVOID*)&_metahost);
     if (FAILED(hr))
     {
-        std::cout << "Could not obtain CLR Mata host.\n";
+        Error("Could not obtain CLR Mata host");
         return -2;
     }
 
@@ -41,7 +49,7 @@ int main(int argc, char* argv[])
     hr = _metahost->EnumerateLoadedRuntimes(handle, &enumIterator);
     if (FAILED(hr))
     {
-        std::cout << "Could not obtain Installed runtimes enumerator.\n";
+        Error("Could not obtain Installed runtimes enumerator");
         return -3;
     }
     ICLRRuntimeInfo *runtimeInfo = nullptr;
@@ -64,7 +72,7 @@ int main(int argc, char* argv[])
 
     if (!runtimeInfo)
     {
-        std::cout << "No runtime info loaded found. Only works for .NET Framework applications." << std::endl;
+        Error("No runtime info loaded found. Only works for .NET Framework applications");
         return -4;
     }
 
@@ -72,7 +80,7 @@ int main(int argc, char* argv[])
     hr = runtimeInfo->GetInterface(CLSID_CLRProfiling, IID_ICLRProfiling, (LPVOID*)&clrProfiling);
     if (FAILED(hr))
     {
-        std::cout << "Could not get CLRProfiling interface. " << std::endl;
+        Error("Could not get CLRProfiling interface");
         return -5;
     }
 
@@ -81,7 +89,7 @@ int main(int argc, char* argv[])
     hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, L"c:\\work\\100commitow\\symmetrical-octo-broccoli\\src\\profiler\\x64\\Debug\\OctoProfiler.dll", NULL, 0);
     if (FAILED(hr))
     {
-        std::cout << "Could not attach profiler" << std::endl;
+        Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
         return -6;
     }
     WaitForSingleObject(handle, INFINITE);
