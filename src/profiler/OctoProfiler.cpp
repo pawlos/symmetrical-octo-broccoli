@@ -342,13 +342,13 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 {	
 	if (!funcId)
 	{
-		Logger::DoLog(std::format("OctoProfiler::Native frame {0:X}", ip));
+		Logger::DoLog(std::format("OctoProfiler::Native frame {0:x}", ip));
 	}
 	else
 	{
 		NameResolver* nameResolver = reinterpret_cast<NameResolver*>(clientData);
 		auto functionName = nameResolver->ResolveFunctionName(funcId);
-		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:X}", functionName.value_or(L"<<no info>>"), ip));
+		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", functionName.value_or(L"<<no info>>"), ip));
 	}
 
 	return S_OK;
