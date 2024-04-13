@@ -28,7 +28,7 @@ ULONG __stdcall OctoProfiler::Release(void)
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	Logger::DoLog("OctoProfiler::Initialize started...");
+	Logger::DoLog(std::format("OctoProfiler::Initialize started...{0}", this->version));
 	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
 	if (FAILED(hr))
 	{
@@ -80,6 +80,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 {	
 	std::condition_variable cv;
 	std::unique_lock<std::mutex> lk(stackWalkMutex);
+	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	cv.wait_for(lk, std::chrono::seconds(20));
 	Logger::DoLog(std::format("OctoProfiler::Total allocated bytes: {0} [B]", totalAllocatedBytes));
 	Logger::DoLog("OctoProfiler::Shutdown...");

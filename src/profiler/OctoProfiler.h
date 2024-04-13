@@ -9,6 +9,7 @@
 
 class OctoProfiler : public ICorProfilerCallback3 {
 private:
+	std::string version = "v0.0.1";
 	CComQIPtr<ICorProfilerInfo5> pInfo;
 	std::unique_ptr<NameResolver> nameResolver {};
 	ULONG totalAllocatedBytes = 0;
