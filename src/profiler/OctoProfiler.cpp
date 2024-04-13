@@ -36,7 +36,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	}
 	auto versionString = ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
-	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT, COR_PRF_HIGH_MONITOR_NONE);
+	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
@@ -80,7 +80,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 {	
 	std::condition_variable cv;
 	std::unique_lock<std::mutex> lk(stackWalkMutex);
-	cv.wait_for(lk, std::chrono::seconds(2));
+	cv.wait_for(lk, std::chrono::seconds(20));
 	Logger::DoLog(std::format("OctoProfiler::Total allocated bytes: {0} [B]", totalAllocatedBytes));
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
@@ -226,19 +226,13 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
-	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0}]", win32ThreadId));
+	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0},{1:x}]", win32ThreadId, threadId));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 {
-	DWORD win32ThreadId;
-	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId)))
-	{
-		Logger::Error("Could not resolve thread ID");
-		return E_FAIL;
-	}
-	Logger::DoLog(std::format("OctoProfiler::ThreadDestroyed [{0}]", win32ThreadId));
+	Logger::DoLog(std::format("OctoProfiler::ThreadDestroyed {0:x}", threadId));
 	return S_OK;
 }
 
