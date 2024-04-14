@@ -394,7 +394,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
 	auto typeName = nameResolver->ResolveTypeNameByObjectId(thrownObjectId);
 	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0}", typeName.value_or(L"<<no info>>")));
-	return E_FAIL;
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ExceptionSearchFunctionEnter(FunctionID functionId)
