@@ -9,5 +9,16 @@ public class SettingsDataModel
         MegaBytes
     }
 
+    public enum TimeSize
+    {
+        Decisecond,
+        Second,
+        Millisecond
+    }
+
     public DataSize TimelineYAxis { get; set; }
+
+    public TimeSize TimelineXAxis { get; set; }
+
+    public string Filter { get; set; } = string.Empty;
 }

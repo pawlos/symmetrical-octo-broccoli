@@ -14,93 +14,21 @@ public static class LogParser
             return null;
         }
 
-        uint totalMemoryAllocated = 0;
-        ProfilerDataModel model = new();
-        ulong? startTicks = null;
-        ulong? gcStartEventTicks = null;
-
         using var stream = File.OpenText(fileName);
 
         while (!stream.EndOfStream)
         {
-            var line = stream.ReadLine();
-            if (line.Contains("OctoProfiler::QueryInterface"))
+            var line = stream.ReadLine() ?? string.Empty;
+            if (line.Contains("OctoProfiler::Initialize started..."))
             {
-                startTicks = ParseTimestamp(line);
-            }
-            else if (line.Contains("OctoProfiler::Shutdown..."))
-            {
-                var endTicks = ParseTimestamp(line);
-                model.TotalTime = TimeSpan.FromMicroseconds(endTicks - startTicks!.Value);
-            }
-            else if (line.Contains("OctoProfiler::Detected"))
-            {
-                var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::Detected (.+)");
-                model.NetVersion = match.Groups[1].Value;
-            }
-            else if (line.Contains("OctoProfiler::ObjectAllocated"))
-            {
-                var currentTicks = ParseTimestamp(line);
-                (string type, uint bytes) = ParseTypeAndBytesAllocated(line);
-                totalMemoryAllocated += bytes / 1024;
-                if (model.TypeAllocationInfo.TryGetValue(type, out var v))
-                {
-                    var (oldMemory, oldCount) = v;
-                    model.TypeAllocationInfo[type] = (oldMemory + bytes, oldCount + 1);
-                }
-                else
-                {
-                    model.TypeAllocationInfo.Add(type, (bytes, 1));
-                }
-
-                model.MemoryData.Add(new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value),
-                    totalMemoryAllocated));
-
-                var allocationStack = new List<ProfilerDataModel.AllocationStackFrame>();
-                var stackFrame = stream.ReadLine();
-                while (!stackFrame.Contains("OctoProfiler::DoStackSnapshot end"))
-                {
-                    allocationStack.Add(new ProfilerDataModel.AllocationStackFrame(ParseFrame(stackFrame)));
-                    stackFrame = stream.ReadLine();
-                }
-
-                model.ObjectAllocationPath.Add(Guid.NewGuid(), (type, allocationStack));
-
-            }
-            else if (line.Contains("OctoProfiler::GarbageCollection"))
-            {
-                var time = ParseTimestamp(line);
-                if (line.Contains("OctoProfiler::GarbageCollectionStarted"))
-                {
-                    gcStartEventTicks = time;
-                }
-                else if (line.Contains("OctoProfiler::GarbageCollectionFinished") && gcStartEventTicks.HasValue)
-                {
-                    var gcEnd = time;
-                    var gcStartTime = CalculateTimestamp(gcStartEventTicks.Value, startTicks!.Value);
-                    var duration = CalculateTimestamp(gcEnd, startTicks.Value) - gcStartTime;
-                    model.GcData.Add(new RangeDataPoint(gcStartTime, duration));
-                    model.TotalGcTime += TimeSpan.FromMicroseconds(duration);
-                }
-            }
-            else if (line.Contains("OctoProfiler::ExceptionThrown"))
-            {
-                var currentTicks = ParseTimestamp(line);
-                var exceptionType = ParseException(line);
-
-                var point = new DataPoint(CalculateTimestamp(currentTicks, startTicks!.Value), 0);
-                model.ExceptionData.Add(point);
-                model.ExceptionInfo.Add(point.Time, exceptionType);
+                var version = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::Initialize started...(.+)");
+                var startTicks = ParseTimestamp(line);
+                var parser = CreateParser(version.Groups[1].Value);
+                return parser.Parse(startTicks, stream);
             }
         }
 
-        return model;
-    }
-
-    private static string ParseFrame(string stackFrameLine)
-    {
-        var match = Regex.Match(stackFrameLine, @"\[(\d+)ns\] OctoProfiler::(Native|Managed) frame (.*)");
-        return match.Groups[3].Value;
+        return null;
     }
 
     private static ulong ParseTimestamp(string line)
@@ -109,22 +37,7 @@ public static class LogParser
         return ulong.Parse(match.Groups[1].Value);
     }
 
-    private static (string, uint) ParseTypeAndBytesAllocated(string line)
-    {
-        var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::ObjectAllocated (\d+) \[B\] for (.*)");
-        return (match.Groups[2].Value, uint.Parse(match.Groups[1].Value));
-    }
-
-    private static string ParseException(string line)
-    {
-        var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::ExceptionThrown (.*)");
-        return match.Groups[1].Value;
-    }
-
-    private static ulong CalculateTimestamp(ulong currentTicks, ulong startTicks)
-    {
-        return (currentTicks - startTicks) / 1000;
-    }
+    private static IParser CreateParser(string version) => new v0_0_1.LogParser();
 
     public static void Deconstruct(this (ObservablePoint[], ObservablePoint[], Dictionary<double, string>) p,
         out ObservablePoint[] memoryData,

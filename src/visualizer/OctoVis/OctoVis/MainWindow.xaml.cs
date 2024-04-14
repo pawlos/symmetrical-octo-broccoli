@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.Windows;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
@@ -17,6 +19,8 @@ namespace OctoVis;
 public partial class MainWindow : Window
 {
     private ProfilerDataModel _data = new();
+    private SettingsDataModel _settings = new();
+
     public MainWindow()
     {
         InitializeComponent();
@@ -25,6 +29,12 @@ public partial class MainWindow : Window
 
     private void ParseFile(string fileName)
     {
+        _settings = new SettingsDataModel
+        {
+            TimelineXAxis = SettingsDataModel.TimeSize.Millisecond,
+            TimelineYAxis = SettingsDataModel.DataSize.KiloBytes,
+            Filter = string.Empty
+        };
         var data = LogParser.ParseFile(fileName);
         if (data is null)
         {
@@ -32,9 +42,72 @@ public partial class MainWindow : Window
         }
 
         _data = data;
-        DataContext = ProfilerViewModel.FromDataModel(_data, new SettingsDataModel());
+        var d = ProfilerViewModel.FromDataModel(_data, _settings);
+        DataContext = d;
+        d.Settings.PropertyChanged += OnPropertyChanged;
     }
 
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var model = (SettingsViewModel)sender!;
+        HandleXResolution(model, e);
+        HandleYResolution(model, e);
+        HandleFilter(model, e);
+
+        var d = ProfilerViewModel.FromDataModel(_data, _settings);
+        DataContext = d;
+        d.Settings.PropertyChanged += OnPropertyChanged;
+    }
+
+    private void HandleFilter(SettingsViewModel model, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName.Contains(nameof(model.Filter)))
+        {
+            _settings.Filter = model.Filter;
+        }
+    }
+
+    private void HandleYResolution(SettingsViewModel model, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName.Contains(nameof(model.SelectedYResolution)))
+        {
+            if (model.SelectedYResolution == nameof(SettingsDataModel.DataSize.Bytes))
+            {
+                _settings.TimelineYAxis = SettingsDataModel.DataSize.Bytes;
+            }
+
+            if (model.SelectedYResolution == nameof(SettingsDataModel.DataSize.KiloBytes))
+            {
+                _settings.TimelineYAxis = SettingsDataModel.DataSize.KiloBytes;
+            }
+
+            if (model.SelectedYResolution == nameof(SettingsDataModel.DataSize.MegaBytes))
+            {
+                _settings.TimelineYAxis = SettingsDataModel.DataSize.MegaBytes;
+            }
+        }
+    }
+
+    private void HandleXResolution(SettingsViewModel model, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName.Contains(nameof(model.SelectedXResolution)))
+        {
+            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Second))
+            {
+                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Second;
+            }
+
+            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Millisecond))
+            {
+                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Millisecond;
+            }
+
+            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Decisecond))
+            {
+                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Decisecond;
+            }
+        }
+    }
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {

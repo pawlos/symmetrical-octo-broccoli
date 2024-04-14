@@ -5,11 +5,13 @@ public class ProfilerDataModel
     public record AllocationStackFrame(string FrameInfo);
     public Dictionary<string, (uint TotalMemory, uint Count)> TypeAllocationInfo { get; set; } = new();
 
-    public Dictionary<Guid, (string type, List<AllocationStackFrame>)> ObjectAllocationPath = new();
+    public Dictionary<Guid, (string Type, List<AllocationStackFrame> StackTraces)> ObjectAllocationPath = new();
 
     public Dictionary<double,string> ExceptionInfo { get; set; } = new();
 
     public List<DataPoint> ExceptionData { get; set; } = new();
+
+    public List<DataPoint> TotalMemoryData { get; set; } = new();
 
     public List<DataPoint> MemoryData { get; set; } = new();
 
@@ -17,7 +19,11 @@ public class ProfilerDataModel
 
     public TimeSpan TotalTime { get; set; }
 
+    public ulong StartMarker { get; set; }
+
+    public ulong EndMarker { get; set; }
+
     public TimeSpan TotalGcTime { get; set; }
 
-    public string NetVersion { get; set; }
+    public string NetVersion { get; set; } = string.Empty;
 }

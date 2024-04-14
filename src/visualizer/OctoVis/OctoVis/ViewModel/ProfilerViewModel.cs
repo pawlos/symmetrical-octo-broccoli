@@ -2,7 +2,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.VisualElements;
 using OctoVis.Model;
@@ -12,7 +14,7 @@ namespace OctoVis.ViewModel;
 
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
-    public record TypeAllocationsTable(string Name, uint TotalAllocations, uint Count);
+    public record TypeAllocationsTable(string Name, uint TotalAllocations, uint Count, uint UniqueStackTraces);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
     {
@@ -28,17 +30,13 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         Paint = new SolidColorPaint(SKColors.DarkSlateGray)
     };
 
-    public Axis[] TimelineYAxis { get; set; } = new Axis[]
-    {
-        new Axis
-        {
-            Name = "Total memory allocations [kB]",
-        }
-    };
+    public Axis[] TimelineYAxis { get; set; } = null!;
+    public Axis[] TimelineXAxis { get; set; } = null!;
+
     public ISeries[] Timeline { get; set; } = null!;
     public ISeries?[] MemoryByType { get; set; } = null!;
 
-    public RectangularSection[] GcSections { get; set; } = null!;
+    public RectangularSection[] Sections { get; set; } = null!;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -56,11 +54,14 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
 
     public TypeAllocationsTable[] TypeAllocationInfo { get; set; } = null!;
 
+    public string Filter { get; set; } = string.Empty;
     public string TotalTime { get; set; } = string.Empty;
 
     public string TotalGcTime { get; set; } = string.Empty;
-    public bool LogParsed { get; set; }= false;
+    public bool LogParsed { get; set; }
     public bool LogNotParsed { get; set; } = true;
+
+    public SettingsViewModel Settings { get; private set; } = null!;
 
     public static ProfilerViewModel FromDataModel(
         ProfilerDataModel data,
@@ -68,40 +69,63 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     {
         var profilerViewModel = new ProfilerViewModel
         {
-            Timeline = new[]
-            {
+            Timeline =
+            [
+                new ColumnSeries<ObservablePoint>
+                {
+                    Values = data.MemoryData.GroupBy(x => GroupSamples(x, settings))
+                        .Select(x => new ObservablePoint(x.Key, ParseData(x.Sum(y => y.Value), settings))),
+                    Fill = new SolidColorPaint(SKColors.CornflowerBlue),
+                    ScalesYAt = 0
+                },
                 new LineSeries<ObservablePoint>
                 {
-                    Values = data.MemoryData.Select(x => new ObservablePoint(x.Time, x.Value))
-                } as ISeries<ObservablePoint>,
-                new ScatterSeries<ObservablePoint>
+                    Values = data.TotalMemoryData.GroupBy(x => GroupSamples(x, settings))
+                        .Select(x => new ObservablePoint(x.Key, ParseData(x.Max(y => y.Value), settings))),
+                    Stroke = new SolidColorPaint(SKColors.ForestGreen),
+                    Fill = null,
+                    GeometrySize = 0,
+                    ScalesYAt = 1
+                },
+                new ScatterSeries<ObservablePoint, RoundedRectangleGeometry>
                 {
-                    Values = data.ExceptionData.Select(x=> new ObservablePoint(x.Time, x.Value)),
-                    XToolTipLabelFormatter = point =>  data.ExceptionInfo[point.Model!.X!.Value],
+                    Values = data.ExceptionData.GroupBy(x => GroupSamples(x, settings))
+                        .Select(x => new ObservablePoint(x.Key, 10)),
+                    XToolTipLabelFormatter = point => data.ExceptionInfo[point.Model!.X!.Value],
+                    YToolTipLabelFormatter = point => data.ExceptionInfo[point.Model!.X!.Value],
                     Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
-                }
-            }
+                },
+            ]
         };
-        var gcSections = data.GcData.Select(gc => new RectangularSection
+        var sections = data.GcData.GroupBy(x => GroupSamples(x, settings))
+            .Select(gc => new RectangularSection
+            {
+                Xi = gc.Key,
+                Xj = gc.Key + TimeSpan.FromMicroseconds((long)gc.OrderBy(l => l.TimeStart).Last().Duration)
+                    .TotalSeconds,
+                Fill = new SolidColorPaint { Color = SKColors.Orange.WithAlpha(80) },
+                Stroke = new SolidColorPaint { Color = SKColors.Orange, StrokeThickness = 3 },
+                Label = "GC",
+                LabelSize = 200
+            });
+        sections = sections.Append(new RectangularSection
         {
-            Xi = gc.TimeStart,
-            Xj = gc.TimeStart + gc.Duration,
-            Fill = new SolidColorPaint {Color = SKColors.Orange.WithAlpha(80) },
-            Stroke = new SolidColorPaint {Color = SKColors.Orange, StrokeThickness = 3},
-            Label = "GC",
-            LabelSize = 200
-        }).ToArray();
-        profilerViewModel.GcSections = gcSections;
-        var series = data.TypeAllocationInfo
-            .OrderByDescending(x=>x.Value)
-            .SkipWhile(x=>x.Key == "<<no info>>")
+            Xi = Sample(data.StartMarker, settings.TimelineXAxis),
+            Xj = Sample(data.EndMarker, settings.TimelineXAxis),
+            Stroke = new SolidColorPaint {Color = SKColors.Lime, StrokeThickness = 20},
+            Yi = -10,
+        });
+        profilerViewModel.Sections = sections.ToArray();
+        ISeries?[] series = data.TypeAllocationInfo
+            .OrderByDescending(x => x.Value)
+            .SkipWhile(x => x.Key == "<<no info>>")
             .Take(20)
             .Select(x => new PieSeries<double>
             {
-                Values = new [] { (double)(x.Value.TotalMemory) },
+                Values = new[] { (double)x.Value.TotalMemory },
                 Name = x.Key
-            }).ToArray();
-        profilerViewModel.MemoryByType = series as ISeries?[];
+            } as ISeries).ToArray();
+        profilerViewModel.MemoryByType = series;
         profilerViewModel.TotalGcTime = data.TotalGcTime.ToString();
         profilerViewModel.TotalTime = data.TotalTime.ToString();
         profilerViewModel.NetVersion = data.NetVersion;
@@ -110,10 +134,110 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
 
         profilerViewModel.TypeAllocationInfo =
             data.TypeAllocationInfo
-                .Select(x => new TypeAllocationsTable(x.Key, x.Value.TotalMemory, x.Value.Count))
+                .Where(x => string.IsNullOrWhiteSpace(settings.Filter) ||
+                            (!string.IsNullOrWhiteSpace(settings.Filter) && x.Key.Contains(settings.Filter)))
+                .Select(x => new TypeAllocationsTable(x.Key, x.Value.TotalMemory, x.Value.Count,
+                    (uint)data.ObjectAllocationPath.Where(t => t.Value.Type == x.Key)
+                        .Distinct(new StackTraceComparer())
+                        .Count()))
                 .ToArray();
+        profilerViewModel.TimelineYAxis =
+        [
+            new()
+            {
+                Name = $"Memory allocations [{settings.TimelineYAxis}]",
+                ShowSeparatorLines = true,
+                UnitWidth = settings.TimelineYAxis switch
+                {
+                    SettingsDataModel.DataSize.Bytes => 1,
+                    SettingsDataModel.DataSize.KiloBytes => 1024,
+                    SettingsDataModel.DataSize.MegaBytes => 1024 * 1024,
+                    _ => throw new ArgumentOutOfRangeException()
+                },
+                MinLimit = -10,
+            },
+            new()
+            {
+                Name = $"Total memory allocations [{settings.TimelineYAxis}]",
+                UnitWidth = settings.TimelineYAxis switch
+                {
+                    SettingsDataModel.DataSize.Bytes => 1,
+                    SettingsDataModel.DataSize.KiloBytes => 1024,
+                    SettingsDataModel.DataSize.MegaBytes => 1024 * 1024,
+                    _ => throw new ArgumentOutOfRangeException()
+                },
+                ShowSeparatorLines = false,
+                Position = AxisPosition.End,
+                MinLimit = -10,
+            }
+        ];
+        profilerViewModel.TimelineXAxis =
+        [
+            new()
+            {
+                Name = $"Time [{settings.TimelineXAxis}]",
+                UnitWidth = settings.TimelineXAxis switch
+                {
+                    SettingsDataModel.TimeSize.Second => 0.5,
+                    SettingsDataModel.TimeSize.Millisecond => 1000,
+                    SettingsDataModel.TimeSize.Decisecond => 1,
+                    _ => throw new ArgumentOutOfRangeException()
+                },
+                MinLimit = 0,
+            }
+        ];
+        profilerViewModel.Settings = new SettingsViewModel(settings);
         return profilerViewModel;
     }
+    public string NetVersion { get; set; } = string.Empty;
 
-    public string NetVersion { get; set; }
+    private static double? ParseData(double data, SettingsDataModel settings)
+    {
+        return settings.TimelineYAxis switch
+        {
+            SettingsDataModel.DataSize.Bytes => data,
+            SettingsDataModel.DataSize.KiloBytes => data / 1024,
+            SettingsDataModel.DataSize.MegaBytes => data / (1024 * 1014),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private static double GroupSamples(RangeDataPoint x, SettingsDataModel settings)
+    {
+        return Sample(x.TimeStart, settings.TimelineXAxis);
+    }
+
+    private static double GroupSamples(DataPoint x, SettingsDataModel settings)
+    {
+        return Sample(x.Time, settings.TimelineXAxis);
+    }
+
+    private static double Sample(ulong time, SettingsDataModel.TimeSize size)
+    {
+        return size switch
+        {
+            SettingsDataModel.TimeSize.Millisecond => Math.Round(
+                TimeSpan.FromMicroseconds((long)time).TotalMilliseconds, 4),
+            SettingsDataModel.TimeSize.Second => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalSeconds, 4),
+            SettingsDataModel.TimeSize.Decisecond => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalSeconds/10, 4),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+}
+
+public class StackTraceComparer : IEqualityComparer<
+    KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)>>
+{
+    public bool Equals(KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)> x,
+        KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)> y)
+    {
+        return ((Object)x.Value.Type).Equals(y.Value.Type) && x.Value.StackTraces.SequenceEqual(y.Value.StackTraces);
+    }
+
+    public int GetHashCode(
+        KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)> obj)
+    {
+        return HashCode.Combine(obj.Value.Type);
+    }
 }

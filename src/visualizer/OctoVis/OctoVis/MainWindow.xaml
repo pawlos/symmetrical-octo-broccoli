@@ -37,14 +37,16 @@
                         <Label Grid.Column="1" Grid.Row="1" Content="{Binding TotalGcTime}" />
                         <Label Grid.Column="1" Grid.Row="2" Content="{Binding NetVersion}" />
                     </Grid>
-                    <lvc:CartesianChart DataContext="{Binding .}"
-                                        Series="{Binding Timeline}"
+                    <lvc:CartesianChart Series="{Binding Timeline}"
                                         ZoomMode="X"
-                                        ZoomingSpeed="5"
                                         Grid.Row="2"
-                                        TooltipPosition="Auto"
-                                        Title="{Binding TimelineTitle}" YAxes="{Binding TimelineYAxis}"
-                                        Sections="{Binding GcSections}">
+                                        TooltipTextSize="12"
+                                        Title="{Binding TimelineTitle}"
+                                        YAxes="{Binding TimelineYAxis}"
+                                        XAxes="{Binding TimelineXAxis}"
+                                        Sections="{Binding Sections}"
+                                        TooltipPosition="Center"
+                                        TooltipFindingStrategy="CompareOnlyX">
                     </lvc:CartesianChart>
                     <lvc:PieChart Grid.Row="3" DataContext="{Binding .}"
                                   Series="{Binding MemoryByType}"
@@ -58,20 +60,46 @@
                 <TabItem.Header>
                     <Label Content="Allocations" FontWeight="Bold" />
                 </TabItem.Header>
-                <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TypeAllocationInfo}"
-                          DataContext="{Binding .}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" FontSize="12" />
-                        <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true" FontSize="12" />
-                        <DataGridTextColumn Header="Total memory (B)" Binding="{Binding TotalAllocations}"
-                                            IsReadOnly="true" FontSize="12" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid DataContext="{Binding .}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBox Text="{Binding Settings.Filter, UpdateSourceTrigger=LostFocus}" />
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TypeAllocationInfo}"
+                              Grid.Row="1">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" FontSize="12" />
+                            <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true"
+                                                FontSize="12" />
+                            <DataGridTextColumn Header="Total memory (B)" Binding="{Binding TotalAllocations}"
+                                                IsReadOnly="true" FontSize="12" />
+                            <DataGridTextColumn Header="Unique trace" Binding="{Binding UniqueStackTraces}"
+                                                IsReadOnly="True" FontSize="12" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </TabItem>
-            <TabItem>
+            <TabItem DataContext="{Binding .}">
                 <TabItem.Header>
                     <Label Content="Settings" FontWeight="Bold" />
                 </TabItem.Header>
+                <Grid DataContext="{Binding Settings}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="50" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Time resolution" />
+                    <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding TimelineXValue}"
+                              SelectedItem="{Binding SelectedXResolution}" />
+                    <Label Content="Data resolution" Grid.Row="1" Grid.Column="0" />
+                    <ComboBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding TimelineYValue}"
+                              SelectedItem="{Binding SelectedYResolution}" />
+                </Grid>
             </TabItem>
         </TabControl>
         <Button Margin="20"
