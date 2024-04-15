@@ -373,8 +373,6 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 	return E_FAIL;
 }
 
-
-
 HRESULT __stdcall OctoProfiler::ObjectsAllocatedByClass(ULONG cClassCount, ClassID classIds[], ULONG cObjects[])
 {
 	return E_NOTIMPL;
@@ -393,7 +391,18 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
 	auto typeName = nameResolver->ResolveTypeNameByObjectId(thrownObjectId);
-	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0}", typeName.value_or(L"<<no info>>")));
+	ThreadID threadId;
+	auto hr = pInfo->GetCurrentThreadID(&threadId);
+	if (FAILED(hr))
+	{
+		Logger::Error("Could not obtain current thread.");
+		return E_FAIL;
+	}
+	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0} on thread {1}", typeName.value_or(L"<<no info>>"), threadId));
+	stackWalkMutex.lock();
+	hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(nameResolver.get()), NULL, 0);
+	stackWalkMutex.unlock();
+	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 	return S_OK;
 }
 
