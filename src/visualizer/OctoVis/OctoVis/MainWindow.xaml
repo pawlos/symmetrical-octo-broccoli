@@ -80,6 +80,11 @@
                     </DataGrid>
                 </Grid>
             </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <Label Content="Exceptions" FontWeight="Bold" />
+                </TabItem.Header>
+            </TabItem>
             <TabItem DataContext="{Binding .}">
                 <TabItem.Header>
                     <Label Content="Settings" FontWeight="Bold" />
