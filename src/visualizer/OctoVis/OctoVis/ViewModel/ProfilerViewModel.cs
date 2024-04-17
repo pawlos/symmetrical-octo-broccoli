@@ -15,6 +15,7 @@ namespace OctoVis.ViewModel;
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
     public record TypeAllocationsTable(string Name, uint TotalAllocations, uint Count, uint UniqueStackTraces);
+    public record ExceptionTable(string Name, int Count);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
     {
@@ -53,6 +54,8 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     }
 
     public TypeAllocationsTable[] TypeAllocationInfo { get; set; } = null!;
+
+    public ExceptionTable[] ExceptionCountInfo { get; set; } = null!;
 
     public string Filter { get; set; } = string.Empty;
     public string TotalTime { get; set; } = string.Empty;
@@ -186,6 +189,10 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 MinLimit = 0,
             }
         ];
+        profilerViewModel.ExceptionCountInfo = data.ExceptionInfo
+            .GroupBy(x => x.Value)
+            .Select(x => new ExceptionTable(x.Key, x.Count()))
+            .ToArray();
         profilerViewModel.Settings = new SettingsViewModel(settings);
         return profilerViewModel;
     }
