@@ -92,7 +92,10 @@
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding ExceptionCountInfo}"
                               Grid.Row="1">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" FontSize="12" />
+                            <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true"
+                                                FontSize="12" />
+                            <DataGridTextColumn Header="Thread" Binding="{Binding ThreadId}" IsReadOnly="True"
+                                                FontSize="12" />
                             <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true"
                                                 FontSize="12" />
                             <DataGridTextColumn Header="Unique trace" Binding="{Binding UniqueStackTraces}"

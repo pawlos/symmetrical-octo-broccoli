@@ -2,12 +2,14 @@ namespace OctoVis.Model;
 
 public class ProfilerDataModel
 {
-    public record AllocationStackFrame(string FrameInfo);
+    public record StackFrame(string FrameInfo);
+
+    public record ExceptionInfo(string ExceptionType, string ThreadId, List<StackFrame> StackTrace);
     public Dictionary<string, (uint TotalMemory, uint Count)> TypeAllocationInfo { get; set; } = new();
 
-    public Dictionary<Guid, (string Type, List<AllocationStackFrame> StackTraces)> ObjectAllocationPath = new();
+    public Dictionary<Guid, (string Type, List<StackFrame> StackTraces)> ObjectAllocationPath = new();
 
-    public Dictionary<double,string> ExceptionInfo { get; set; } = new();
+    public Dictionary<double,ExceptionInfo> ExceptionsInfo { get; set; } = new();
 
     public List<DataPoint> ExceptionData { get; set; } = new();
 

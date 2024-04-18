@@ -15,7 +15,7 @@ namespace OctoVis.ViewModel;
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
     public record TypeAllocationsTable(string Name, uint TotalAllocations, uint Count, uint UniqueStackTraces);
-    public record ExceptionTable(string Name, int Count);
+    public record ExceptionTable(string Name, string ThreadId, int Count);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
     {
@@ -94,8 +94,8 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 {
                     Values = data.ExceptionData.GroupBy(x => GroupSamples(x, settings))
                         .Select(x => new ObservablePoint(x.Key, 10)),
-                    XToolTipLabelFormatter = point => data.ExceptionInfo[point.Model!.X!.Value],
-                    YToolTipLabelFormatter = point => data.ExceptionInfo[point.Model!.X!.Value],
+                    XToolTipLabelFormatter = point => data.ExceptionsInfo[point.Model!.X!.Value].ExceptionType,
+                    YToolTipLabelFormatter = point => data.ExceptionsInfo[point.Model!.X!.Value].ExceptionType,
                     Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
                 },
             ]
@@ -189,9 +189,9 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 MinLimit = 0,
             }
         ];
-        profilerViewModel.ExceptionCountInfo = data.ExceptionInfo
-            .GroupBy(x => x.Value)
-            .Select(x => new ExceptionTable(x.Key, x.Count()))
+        profilerViewModel.ExceptionCountInfo = data.ExceptionsInfo
+            .GroupBy(x => new {x.Value.ExceptionType, x.Value.ThreadId})
+            .Select(x => new ExceptionTable(x.Key.ExceptionType, x.Key.ThreadId, x.Count()))
             .ToArray();
         profilerViewModel.Settings = new SettingsViewModel(settings);
         return profilerViewModel;
@@ -234,16 +234,16 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
 }
 
 public class StackTraceComparer : IEqualityComparer<
-    KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)>>
+    KeyValuePair<Guid, (string Type, List<ProfilerDataModel.StackFrame> StackTraces)>>
 {
-    public bool Equals(KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)> x,
-        KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)> y)
+    public bool Equals(KeyValuePair<Guid, (string Type, List<ProfilerDataModel.StackFrame> StackTraces)> x,
+        KeyValuePair<Guid, (string Type, List<ProfilerDataModel.StackFrame> StackTraces)> y)
     {
         return ((Object)x.Value.Type).Equals(y.Value.Type) && x.Value.StackTraces.SequenceEqual(y.Value.StackTraces);
     }
 
     public int GetHashCode(
-        KeyValuePair<Guid, (string Type, List<ProfilerDataModel.AllocationStackFrame> StackTraces)> obj)
+        KeyValuePair<Guid, (string Type, List<ProfilerDataModel.StackFrame> StackTraces)> obj)
     {
         return HashCode.Combine(obj.Value.Type);
     }
