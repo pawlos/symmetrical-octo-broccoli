@@ -227,13 +227,13 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
-	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0},{1:x}]", win32ThreadId, threadId));
+	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0},{1}]", win32ThreadId, threadId));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 {
-	Logger::DoLog(std::format("OctoProfiler::ThreadDestroyed {0:x}", threadId));
+	Logger::DoLog(std::format("OctoProfiler::ThreadDestroyed {0}", threadId));
 	return S_OK;
 }
 
