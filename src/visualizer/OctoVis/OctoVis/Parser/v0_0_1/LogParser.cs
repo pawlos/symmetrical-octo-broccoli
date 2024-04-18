@@ -46,6 +46,18 @@ public class LogParser : IParser
                     model.TotalGcTime += TimeSpan.FromTicks((long)duration);
                 }
             }
+            else if (line.Contains("OctoProfiler::ThreadCreated"))
+            {
+                var time = ParseTimestamp(line);
+                //  [{0},{1}]
+                var match = Regex.Match(line, @"OctoProfiler::ThreadCreated \[(\d+),(\d+)\]");
+                var threadId = int.Parse(match.Groups[1].Value);
+                var managedId = ulong.Parse(match.Groups[2].Value);
+                model.Threads.Add(new ProfilerDataModel.ThreadInfo(
+                    CalculateTimestamp(time, startTicks),
+                    threadId,
+                    managedId));
+            }
             else if (line.Contains("OctoProfiler::ExceptionThrown"))
             {
                 var currentTicks = ParseTimestamp(line);
