@@ -11,7 +11,7 @@ public class SettingsDataModel
 
     public enum TimeSize
     {
-        Decisecond,
+        Minute,
         Second,
         Millisecond
     }

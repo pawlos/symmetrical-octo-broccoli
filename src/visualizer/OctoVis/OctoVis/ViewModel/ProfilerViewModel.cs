@@ -183,7 +183,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 {
                     SettingsDataModel.TimeSize.Second => 0.5,
                     SettingsDataModel.TimeSize.Millisecond => 1000,
-                    SettingsDataModel.TimeSize.Decisecond => 1,
+                    SettingsDataModel.TimeSize.Minute => 1,
                     _ => throw new ArgumentOutOfRangeException()
                 },
                 MinLimit = 0,
@@ -223,10 +223,9 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     {
         return size switch
         {
-            SettingsDataModel.TimeSize.Millisecond => Math.Round(
-                TimeSpan.FromMicroseconds((long)time).TotalMilliseconds, 4),
+            SettingsDataModel.TimeSize.Millisecond => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalMilliseconds, 4),
             SettingsDataModel.TimeSize.Second => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalSeconds, 4),
-            SettingsDataModel.TimeSize.Decisecond => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalSeconds/10, 4),
+            SettingsDataModel.TimeSize.Minute => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalMinutes, 4),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

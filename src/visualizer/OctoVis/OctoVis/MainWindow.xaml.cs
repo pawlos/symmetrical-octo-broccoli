@@ -102,9 +102,9 @@ public partial class MainWindow : Window
                 _settings.TimelineXAxis = SettingsDataModel.TimeSize.Millisecond;
             }
 
-            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Decisecond))
+            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Minute))
             {
-                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Decisecond;
+                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Minute;
             }
         }
     }

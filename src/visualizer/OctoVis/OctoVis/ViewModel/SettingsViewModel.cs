@@ -15,7 +15,7 @@ public class SettingsViewModel : INotifyPropertyChanged
         SelectedXResolution = model.TimelineXAxis.ToString();
         SelectedYResolution = model.TimelineYAxis.ToString();
     }
-    public List<string> TimelineXValue { get; set; } = [nameof(SettingsDataModel.TimeSize.Decisecond), nameof(SettingsDataModel.TimeSize.Second), nameof(SettingsDataModel.TimeSize.Millisecond)];
+    public List<string> TimelineXValue { get; set; } = [nameof(SettingsDataModel.TimeSize.Minute), nameof(SettingsDataModel.TimeSize.Second), nameof(SettingsDataModel.TimeSize.Millisecond)];
     public List<string> TimelineYValue { get; set; } = [nameof(SettingsDataModel.DataSize.Bytes), nameof(SettingsDataModel.DataSize.KiloBytes), nameof(SettingsDataModel.DataSize.MegaBytes)];
 
     private string? _selectedXResolution;
