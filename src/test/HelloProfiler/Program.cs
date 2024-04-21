@@ -2,12 +2,13 @@
 
 using HelloProfiler;
 
+bool waitForKey = args.Contains("--wait");
 Console.WriteLine("Profile test program - start");
-WaitForAKey();
+WaitForAKey(waitForKey);
 
 Console.WriteLine("Profiler - GC collect test");
 GC.Collect();
-WaitForAKey();
+WaitForAKey(waitForKey);
 
 Console.WriteLine("Profiler - GC allocations test");
 var allocations = new List<TestClass>();
@@ -15,19 +16,19 @@ for (int i = 0; i < 40000; i++)
 {
     allocations.Add(new TestClass());
 }
-WaitForAKey();
+WaitForAKey(waitForKey);
 
 Console.WriteLine("Profiler - Call stack test");
 await Function1();
 Console.WriteLine("Profile test program - done");
-WaitForAKey();
+WaitForAKey(waitForKey);
 
 Console.WriteLine("Profiler - Allocations test");
 var test = new int[256];
 var test2 = new Dictionary<string, int> { { "test", 12 } };
 Console.WriteLine("Print value {0} {1}", test[0], test2["test"]);
 
-WaitForAKey();
+WaitForAKey(waitForKey);
 Console.WriteLine("Profiler - Exceptions test");
 for (int i = 0; i < 10; i++)
 {
@@ -44,13 +45,16 @@ for (int i = 0; i < 10; i++)
     }
 }
 
-WaitForAKey();
+WaitForAKey(waitForKey);
 return;
 
-void WaitForAKey()
+void WaitForAKey(bool wait)
 {
-    Console.WriteLine("Press [Enter]");
-    Console.ReadLine();
+    if (wait)
+    {
+        Console.WriteLine("Press [Enter]");
+        Console.ReadLine();
+    }
     Console.WriteLine();
     Console.WriteLine("-----------------------------");
 }
