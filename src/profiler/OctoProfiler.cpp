@@ -358,8 +358,8 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
 	auto typeName = nameResolver->ResolveTypeNameByObjectId(objectId);
-	ULONG bytesAllocated;
-	auto hr = pInfo->GetObjectSize(objectId, &bytesAllocated);
+	SIZE_T bytesAllocated;
+	auto hr = pInfo->GetObjectSize2(objectId, &bytesAllocated);
 	if (SUCCEEDED(hr))
 	{
 		totalAllocatedBytes += bytesAllocated;

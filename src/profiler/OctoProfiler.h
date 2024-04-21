@@ -12,7 +12,7 @@ private:
 	std::string version = "v0.0.1";
 	CComQIPtr<ICorProfilerInfo5> pInfo;
 	std::unique_ptr<NameResolver> nameResolver {};
-	ULONG totalAllocatedBytes = 0;
+	SIZE_T totalAllocatedBytes = 0;
 	std::mutex stackWalkMutex{};
 	std::optional<std::wstring> ResolveNetRuntimeVersion() const;
 public:		
