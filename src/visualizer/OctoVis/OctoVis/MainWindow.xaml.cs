@@ -1,22 +1,16 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
-using LiveChartsCore;
-using LiveChartsCore.Defaults;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.Win32;
 using OctoVis.Model;
 using OctoVis.Parser;
 using OctoVis.ViewModel;
-using SkiaSharp;
 
 namespace OctoVis;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow
 {
     private ProfilerDataModel _data = new();
     private SettingsDataModel _settings = new();
@@ -61,6 +55,8 @@ public partial class MainWindow : Window
 
     private void HandleFilter(SettingsViewModel model, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName is null)
+            return;
         if (e.PropertyName.Contains(nameof(model.Filter)))
         {
             _settings.Filter = model.Filter;
@@ -69,49 +65,36 @@ public partial class MainWindow : Window
 
     private void HandleYResolution(SettingsViewModel model, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName.Contains(nameof(model.SelectedYResolution)))
+        if (e.PropertyName is null)
+            return;
+        if (!e.PropertyName.Contains(nameof(model.SelectedYResolution))) return;
+        _settings.TimelineYAxis = model.SelectedYResolution switch
         {
-            if (model.SelectedYResolution == nameof(SettingsDataModel.DataSize.Bytes))
-            {
-                _settings.TimelineYAxis = SettingsDataModel.DataSize.Bytes;
-            }
-
-            if (model.SelectedYResolution == nameof(SettingsDataModel.DataSize.KiloBytes))
-            {
-                _settings.TimelineYAxis = SettingsDataModel.DataSize.KiloBytes;
-            }
-
-            if (model.SelectedYResolution == nameof(SettingsDataModel.DataSize.MegaBytes))
-            {
-                _settings.TimelineYAxis = SettingsDataModel.DataSize.MegaBytes;
-            }
-        }
+            nameof(SettingsDataModel.DataSize.Bytes) => SettingsDataModel.DataSize.Bytes,
+            nameof(SettingsDataModel.DataSize.KiloBytes) => SettingsDataModel.DataSize.KiloBytes,
+            nameof(SettingsDataModel.DataSize.MegaBytes) => SettingsDataModel.DataSize.MegaBytes,
+            _ => _settings.TimelineYAxis
+        };
     }
 
     private void HandleXResolution(SettingsViewModel model, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName.Contains(nameof(model.SelectedXResolution)))
+        if (e.PropertyName is null)
+            return;
+
+        if (!e.PropertyName.Contains(nameof(model.SelectedXResolution))) return;
+        _settings.TimelineXAxis = model.SelectedXResolution switch
         {
-            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Second))
-            {
-                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Second;
-            }
-
-            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Millisecond))
-            {
-                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Millisecond;
-            }
-
-            if (model.SelectedXResolution == nameof(SettingsDataModel.TimeSize.Minute))
-            {
-                _settings.TimelineXAxis = SettingsDataModel.TimeSize.Minute;
-            }
-        }
+            nameof(SettingsDataModel.TimeSize.Second) => SettingsDataModel.TimeSize.Second,
+            nameof(SettingsDataModel.TimeSize.Millisecond) => SettingsDataModel.TimeSize.Millisecond,
+            nameof(SettingsDataModel.TimeSize.Minute) => SettingsDataModel.TimeSize.Minute,
+            _ => _settings.TimelineXAxis
+        };
     }
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog ofd = new OpenFileDialog();
+        var ofd = new OpenFileDialog();
         ofd.ShowDialog();
         ParseFile(ofd.FileName);
     }

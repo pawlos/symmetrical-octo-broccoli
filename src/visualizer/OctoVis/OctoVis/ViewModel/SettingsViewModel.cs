@@ -11,7 +11,7 @@ public class SettingsViewModel : INotifyPropertyChanged
     public SettingsViewModel(SettingsDataModel model)
     {
         _model = model;
-        Filter = model.Filter;
+        _filter = model.Filter;
         SelectedXResolution = model.TimelineXAxis.ToString();
         SelectedYResolution = model.TimelineYAxis.ToString();
     }

@@ -14,7 +14,7 @@ namespace OctoVis.ViewModel;
 
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
-    public record TypeAllocationsTable(string Name, uint TotalAllocations, uint Count, uint UniqueStackTraces);
+    public record TypeAllocationsTable(string Name, double TotalAllocations, uint Count, uint UniqueStackTraces);
     public record ExceptionTable(string Name, string ThreadId, int Count);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
@@ -139,7 +139,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
             data.TypeAllocationInfo
                 .Where(x => string.IsNullOrWhiteSpace(settings.Filter) ||
                             (!string.IsNullOrWhiteSpace(settings.Filter) && x.Key.Contains(settings.Filter)))
-                .Select(x => new TypeAllocationsTable(x.Key, x.Value.TotalMemory, x.Value.Count,
+                .Select(x => new TypeAllocationsTable(x.Key, ParseData(x.Value.TotalMemory, settings), x.Value.Count,
                     (uint)data.ObjectAllocationPath.Where(t => t.Value.Type == x.Key)
                         .Distinct(new StackTraceComparer())
                         .Count()))
@@ -198,7 +198,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     }
     public string NetVersion { get; set; } = string.Empty;
 
-    private static double? ParseData(double data, SettingsDataModel settings)
+    private static double ParseData(double data, SettingsDataModel settings)
     {
         return settings.TimelineYAxis switch
         {

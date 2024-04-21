@@ -4,8 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        xmlns:converters="clr-namespace:OctoVis.Converters"
         mc:Ignorable="d"
         Title="OctoProfiler" Height="800" Width="1600" d:DataContext="{d:DesignInstance}">
+    <Window.Resources>
+        <converters:NumberConverter x:Key="NumberConverter" />
+    </Window.Resources>
     <Grid>
         <TabControl Visibility="{Binding LogParsed, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TabItem>
@@ -40,19 +44,18 @@
                     <lvc:CartesianChart Series="{Binding Timeline}"
                                         ZoomMode="X"
                                         Grid.Row="2"
-                                        TooltipTextSize="12"
                                         Title="{Binding TimelineTitle}"
                                         YAxes="{Binding TimelineYAxis}"
                                         XAxes="{Binding TimelineXAxis}"
                                         Sections="{Binding Sections}"
                                         TooltipPosition="Center"
+                                        TooltipTextSize="12"
                                         TooltipFindingStrategy="CompareOnlyX">
                     </lvc:CartesianChart>
                     <lvc:PieChart Grid.Row="3" DataContext="{Binding .}"
                                   Series="{Binding MemoryByType}"
                                   LegendPosition="Right"
                                   Title="{Binding Top20AllocationsTitle}">
-
                     </lvc:PieChart>
                 </Grid>
             </TabItem>
@@ -72,8 +75,16 @@
                             <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" FontSize="12" />
                             <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true"
                                                 FontSize="12" />
-                            <DataGridTextColumn Header="Total memory (B)" Binding="{Binding TotalAllocations}"
-                                                IsReadOnly="true" FontSize="12" />
+                            <DataGridTextColumn Header="Total bytes"
+                                                Binding="{Binding TotalAllocations,
+                                                Converter={StaticResource NumberConverter}}"
+                                                IsReadOnly="true" FontSize="12">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="HorizontalAlignment" Value="Right" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Unique trace" Binding="{Binding UniqueStackTraces}"
                                                 IsReadOnly="True" FontSize="12" />
                         </DataGrid.Columns>
