@@ -9,12 +9,10 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	if (FAILED(hr))
 	{		
 		return {};
-	}
-
-	auto className = this->ResolveTypeNameByClassId(classId);	
+	}	
 
 	IMetaDataImport* pIMDImport = nullptr;
-	hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
@@ -31,13 +29,14 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 
 		if (SUCCEEDED(hr))
 		{						
+			auto className = this->ResolveTypeNameByClassId(classId);
 			if (className)
 			{
-				return std::optional<std::wstring>(className.value_or(L"") + std::wstring(functionName));
+				return className.value() + L"." + std::wstring(functionName);
 			}
 			else
 			{
-				return std::optional<std::wstring>(std::wstring(functionName));
+				return std::wstring(functionName);
 			}
 		}
 	}
@@ -51,7 +50,7 @@ std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assembl
 	AppDomainID appDomainId;
 	ModuleID moduleId;
 	auto hr = pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
-	return std::optional<std::wstring>(std::wstring(name));
+	return std::wstring(name);
 }
 
 std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDomainId) const {
@@ -64,7 +63,7 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 		return {};
 	}
 
-	return std::optional<std::wstring>(std::wstring(appDomainName));
+	return std::wstring(appDomainName);
 }
 
 std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const 
@@ -75,7 +74,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 	if (SUCCEEDED(hr))
 	{
 		IMetaDataImport* pIMDImport = nullptr;
-		hr = pInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+		hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
 		if (SUCCEEDED(hr))
 		{
 			ULONG typedefnamesize;
@@ -89,9 +88,9 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 				&typedefflags,
 				&extends);
 
-			return std::optional<std::wstring>(std::wstring(typeName));
+			return std::wstring(typeName);
 		}
-	}	
+	}
 	return {};
 }
 
@@ -100,7 +99,18 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID obj
 	auto hr = pInfo->GetClassFromObject(objectId, &classId);
 	if (SUCCEEDED(hr))
 	{
-		return this->ResolveTypeNameByClassId(classId);
+		CorElementType elementType;
+		ClassID baseClassId;
+		ULONG rank;
+		hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+		if (hr == S_OK)
+		{
+			auto name = this->ResolveTypeNameByClassId(baseClassId);
+			if (!name) return name;
+			return name.value() + L"[]";
+		}
+		else
+			return this->ResolveTypeNameByClassId(classId);
 	}
 	return{};
 }
@@ -112,5 +122,5 @@ std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) c
 	ULONG size;
 	auto hr = pInfo->GetModuleInfo(moduleId, &baseLoadAddress, 510, &size, moduleName, &assemblyId);
 
-	return std::optional<std::wstring>(std::wstring(moduleName));
+	return std::wstring(moduleName);
 }
