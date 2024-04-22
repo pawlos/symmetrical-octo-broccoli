@@ -4,9 +4,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:OctoVis"
+        xmlns:control="clr-namespace:OctoVis.Control"
         mc:Ignorable="d"
         Title="StackTraceWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding Name}"></TextBlock>
+        <control:StackTraceControl StackFrames="{Binding StackFrames}" Grid.Row="1"/>
     </Grid>
 </Window>
