@@ -7,7 +7,7 @@
 class NameResolver
 {
 public:
-	NameResolver(ICorProfilerInfo2* pInfo): pInfo(pInfo) {}
+	NameResolver(ICorProfilerInfo4* pInfo): pInfo(pInfo) {}
 	std::optional<std::wstring> ResolveFunctionName(FunctionID functionId) const;
 	std::optional<std::wstring> ResolveAssemblyName(AssemblyID assemblyId) const;
 	std::optional<std::wstring> ResolveAppDomainName(AppDomainID appDomainId) const;
@@ -15,6 +15,6 @@ public:
 	std::optional<std::wstring> ResolveModuleName(ModuleID moduleId) const;
 	std::optional<std::wstring> ResolveTypeNameByClassId(ClassID classId) const;
 private:
-	ICorProfilerInfo2* pInfo;
+	ICorProfilerInfo4* pInfo;
 };
 

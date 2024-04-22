@@ -67,7 +67,7 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 }
 
 std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const 
-{
+{	
 	ModuleID moduleId;
 	mdTypeDef defToken;
 	auto hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
