@@ -14,7 +14,7 @@ namespace OctoVis.ViewModel;
 
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
-    public record TypeAllocationsTable(string Name, double TotalAllocations, uint Count, uint UniqueStackTraces);
+    public record TypeAllocationsEntry(string Name, double TotalAllocations, uint Count, uint UniqueStackTraces, List<List<ProfilerDataModel.StackFrame>> StackFrames);
     public record ExceptionTable(string Name, string ThreadId, int Count);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
@@ -53,7 +53,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         return true;
     }
 
-    public TypeAllocationsTable[] TypeAllocationInfo { get; set; } = null!;
+    public TypeAllocationsEntry[] TypeAllocationInfo { get; set; } = null!;
 
     public ExceptionTable[] ExceptionCountInfo { get; set; } = null!;
 
@@ -121,7 +121,6 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         profilerViewModel.Sections = sections.ToArray();
         ISeries?[] series = data.TypeAllocationInfo
             .OrderByDescending(x => x.Value)
-            .SkipWhile(x => x.Key == "<<no info>>")
             .Take(20)
             .Select(x => new PieSeries<double>
             {
@@ -139,10 +138,13 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
             data.TypeAllocationInfo
                 .Where(x => string.IsNullOrWhiteSpace(settings.Filter) ||
                             (!string.IsNullOrWhiteSpace(settings.Filter) && x.Key.Contains(settings.Filter)))
-                .Select(x => new TypeAllocationsTable(x.Key, ParseData(x.Value.TotalMemory, settings), x.Value.Count,
-                    (uint)data.ObjectAllocationPath.Where(t => t.Value.Type == x.Key)
-                        .Distinct(new StackTraceComparer())
-                        .Count()))
+                .Select(x =>
+                {
+                    var traces = data.ObjectAllocationPath.Where(t => t.Value.Type == x.Key)
+                        .Distinct(new StackTraceComparer());
+                    return new TypeAllocationsEntry(x.Key, ParseData(x.Value.TotalMemory, settings), x.Value.Count,
+                        (uint)traces.Count(), traces.Select(x => x.Value.StackTraces).ToList());
+                })
                 .ToArray();
         profilerViewModel.TimelineYAxis =
         [

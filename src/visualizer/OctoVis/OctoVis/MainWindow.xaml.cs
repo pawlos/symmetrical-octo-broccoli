@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Win32;
 using OctoVis.Model;
 using OctoVis.Parser;
@@ -92,10 +94,29 @@ public partial class MainWindow
         };
     }
 
-    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    private void OpenLog_OnClick(object sender, RoutedEventArgs e)
     {
         var ofd = new OpenFileDialog();
         ofd.ShowDialog();
         ParseFile(ofd.FileName);
+    }
+
+    private void ProfileApp_OnClick(object sender, RoutedEventArgs e)
+    {
+        // TODO: implement
+    }
+
+    private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (ItemsControl.ContainerFromElement((DataGrid)sender, e.OriginalSource as DependencyObject) is not DataGridRow row) return;
+
+        if (row.DataContext is not ProfilerViewModel.TypeAllocationsEntry tat) return;
+
+        StackTraceWindow stw = new StackTraceWindow
+        {
+            DataContext = tat
+        };
+
+        stw.ShowDialog();
     }
 }

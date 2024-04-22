@@ -70,7 +70,8 @@
                     </Grid.RowDefinitions>
                     <TextBox Text="{Binding Settings.Filter, UpdateSourceTrigger=LostFocus}" />
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TypeAllocationInfo}"
-                              Grid.Row="1">
+                              Grid.Row="1"
+                              MouseDoubleClick="Control_OnMouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Type" Binding="{Binding Name}" IsReadOnly="true" FontSize="12" />
                             <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="true"
@@ -137,11 +138,21 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <Button Margin="20"
-                Click="ButtonBase_OnClick"
-                Content="Pick a log"
-                FontWeight="Bold"
-                FontSize="20"
-                Visibility="{Binding LogNotParsed, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <Grid Visibility="{Binding LogNotParsed, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+            <Button Margin="20"
+                    Click="OpenLog_OnClick"
+                    Content="Pick a log"
+                    FontWeight="Bold"
+                    FontSize="20" />
+            <Button Grid.Column="1" Margin="20"
+                    Click="ProfileApp_OnClick"
+                    Content="Profile application"
+                    FontWeight="Bold"
+                    FontSize="20" />
+        </Grid>
     </Grid>
 </Window>

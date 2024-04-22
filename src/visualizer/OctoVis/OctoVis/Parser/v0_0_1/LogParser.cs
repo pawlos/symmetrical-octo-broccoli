@@ -73,6 +73,7 @@ public class LogParser : IParser
 
                 var point = new DataPoint(CalculateTimestamp(currentTicks, startTicks), 0);
                 model.ExceptionData.Add(point);
+                stack.Reverse();
                 model.ExceptionsInfo.Add(point.Time, new ProfilerDataModel.ExceptionInfo(
                     exceptionType,
                     threadId,
@@ -115,6 +116,7 @@ public class LogParser : IParser
             stackFrame = stream.ReadLine();
         }
 
+        allocationStack.Reverse();
         model.ObjectAllocationPath.Add(Guid.NewGuid(), (type, allocationStack));
         return totalMemoryAllocated;
     }
