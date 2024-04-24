@@ -73,7 +73,7 @@ std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
 		return {};
 	}
 
-	return std::optional<std::wstring>(std::wstring(versionString));
+	return std::wstring(versionString);
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown(void)
