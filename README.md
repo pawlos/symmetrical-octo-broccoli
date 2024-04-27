@@ -37,7 +37,17 @@ Minimum plan:
 
 ## Current state ##
 
-OctoProfiler reacts to events and currently stors them in a text file.
+Ability to start the program with the profiler attached directly from the console or from the OctoVis. There's also an option to attach to a running binary - for now only from the console and only to the .NET Framework ones.
+
+OctoProfiler reacts to events and currently stors them in a text file that later are being parsed by the visualization.
+
+Currently collected information:
+- [x] allocations
+- [x] exceptions
+- [x] GC information
+- [x] JIT
+
+Running the profiler:
 
 ![CLI](img/cli.png)
 
@@ -48,6 +58,10 @@ Summary tab - general overview of the profiling session
 
 Allocations tab - # of objects, memory used and count information
 ![ALLOCATIONS](img/gui_allocations.png)
+
+Flame graph showing the allocation paths:
+![FLAME](img/gui_flame_hot.png)
+![COLD](img/gui_flame_cold.png)
 
 Exceptions tab - "detail" information about thrown exceptions
 ![EXCEPTIONS](img/gui_exceptions.png)
@@ -68,6 +82,8 @@ Issues found during development:
 It can be debugged with a native debugger. Setting a breakpoint at DllGetClassObject (`bp OctoProfiler!DllGetClassObject`) or `OctoProfiler::Initialize` (`bp OctoProfiler!OctoProfiler::Initialize`).
 
 ## Debugger ##
+
+On hold for the moment. Working on the profiler part.
 
 Minimum plan:
 - [ ] starting a binary
