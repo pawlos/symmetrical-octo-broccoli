@@ -51,7 +51,9 @@ Running the profiler:
 
 ![CLI](img/cli.png)
 
-OctoVis can read the generated file and provide a visualization
+OctoVis can either start the program under the profiler or read the generated file and provide a visualization
+
+![START](img/gui_start.png)
 
 Summary tab - general overview of the profiling session
 ![SUMMARY](img/gui_summary.png)
