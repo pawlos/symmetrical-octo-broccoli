@@ -13,6 +13,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Text="{Binding Name}"></TextBlock>
-        <control:StackTraceControl StackFrames="{Binding StackFrames}" Grid.Row="1"/>
+        <control:StackTraceControl StackFrames="{Binding StackFrames}" Grid.Row="1" />
     </Grid>
 </Window>
