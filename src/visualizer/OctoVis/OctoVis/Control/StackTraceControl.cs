@@ -19,13 +19,14 @@ public class StackTraceControl : FrameworkElement
     private record Tuple(Guid Id, string Entry, double Fraction);
     private record RectTooltip(Rect BoundingBox, string Tooltip);
 
-    private List<RectTooltip> TooltipsCoords = new();
+    private readonly List<RectTooltip> _tooltipsCoords = new();
 
-    private readonly Color[] FlameColors = [Colors.Orange, Colors.Yellow, Colors.Chocolate, Colors.Goldenrod, Colors.Coral];
-    private readonly Color[] ColdColors = [Colors.Blue, Colors.SteelBlue, Colors.CadetBlue, Colors.Navy, Colors.MediumAquamarine];
+    private readonly Color[] _flameColors = [Colors.Orange, Colors.Yellow, Colors.Chocolate, Colors.Goldenrod, Colors.Coral];
+    private readonly Color[] _coldColors = [Colors.Blue, Colors.SteelBlue, Colors.CadetBlue, Colors.Navy, Colors.MediumAquamarine];
 
     public static readonly DependencyProperty PaletteProperty = DependencyProperty.Register(
-        nameof(Palette), typeof(ColorPalette), typeof(StackTraceControl), new PropertyMetadata(ColorPalette.Cold));
+        nameof(Palette), typeof(ColorPalette), typeof(StackTraceControl),
+        new FrameworkPropertyMetadata(ColorPalette.Cold, FrameworkPropertyMetadataOptions.AffectsRender));
 
     public ColorPalette Palette
     {
@@ -58,7 +59,7 @@ public class StackTraceControl : FrameworkElement
     protected override void OnRender(DrawingContext drawingContext)
     {
         base.OnRender(drawingContext);
-        TooltipsCoords.Clear();
+        _tooltipsCoords.Clear();
         drawingContext.DrawRectangle(new SolidColorBrush(Colors.Transparent),
             new Pen(Brushes.Transparent, 0.0), new Rect(0, 0, ActualWidth, ActualHeight));
 
@@ -79,7 +80,7 @@ public class StackTraceControl : FrameworkElement
                 drawingContext.DrawRectangle(new SolidColorBrush(color),
                     new Pen(new SolidColorBrush(Colors.Transparent), 2.0),
                     rect);
-                TooltipsCoords.Add(new RectTooltip(rect, info.FrameInfo));
+                _tooltipsCoords.Add(new RectTooltip(rect, info.FrameInfo));
 
                 if (idx < 1 || StackFrames.ElementAt(idx - 1).ElementAtOrDefault(i)?.FrameInfo != info.FrameInfo)
                 {
@@ -107,23 +108,24 @@ public class StackTraceControl : FrameworkElement
     }
 
     private Color GetColor(int i) => Palette == ColorPalette.Cold
-        ? ColdColors[i % ColdColors.Length]
-        : FlameColors[i % FlameColors.Length];
+        ? _coldColors[i % _coldColors.Length]
+        : _flameColors[i % _flameColors.Length];
 
     private Brush GetFontColor => Palette == ColorPalette.Cold ? Brushes.WhiteSmoke : Brushes.Black;
 
     protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
     {
-        var tooltip = TooltipsCoords.FirstOrDefault(x => x.BoundingBox.Contains(hitTestParameters.HitPoint));
+        var tooltip = _tooltipsCoords.FirstOrDefault(x => x.BoundingBox.Contains(hitTestParameters.HitPoint));
         if (tooltip is not null)
         {
             ToolTipService.SetToolTip(this, tooltip.Tooltip);
-            ToolTipService.SetPlacement(this, PlacementMode.Mouse);
             return new PointHitTestResult(this, hitTestParameters.HitPoint);
         }
 
         ToolTipService.SetToolTip(this, null);
+        #nullable disable
         return null;
+        #nullable restore
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -138,5 +140,16 @@ public class StackTraceControl : FrameworkElement
 
         if (Zoom > 5) Zoom = 5;
         if (Zoom < 1) Zoom = 1;
+    }
+
+    protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Released)
+        {
+            Palette = Palette == ColorPalette.Hot ? ColorPalette.Cold : ColorPalette.Hot;
+            e.Handled = true;
+        }
+
+        base.OnMouseRightButtonUp(e);
     }
 }
