@@ -20,6 +20,13 @@ inline std::optional<std::string> GetEnv(const char* key) {
 	}
 }
 
+inline bool to_bool(std::string str) {
+	std::istringstream is(str);
+	bool b;
+	is >> std::boolalpha >> b;
+	return b;
+}
+
 BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	return TRUE;
@@ -32,6 +39,9 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 	Logger::Initialize(logger);
 	Logger::DoLog(std::format("Log file: {0}", fileToLog.value_or("console")));
 	Logger::DoLog("OctoProfiler::DllGetClassObject");
+
+	auto doLogEnterLeave = to_bool(GetEnv("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
+	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doLogEnterLeave));
 
 	if (ppv == nullptr)
 	{
