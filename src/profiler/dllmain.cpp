@@ -1,7 +1,7 @@
 #include "OctoProfilerFactory.h"
 #include "log.h"
 
-static OctoProfileFactory* factory;
+static OctoProfilerFactory* factory;
 
 inline std::optional<std::string> GetEnv(const char* key) {
 	if (key == nullptr) {
@@ -40,15 +40,15 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 	Logger::DoLog(std::format("Log file: {0}", fileToLog.value_or("console")));
 	Logger::DoLog("OctoProfiler::DllGetClassObject");
 
-	auto doLogEnterLeave = to_bool(GetEnv("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
-	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doLogEnterLeave));
+	auto doProgfileEnterLeave = to_bool(GetEnv("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
+	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doProgfileEnterLeave));
 
 	if (ppv == nullptr)
 	{
 		return E_FAIL;
 	}
 
-	factory = new OctoProfileFactory();
+	factory = new OctoProfilerFactory();
 
 	*ppv = factory;
 		
