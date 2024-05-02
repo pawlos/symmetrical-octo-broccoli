@@ -1,9 +1,9 @@
 #include "OctoProfilerFactory.h"
 
-HRESULT __stdcall OctoProfileFactory::QueryInterface(REFIID riid, void** ppvObject)
+HRESULT __stdcall OctoProfilerFactory::QueryInterface(REFIID riid, void** ppvObject)
 {	
 	static const GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
-	Logger::DoLog("OctoProfileFactory::QueryInterface");
+	Logger::DoLog("OctoProfilerFactory::QueryInterface");
 	if (riid == CLSID_ClassFactoryGuid)
 	{
 		*ppvObject = &profiler;
@@ -14,25 +14,25 @@ HRESULT __stdcall OctoProfileFactory::QueryInterface(REFIID riid, void** ppvObje
 	return E_NOINTERFACE;
 }
 
-ULONG __stdcall OctoProfileFactory::AddRef(void)
+ULONG __stdcall OctoProfilerFactory::AddRef(void)
 {
 	return 1;
 }
 
-ULONG __stdcall OctoProfileFactory::Release(void)
+ULONG __stdcall OctoProfilerFactory::Release(void)
 {
 	return 0;
 }
 
-HRESULT __stdcall OctoProfileFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
+HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 {
-	Logger::DoLog("OctoProfileFactory::CreateInstance");
+	Logger::DoLog("OctoProfilerFactory::CreateInstance");
 	profiler = new OctoProfiler();
 	*ppvObject = profiler;
 	return S_OK;
 }
 
-HRESULT __stdcall OctoProfileFactory::LockServer(BOOL fLock)
+HRESULT __stdcall OctoProfilerFactory::LockServer(BOOL fLock)
 {
 	return S_OK;
 }

@@ -3,7 +3,7 @@
 #include "OctoProfiler.h"
 #include <stdio.h>
 
-class OctoProfileFactory : public IClassFactory
+class OctoProfilerFactory : public IClassFactory
 {
 public:
 	OctoProfiler* profiler = nullptr;
