@@ -1,10 +1,44 @@
 #include "OctoProfilerEnterLeave.h"
 
-EXTERN_C_START void FunEnterCallback(
+EXTERN_C_START 
+
+void FuncEnterCallback(
 	FunctionID funId, 
 	UINT_PTR clientData, 
 	COR_PRF_FRAME_INFO frameInfo, 
 	COR_PRF_FUNCTION_ARGUMENT_INFO * argInfo);
+
+void FuncLeaveCallback(
+	FunctionID funId,
+	UINT_PTR clientData,
+	COR_PRF_FRAME_INFO frameInfo,
+	COR_PRF_FUNCTION_ARGUMENT_INFO* argInfo);
+
+void FuncEnterStub(FunctionID funcId, UINT_PTR clientData)
+{			
+	if (clientData != NULL)
+	{
+		auto str = reinterpret_cast<wchar_t*>(clientData);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::EnterStub {0}", str));		
+	}
+	else
+	{
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::EnterStub {0:x}", funcId));
+	}
+}
+
+void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData)
+{
+	if (clientData != NULL)
+	{
+		auto str = reinterpret_cast<wchar_t*>(clientData);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::FunExitStub {0}", str));
+	}
+	else
+	{
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::FunExitStub {0:x}", funcId));
+	}
+}
 
 EXTERN_C_END
 
@@ -34,6 +68,21 @@ ULONG __stdcall OctoProfilerEnterLeave::Release(void)
 	return 0;
 }
 
+UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHookFunction)
+{
+	NameResolver* nameResolver = reinterpret_cast<NameResolver*>(clientData);
+	auto functionName = nameResolver->ResolveFunctionName(funcId);
+	*pbHookFunction = false;
+
+	if (functionName.has_value())
+	{		
+		auto c_ptr = new std::wstring(functionName.value_or(L"<<unknown>>"));
+		*pbHookFunction = true;
+		return reinterpret_cast<UINT_PTR>(c_ptr->c_str());
+	}
+	return NULL;
+}
+
 HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
 	Logger::DoLog(std::format("OctoProfilerEnterLeave::Initialize started...{0}", this->version));
@@ -50,8 +99,11 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 		Logger::Error(std::format("OctoProfilerEnterLeave::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
-	this->pInfo->SetEnterLeaveFunctionHooks2((FunctionEnter2*)FunEnterCallback, nullptr, nullptr);
+	this->nameResolver = std::shared_ptr<NameResolver>(new NameResolver(pInfo));
+	this->pInfo->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(nameResolver.get()));
+	this->pInfo->SetEnterLeaveFunctionHooks2(
+		reinterpret_cast<FunctionEnter2*>(FuncEnterCallback),
+		reinterpret_cast<FunctionLeave2*>(FuncLeaveCallback), nullptr);
 	Logger::DoLog("OctoProfilerEnterLeave::Initialize initialized...");
 	return S_OK;
 }

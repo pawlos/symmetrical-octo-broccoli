@@ -1,19 +1,58 @@
-;extern FunEnterCallback:proc
+extern FuncEnterStub:proc
+extern FuncLeaveStub:proc
 
 _TEXT segment para 'CODE'
 	align 16
 
-	public FunEnterCallback
+	public Func EnterCallback	
 
-FunEnterCallback:
+FuncEnterCallback proc frame
 	; rcx - funId
 	; rdx - clientData
 	; r8  - frameInfo
 	; r9  - argInfo	
+	
+	push rax
+	.allocstack 8
+
+	sub rsp, 20h
+	.allocstack 20h
+	.endprolog
+
+	call FuncEnterStub
+
+	add rsp, 20h
+
+	; restore
+	pop rax
 
 	ret
 
-;FunEnterCallback endp
+FuncEnterCallback endp
 
+public FuncLeaveCallback
+FuncLeaveCallback proc frame
+	; rcx - funId
+	; rdx - clientData
+	; r8  - frameInfo
+	; r9  - argInfo	
+	
+	push rax
+	.allocstack 8
+
+	sub rsp, 20h
+	.allocstack 20h
+	.endprolog
+
+	call FuncLeaveStub
+
+	add rsp, 20h
+
+	; restore
+	pop rax
+
+	ret
+
+FuncLeaveCallback endp
 _TEXT ends
 end

@@ -11,7 +11,7 @@ class OctoProfilerEnterLeave : public ICorProfilerCallback3
 private:
 	std::string version = "v0.0.2";
 	CComQIPtr<ICorProfilerInfo5> pInfo;
-	std::unique_ptr<NameResolver> nameResolver{};
+	std::shared_ptr<NameResolver> nameResolver{};
 	SIZE_T totalAllocatedBytes = 0;
 	std::mutex stackWalkMutex{};
 	std::optional<std::wstring> ResolveNetRuntimeVersion() const;
