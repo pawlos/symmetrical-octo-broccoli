@@ -1,13 +1,16 @@
 #pragma once
 #include "unknwn.h"
 #include "OctoProfiler.h"
+#include "OctoProfilerEnterLeave.h"
 #include <stdio.h>
 
 class OctoProfilerFactory : public IClassFactory
 {
 public:
-	OctoProfiler* profiler = nullptr;
+	ICorProfilerCallback3* profiler = nullptr;
+	OctoProfilerFactory(bool doProfileEnterLeave) : m_doProfileEnterLeave(doProfileEnterLeave) {}
 private:	
+	bool m_doProfileEnterLeave = false;
 	// Inherited via IClassFactory
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef(void) override;

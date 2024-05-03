@@ -27,7 +27,8 @@ ULONG __stdcall OctoProfilerFactory::Release(void)
 HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 {
 	Logger::DoLog("OctoProfilerFactory::CreateInstance");
-	profiler = new OctoProfiler();
+
+	profiler = (this->m_doProfileEnterLeave ? (ICorProfilerCallback3*)new OctoProfilerEnterLeave() : new OctoProfiler());
 	*ppvObject = profiler;
 	return S_OK;
 }
