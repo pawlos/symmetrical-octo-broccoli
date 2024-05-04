@@ -4,7 +4,7 @@ extern FuncLeaveStub:proc
 _TEXT segment para 'CODE'
 	align 16
 
-	public Func EnterCallback	
+	public FuncEnterCallback	
 
 FuncEnterCallback proc frame
 	; rcx - funId
