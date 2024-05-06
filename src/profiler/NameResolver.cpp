@@ -1,4 +1,5 @@
 #include "NameResolver.h"
+#include <memory>
 
 
 std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const {
@@ -11,12 +12,12 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 		return {};
 	}	
 
-	IMetaDataImport* pIMDImport = nullptr;
-	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+	std::shared_ptr<IMetaDataImport> imp = std::unique_ptr<IMetaDataImport>();
+	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&imp);
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
-		hr = pIMDImport->GetMethodProps(defToken,
+		hr = imp.get()->GetMethodProps(defToken,
 			NULL,
 			functionName,
 			254,
@@ -29,15 +30,10 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 
 		if (SUCCEEDED(hr))
 		{						
-			auto className = this->ResolveTypeNameByClassId(classId);
-			if (className)
-			{
-				return className.value() + L"." + std::wstring(functionName);
-			}
-			else
-			{
-				return std::wstring(functionName);
-			}
+			auto className = this->ResolveTypeNameByClassIdWithExistingMetaData(classId, imp.get()).value_or(L"");
+			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
+
+			return moduleName + L":" + className + L":" + std::wstring(functionName);
 		}
 	}
 
@@ -64,6 +60,29 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 	}
 
 	return std::wstring(appDomainName);
+}
+
+std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMetaData(ClassID classId, IMetaDataImport* pIMDImport) const
+{
+	ModuleID moduleId;
+	mdTypeDef defToken;
+	auto hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+	if (SUCCEEDED(hr))
+	{
+		ULONG typedefnamesize;
+		DWORD typedefflags;
+		mdToken extends;
+		WCHAR typeName[512];
+		hr = pIMDImport->GetTypeDefProps(defToken,
+			typeName,
+			510,
+			&typedefnamesize,
+			&typedefflags,
+			&extends);
+
+		return std::wstring(typeName);
+	}
+	return {};
 }
 
 std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const 

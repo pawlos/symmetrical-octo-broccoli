@@ -70,7 +70,7 @@ ULONG __stdcall OctoProfilerEnterLeave::Release(void)
 
 UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHookFunction)
 {
-	NameResolver* nameResolver = reinterpret_cast<NameResolver*>(clientData);
+	auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
 	auto functionName = nameResolver->ResolveFunctionName(funcId);
 	*pbHookFunction = false;
 
