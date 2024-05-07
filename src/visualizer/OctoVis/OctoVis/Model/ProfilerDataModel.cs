@@ -2,7 +2,7 @@ namespace OctoVis.Model;
 
 public class ProfilerDataModel
 {
-    public record StackFrame(string FrameInfo);
+    public record StackFrame(string Module, string FrameInfo);
 
     public record ThreadInfo(ulong Time, int NativeThreadId, ulong ManagedThreadId);
 

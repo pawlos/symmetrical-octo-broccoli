@@ -67,7 +67,8 @@ public class LogParser : IParser
                 var stackFrame = stream.ReadLine();
                 while (!stackFrame?.Contains("OctoProfiler::DoStackSnapshot end") ?? false)
                 {
-                    stack.Add(new ProfilerDataModel.StackFrame(ParseFrame(stackFrame)));
+                    var (module, frame) = ParseFrame(stackFrame);
+                    stack.Add(new ProfilerDataModel.StackFrame(module, frame));
                     stackFrame = stream.ReadLine();
                 }
 
@@ -112,7 +113,8 @@ public class LogParser : IParser
         var stackFrame = stream.ReadLine();
         while (!stackFrame?.Contains("OctoProfiler::DoStackSnapshot end") ?? false)
         {
-            allocationStack.Add(new ProfilerDataModel.StackFrame(ParseFrame(stackFrame)));
+            var (module, frame) = ParseFrame(stackFrame);
+            allocationStack.Add(new ProfilerDataModel.StackFrame(module, frame));
             stackFrame = stream.ReadLine();
         }
 
@@ -146,9 +148,9 @@ public class LogParser : IParser
         return (currentTicks - startTicks) / 1000;
     }
 
-    private static string ParseFrame(string stackFrameLine)
+    private static (string,string) ParseFrame(string stackFrameLine)
     {
-        var match = Regex.Match(stackFrameLine, @"\[(\d+)ns\] OctoProfiler::(Native|Managed) frame (.*)");
-        return match.Groups[3].Value;
+        var match = Regex.Match(stackFrameLine, @"\[(\d+)ns\] OctoProfiler::(Native|Managed) frame ([^;]*);([^;]*)");
+        return (match.Groups[3].Value, match.Groups[4].Value);
     }
 }
