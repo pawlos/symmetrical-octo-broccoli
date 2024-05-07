@@ -33,7 +33,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 			auto className = this->ResolveTypeNameByClassIdWithExistingMetaData(classId, imp.get()).value_or(L"");
 			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
 
-			return moduleName + L":" + className + L":" + std::wstring(functionName);
+			return moduleName + L";" + className + L";" + std::wstring(functionName);
 		}
 	}
 
