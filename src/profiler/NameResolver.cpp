@@ -10,7 +10,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	if (FAILED(hr))
 	{		
 		return {};
-	}	
+	}
 
 	std::shared_ptr<IMetaDataImport> imp = std::unique_ptr<IMetaDataImport>();
 	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&imp);
@@ -29,10 +29,9 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 			NULL);
 
 		if (SUCCEEDED(hr))
-		{						
-			auto className = this->ResolveTypeNameByClassIdWithExistingMetaData(classId, imp.get()).value_or(L"");
+		{
+			auto className = this->ResolveTypeNameByClassId(classId).value_or(L"<<empty>>");
 			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
-
 			return moduleName + L";" + className + L";" + std::wstring(functionName);
 		}
 	}
@@ -66,7 +65,18 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
 {
 	ModuleID moduleId;
 	mdTypeDef defToken;
-	auto hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+	CorElementType elementType;
+	ClassID baseClassId;
+	ULONG rank;
+	ClassID classToCheck = classId;
+	bool isArray = false;
+	auto hr = pInfo->IsArrayClass(classToCheck, &elementType, &baseClassId, &rank);
+	if (hr == S_OK)
+	{
+		classToCheck = baseClassId;
+		isArray = true;
+	}
+	hr = pInfo->GetClassIDInfo(classToCheck, &moduleId, &defToken);
 	if (SUCCEEDED(hr))
 	{
 		ULONG typedefnamesize;
@@ -80,7 +90,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
 			&typedefflags,
 			&extends);
 
-		return std::wstring(typeName);
+		return std::wstring(typeName) + (isArray ? L"[]" : L"");
 	}
 	return {};
 }
@@ -88,8 +98,11 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
 std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const 
 {	
 	ModuleID moduleId;
-	mdTypeDef defToken;
-	auto hr = pInfo->GetClassIDInfo(classId, &moduleId, &defToken);
+	mdTypeDef defToken;				
+	auto hr = pInfo->GetClassIDInfo(
+		classId,
+		&moduleId,
+		&defToken);
 	if (SUCCEEDED(hr))
 	{
 		IMetaDataImport* pIMDImport = nullptr;
@@ -108,7 +121,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 				&extends);
 
 			return std::wstring(typeName);
-		}
+		}		
 	}
 	return {};
 }

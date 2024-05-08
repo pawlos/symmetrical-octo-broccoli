@@ -19,11 +19,11 @@ void FuncEnterStub(FunctionID funcId, UINT_PTR clientData)
 	if (clientData != NULL)
 	{
 		auto str = reinterpret_cast<wchar_t*>(clientData);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::EnterStub {0}", str));		
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", str));		
 	}
 	else
 	{
-		Logger::DoLog(std::format("OctoProfilerEnterLeave::EnterStub {0:x}", funcId));
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::Enter {0:x}", funcId));
 	}
 }
 
@@ -32,11 +32,11 @@ void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData)
 	if (clientData != NULL)
 	{
 		auto str = reinterpret_cast<wchar_t*>(clientData);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::FunExitStub {0}", str));
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str));
 	}
 	else
 	{
-		Logger::DoLog(std::format("OctoProfilerEnterLeave::FunExitStub {0:x}", funcId));
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::Exit {0:x}", funcId));
 	}
 }
 
@@ -69,13 +69,13 @@ ULONG __stdcall OctoProfilerEnterLeave::Release(void)
 }
 
 UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHookFunction)
-{
+{	
 	auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
 	auto functionName = nameResolver->ResolveFunctionName(funcId);
 	*pbHookFunction = false;
 
 	if (functionName.has_value())
-	{		
+	{
 		auto c_ptr = new std::wstring(functionName.value_or(L"<<unknown>>"));
 		*pbHookFunction = true;
 		return reinterpret_cast<UINT_PTR>(c_ptr->c_str());
