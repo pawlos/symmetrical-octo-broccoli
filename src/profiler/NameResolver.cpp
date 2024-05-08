@@ -113,28 +113,37 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 	return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID objectId) const {
+std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID objectId) const
+{
 	ClassID classId;
 	auto hr = pInfo->GetClassFromObject(objectId, &classId);
 	if (SUCCEEDED(hr))
 	{
-		CorElementType elementType;
-		ClassID baseClassId;
-		ULONG rank;
-		hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
-		if (hr == S_OK)
-		{
-			auto name = this->ResolveTypeNameByClassId(baseClassId);
-			if (!name) return name;
-			return name.value() + L"[]";
-		}
-		else
-			return this->ResolveTypeNameByClassId(classId);
+		return this->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
 	}
 	return{};
 }
 
-std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) const {
+std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(ObjectID objectId, ClassID classId) const
+{
+	CorElementType elementType;
+	ClassID baseClassId;
+	ULONG rank;
+	auto hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+	if (hr == S_OK)
+	{
+		auto name = this->ResolveTypeNameByClassId(baseClassId);
+		if (!name) return name;
+		return name.value() + L"[]";
+	}
+	else
+	{
+		return this->ResolveTypeNameByClassId(classId);
+	}
+}
+
+std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) const
+{
 	WCHAR moduleName[512];
 	AssemblyID assemblyId;
 	LPCBYTE baseLoadAddress;
