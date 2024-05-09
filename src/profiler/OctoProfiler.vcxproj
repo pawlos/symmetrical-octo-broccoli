@@ -47,7 +47,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -133,7 +133,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>OctoProfiler.def</ModuleDefinitionFile>
-      <AdditionalDependencies>FunctionEnter.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CorGuids.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -161,7 +161,6 @@
   <ItemGroup>
     <MASM Include="FunctionEnter.asm">
       <Filter>Source Files</Filter>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </MASM>
   </ItemGroup>
 </Project>
