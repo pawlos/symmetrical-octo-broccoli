@@ -150,7 +150,9 @@ public class LogParser : IParser
 
     private static (string,string) ParseFrame(string stackFrameLine)
     {
-        var match = Regex.Match(stackFrameLine, @"\[(\d+)ns\] OctoProfiler::(Native|Managed) frame ([^;]*);([^;]*)");
-        return (match.Groups[3].Value, match.Groups[4].Value);
+        var match = Regex.Match(stackFrameLine, @"\[(\d+)ns\] OctoProfiler::(Native|Managed) frame ([^;]*);?([^;]*)");
+        return match.Groups[2].Value == "Native" ?
+            (string.Empty, match.Groups[3].Value) :
+            (match.Groups[3].Value, match.Groups[4].Value);
     }
 }

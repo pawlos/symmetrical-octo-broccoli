@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,6 +16,7 @@ namespace OctoVis;
 /// </summary>
 public partial class MainWindow
 {
+    private string? _profilerFile;
     private ProfilerDataModel _data = new();
     private SettingsDataModel _settings = new();
 
@@ -113,6 +115,16 @@ public partial class MainWindow
 
     private async void ProfileApp_OnClick(object sender, RoutedEventArgs e)
     {
+        if (!File.Exists("OctoProfiler.dll"))
+        {
+            _profilerFile = PickFile("Find profiler dll", "Library|*.dll");
+        }
+
+        if (string.IsNullOrWhiteSpace(_profilerFile))
+        {
+            MessageBox.Show("Could not find profiler dll.");
+            return;
+        }
         var fileName = $"{Guid.NewGuid().ToString()}.txt";
         var program = PickFile("Open application to profile", "Program|*.exe");
         var p = new Process
@@ -127,8 +139,8 @@ public partial class MainWindow
                     ["CORECLR_ENABLE_PROFILING"] = "1",
                     ["COR_PROFILER"] = "{8A8CC829-CCF2-49FE-BBAE-0F022228071A}",
                     ["CORECLR_PROFILER"] = "{8A8CC829-CCF2-49FE-BBAE-0F022228071A}",
-                    ["COR_PROFILER_PATH"] = @"..\..\..\..\..\..\profiler\x64\Debug\OctoProfiler.dll",
-                    ["CORECLR_PROFILER_PATH_64"] = @"..\..\..\..\..\..\profiler\x64\Debug\OctoProfiler.dll",
+                    ["COR_PROFILER_PATH"] = _profilerFile,
+                    ["CORECLR_PROFILER_PATH_64"] = _profilerFile,
                     ["OCTO_PROFILER_FILE"] = fileName
                 }
             }
