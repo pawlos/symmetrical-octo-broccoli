@@ -361,8 +361,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 	SIZE_T bytesAllocated;
 	auto hr = pInfo->GetObjectSize2(objectId, &bytesAllocated);
 	if (SUCCEEDED(hr))
-	{
-		totalAllocatedBytes += bytesAllocated;
+	{		
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytesAllocated, typeName.value_or(L"<<no info>>")));
 		stackWalkMutex.lock();
 		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), NULL, 0);
