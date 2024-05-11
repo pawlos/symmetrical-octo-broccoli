@@ -12,19 +12,19 @@ public class LogParser : IParser
         while (!stream.EndOfStream)
         {
             var line = stream.ReadLine() ?? string.Empty;
-            if (line.Contains("OctoProfiler::Prepare for shutdown..."))
+            if (line.Contains("OctoProfilerEnterLeave::Prepare for shutdown..."))
             {
                 var endTicks = ParseTimestamp(line);
                 model.TotalTime = TimeSpan.FromMicroseconds(CalculateTimestamp(endTicks, startTicks));
                 model.StartMarker = CalculateTimestamp(startTicks, startTicks);
                 model.EndMarker = CalculateTimestamp(endTicks, startTicks);
             }
-            else if (line.Contains("OctoProfiler::Detected"))
+            else if (line.Contains("OctoProfilerEnterLeave::Detected"))
             {
-                var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::Detected (.+)");
+                var match = Regex.Match(line, @"\[[^ ]+\] OctoProfilerEnterLeave::Detected (.+)");
                 model.NetVersion = match.Groups[1].Value;
             }
-            else if (line.Contains("OctoProfileEnterLeave::"))
+            else if (line.Contains("OctoProfilerEnterLeave::"))
             {
                 var ticks = ParseTimestamp(line);
             }
