@@ -3,9 +3,9 @@
 EXTERN_C_START 
 
 void FuncEnterCallback(
-	FunctionID funId, 
-	UINT_PTR clientData, 
-	COR_PRF_FRAME_INFO frameInfo, 
+	FunctionID funId,
+	UINT_PTR clientData,
+	COR_PRF_FRAME_INFO frameInfo,
 	COR_PRF_FUNCTION_ARGUMENT_INFO * argInfo);
 
 void FuncLeaveCallback(
