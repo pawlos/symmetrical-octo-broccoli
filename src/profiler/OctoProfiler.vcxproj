@@ -134,6 +134,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>OctoProfiler.def</ModuleDefinitionFile>
       <AdditionalDependencies>CorGuids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Version>0.1</Version>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
