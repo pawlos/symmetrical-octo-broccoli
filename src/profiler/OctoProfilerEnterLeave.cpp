@@ -1,6 +1,6 @@
 #include "OctoProfilerEnterLeave.h"
 
-EXTERN_C_START 
+EXTERN_C_START
 
 void FuncEnterCallback(
 	FunctionID funId,
@@ -86,7 +86,7 @@ UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHo
 HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
 	Logger::DoLog(std::format("OctoProfilerEnterLeave::Initialize started...{0}", this->version));
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));
 	if (FAILED(hr))
 	{
 		return E_FAIL;
