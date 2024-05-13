@@ -139,7 +139,9 @@ std::optional<std::wstring> OctoProfilerEnterLeave::ResolveNetRuntimeVersion() c
 
 HRESULT __stdcall OctoProfilerEnterLeave::Shutdown(void)
 {
-	return E_NOTIMPL;
+	Logger::DoLog("OctoProfilerEnterLeave::Prepare for shutdown...");
+	Logger::DoLog("OctoProfilerEnterLeave::Shutdown...");
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfilerEnterLeave::AppDomainCreationStarted(AppDomainID appDomainId)
