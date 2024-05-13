@@ -6,6 +6,13 @@ namespace OctoVis.Parser.v0_0_2;
 
 public class LogParser : IParser
 {
+    private record EnterExitEntry(string Module, string Class, string MethodName, ulong StartTime, ulong? EndTime)
+    {
+        public ulong Duration => EndTime.HasValue ? EndTime.Value - StartTime : 0;
+    }
+
+    private readonly List<EnterExitEntry> _toProcess = new(40_000);
+    private readonly List<EnterExitEntry> _processed = new(40_000);
     public ProfilerDataModel Parse(ulong startTicks, StreamReader stream)
     {
         var model = new ProfilerDataModel();
@@ -24,13 +31,38 @@ public class LogParser : IParser
                 var match = Regex.Match(line, @"\[[^ ]+\] OctoProfilerEnterLeave::Detected (.+)");
                 model.NetVersion = match.Groups[1].Value;
             }
-            else if (line.Contains("OctoProfilerEnterLeave::"))
+            else if (line.Contains("OctoProfilerEnterLeave::Enter"))
             {
                 var ticks = ParseTimestamp(line);
+                var (method, @class, module) = ParseEnterLeave(line);
+                if (method == "StelemRef") continue;
+                _toProcess.Add(new EnterExitEntry(module, @class, method, CalculateTimestamp(ticks, startTicks), null));
+            }
+            else if (line.Contains("OctoProfilerEnterLeave::Exit"))
+            {
+                var ticks = ParseTimestamp(line);
+                var (method, @class, module) = ParseEnterLeave(line);
+                if (method == "StelemRef") continue;
+
+                var item = _toProcess.FindLast(x => x.MethodName == method && x.Module == module && x.Class == @class);
+                if (item is null)
+                    throw new Exception("Could not find previous entry");
+                var index = _toProcess.IndexOf(item);
+                _toProcess.RemoveAt(index);
+                _processed.Add(item with { EndTime = CalculateTimestamp(ticks, startTicks) });
             }
         }
 
+        var longest = _processed.MaxBy(x => x.Duration);
+
         return model;
+    }
+
+    private (string method, string @class, string module) ParseEnterLeave(string line)
+    {
+        var match = Regex.Match(line, ".*(Enter|Exit) ([^;]*);([^;]*);([^;]*)");
+
+        return (match.Groups[4].Value, match.Groups[3].Value, match.Groups[2].Value);
     }
 
 

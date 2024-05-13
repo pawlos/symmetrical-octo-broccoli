@@ -19,9 +19,9 @@ public static class LogParser
         while (!stream.EndOfStream)
         {
             var line = stream.ReadLine() ?? string.Empty;
-            if (line.Contains("OctoProfiler::Initialize started..."))
+            if (line.Contains("::Initialize started..."))
             {
-                var version = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::Initialize started...(.+)");
+                var version = Regex.Match(line, @"\[[^ ]+\] .*::Initialize started...(.+)");
                 var startTicks = ParseTimestamp(line);
                 var parser = CreateParser(version.Groups[1].Value);
                 return parser.Parse(startTicks, stream);
@@ -37,7 +37,15 @@ public static class LogParser
         return ulong.Parse(match.Groups[1].Value);
     }
 
-    private static IParser CreateParser(string version) => new v0_0_1.LogParser();
+    private static IParser CreateParser(string version)
+    {
+        return version switch
+        {
+            "v0.0.1" => new v0_0_1.LogParser(),
+            "v0.0.2" => new v0_0_2.LogParser(),
+            _ => throw new ArgumentOutOfRangeException(nameof(version))
+        };
+    }
 
     public static void Deconstruct(this (ObservablePoint[], ObservablePoint[], Dictionary<double, string>) p,
         out ObservablePoint[] memoryData,
