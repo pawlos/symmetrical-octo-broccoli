@@ -6,7 +6,7 @@ namespace OctoVis.Parser.v0_0_2;
 
 public class LogParser : IParser
 {
-    private record EnterExitEntry(string Module, string Class, string MethodName, ulong StartTime, ulong? EndTime)
+    public record EnterExitEntry(string Module, string Class, string MethodName, ulong StartTime, ulong? EndTime)
     {
         public ulong Duration => EndTime.HasValue ? EndTime.Value - StartTime : 0;
     }
@@ -53,8 +53,7 @@ public class LogParser : IParser
             }
         }
 
-        var longest = _processed.MaxBy(x => x.Duration);
-
+        model.EnterExitModel = _processed;
         return model;
     }
 

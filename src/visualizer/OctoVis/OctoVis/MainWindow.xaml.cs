@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -125,6 +126,10 @@ public partial class MainWindow
             MessageBox.Show("Could not find profiler dll.");
             return;
         }
+
+        var result = MessageBox.Show("Profile for memory?", "Profile type?", MessageBoxButton.YesNo);
+
+        var profile = result == MessageBoxResult.No;
         var fileName = $"{Guid.NewGuid().ToString()}.txt";
         var program = PickFile("Open application to profile", "Program|*.exe");
         var p = new Process
@@ -141,10 +146,15 @@ public partial class MainWindow
                     ["CORECLR_PROFILER"] = "{8A8CC829-CCF2-49FE-BBAE-0F022228071A}",
                     ["COR_PROFILER_PATH"] = _profilerFile,
                     ["CORECLR_PROFILER_PATH_64"] = _profilerFile,
-                    ["OCTO_PROFILER_FILE"] = fileName
+                    ["OCTO_PROFILER_FILE"] = fileName,
                 }
             }
         };
+        if (profile)
+        {
+            p.StartInfo.EnvironmentVariables.Add("OCTO_MONITOR_ENTERLEAVE", "1");
+        }
+
         Hide();
         p.Start();
 

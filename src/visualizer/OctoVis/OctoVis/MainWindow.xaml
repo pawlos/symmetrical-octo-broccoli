@@ -148,17 +148,16 @@
                     Background="White">
                 <Button.Content>
                     <StackPanel>
-                        <Image Source="Images/log.png" Width="600"/>
+                        <Image Source="Images/log.png" Width="600" />
                         <TextBlock Text="Pick a log" TextAlignment="Center"
                                    FontWeight="Bold"
-                                   FontSize="20"/>
+                                   FontSize="20" />
                     </StackPanel>
                 </Button.Content>
             </Button>
             <Button Grid.Column="1" Margin="20"
                     Click="ProfileApp_OnClick"
-                    Background="White"
-                    >
+                    Background="White">
                 <Button.Content>
                     <StackPanel>
                         <Image Source="Images/profile.png" Width="600" />

@@ -1,3 +1,5 @@
+using OctoVis.Parser.v0_0_2;
+
 namespace OctoVis.Model;
 
 public class ProfilerDataModel
@@ -32,4 +34,5 @@ public class ProfilerDataModel
     public TimeSpan TotalGcTime { get; set; }
 
     public string NetVersion { get; set; } = string.Empty;
+    public List<LogParser.EnterExitEntry> EnterExitModel { get; set; }
 }
