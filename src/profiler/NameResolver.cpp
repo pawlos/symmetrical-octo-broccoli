@@ -12,8 +12,8 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 		return {};
 	}
 
-	std::shared_ptr<IMetaDataImport> imp = std::unique_ptr<IMetaDataImport>();
-	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&imp);
+	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
+	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(& imp));
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
@@ -106,7 +106,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 	if (SUCCEEDED(hr))
 	{
 		IMetaDataImport* pIMDImport = nullptr;
-		hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, (IUnknown**)&pIMDImport);
+		hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(& pIMDImport));
 		if (SUCCEEDED(hr))
 		{
 			ULONG typedefnamesize;

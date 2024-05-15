@@ -539,7 +539,7 @@ HRESULT __stdcall OctoProfiler::HandleDestroyed(GCHandleID handleId)
 HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) 
 {
 	Logger::DoLog("OctoProfiler::InitializeForAttach");
-	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
+	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));
 	if (FAILED(hr))
 	{
 		return E_FAIL;
