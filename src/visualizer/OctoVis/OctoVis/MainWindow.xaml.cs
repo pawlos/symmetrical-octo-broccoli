@@ -1,14 +1,7 @@
-﻿using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using Microsoft.Win32;
-using OctoVis.Model;
-using OctoVis.Parser;
-using OctoVis.ViewModel;
 
 namespace OctoVis;
 
@@ -18,8 +11,6 @@ namespace OctoVis;
 public partial class MainWindow
 {
     private string? _profilerFile;
-    private ProfilerDataModel _data = new();
-    private SettingsDataModel _settings = new();
 
     public MainWindow()
     {
@@ -27,80 +18,14 @@ public partial class MainWindow
         DataContext = new { LogParsed = false, LogNotParsed = true };
     }
 
-    private void ParseFile(string fileName)
-    {
-        _settings = new SettingsDataModel
-        {
-            TimelineXAxis = SettingsDataModel.TimeSize.Millisecond,
-            TimelineYAxis = SettingsDataModel.DataSize.KiloBytes,
-            Filter = string.Empty
-        };
-        var data = LogParser.ParseFile(fileName);
-        if (data is null)
-        {
-            return;
-        }
-
-        _data = data;
-        var d = ProfilerViewModel.FromDataModel(_data, _settings);
-        DataContext = d;
-        d.Settings.PropertyChanged += OnPropertyChanged;
-    }
-
-    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        var model = (SettingsViewModel)sender!;
-        HandleXResolution(model, e);
-        HandleYResolution(model, e);
-        HandleFilter(model, e);
-
-        var d = ProfilerViewModel.FromDataModel(_data, _settings);
-        DataContext = d;
-        d.Settings.PropertyChanged += OnPropertyChanged;
-    }
-
-    private void HandleFilter(SettingsViewModel model, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is null)
-            return;
-        if (e.PropertyName.Contains(nameof(model.Filter)))
-        {
-            _settings.Filter = model.Filter;
-        }
-    }
-
-    private void HandleYResolution(SettingsViewModel model, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is null)
-            return;
-        if (!e.PropertyName.Contains(nameof(model.SelectedYResolution))) return;
-        _settings.TimelineYAxis = model.SelectedYResolution switch
-        {
-            nameof(SettingsDataModel.DataSize.Bytes) => SettingsDataModel.DataSize.Bytes,
-            nameof(SettingsDataModel.DataSize.KiloBytes) => SettingsDataModel.DataSize.KiloBytes,
-            nameof(SettingsDataModel.DataSize.MegaBytes) => SettingsDataModel.DataSize.MegaBytes,
-            _ => _settings.TimelineYAxis
-        };
-    }
-
-    private void HandleXResolution(SettingsViewModel model, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is null)
-            return;
-
-        if (!e.PropertyName.Contains(nameof(model.SelectedXResolution))) return;
-        _settings.TimelineXAxis = model.SelectedXResolution switch
-        {
-            nameof(SettingsDataModel.TimeSize.Second) => SettingsDataModel.TimeSize.Second,
-            nameof(SettingsDataModel.TimeSize.Millisecond) => SettingsDataModel.TimeSize.Millisecond,
-            nameof(SettingsDataModel.TimeSize.Minute) => SettingsDataModel.TimeSize.Minute,
-            _ => _settings.TimelineXAxis
-        };
-    }
-
     private void OpenLog_OnClick(object sender, RoutedEventArgs e)
     {
-        ParseFile(PickFile("Open log file", "Log files|*.txt"));
+        string file = PickFile("Open log file", "Log files|*.txt");
+        Hide();
+        var memoryProfileWindow = new MemoryProfileWindow();
+        memoryProfileWindow.ParseFile(file);
+        memoryProfileWindow.Show();
+
     }
 
     private string PickFile(string title, string allowedExtension)
@@ -159,21 +84,17 @@ public partial class MainWindow
         p.Start();
 
         await p.WaitForExitAsync();
-        Show();
-        ParseFile(fileName);
-    }
-
-    private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-    {
-        if (ItemsControl.ContainerFromElement((DataGrid)sender, e.OriginalSource as DependencyObject) is not DataGridRow row) return;
-
-        if (row.DataContext is not ProfilerViewModel.TypeAllocationsEntry tat) return;
-
-        var stw = new StackTraceWindow
+        if (profile)
         {
-            DataContext = tat
-        };
-
-        stw.ShowDialog();
+            var window = new PerformanceProfileWindow();
+            window.ParseFile(fileName);
+            window.Show();
+        }
+        else
+        {
+            var window = new MemoryProfileWindow();
+            window.ParseFile(fileName);
+            window.Show();
+        }
     }
 }
