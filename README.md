@@ -32,7 +32,7 @@ Some reference links about the topic:
 
 Minimum plan:
 - [x] implement profiler class that can be used as a profiler for .NET based applications
-- [ ] gather informations about stack traces during the excution of the program
+- [x] gather informations about stack traces during the excution of the program
 - [ ] implement basic flame-graph to visualize the execution timelime
 
 ## Current state ##
@@ -46,6 +46,7 @@ Currently collected information:
 - [x] exceptions
 - [x] GC information
 - [x] JIT
+- [ ] function enter, exit
 
 Running the profiler:
 
