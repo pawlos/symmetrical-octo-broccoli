@@ -159,9 +159,4 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
-  <ItemGroup>
-    <MASM Include="FunctionEnter.asm">
-      <Filter>Source Files</Filter>
-    </MASM>
-  </ItemGroup>
 </Project>

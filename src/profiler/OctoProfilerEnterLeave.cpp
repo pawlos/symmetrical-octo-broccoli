@@ -2,19 +2,7 @@
 
 EXTERN_C_START
 
-void FuncEnterCallback(
-	FunctionID funId,
-	UINT_PTR clientData,
-	COR_PRF_FRAME_INFO frameInfo,
-	COR_PRF_FUNCTION_ARGUMENT_INFO * argInfo);
-
-void FuncLeaveCallback(
-	FunctionID funId,
-	UINT_PTR clientData,
-	COR_PRF_FRAME_INFO frameInfo,
-	COR_PRF_FUNCTION_ARGUMENT_INFO* argInfo);
-
-void FuncEnterStub(FunctionID funcId, UINT_PTR clientData)
+void FuncEnterStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO *argInfo)
 {			
 	if (clientData != NULL)
 	{
@@ -27,7 +15,7 @@ void FuncEnterStub(FunctionID funcId, UINT_PTR clientData)
 	}
 }
 
-void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData)
+void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO* argInfo)
 {
 	if (clientData != NULL)
 	{
@@ -102,8 +90,8 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 	this->nameResolver = std::shared_ptr<NameResolver>(new NameResolver(pInfo));
 	this->pInfo->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(nameResolver.get()));
 	this->pInfo->SetEnterLeaveFunctionHooks2(
-		reinterpret_cast<FunctionEnter2*>(FuncEnterCallback),
-		reinterpret_cast<FunctionLeave2*>(FuncLeaveCallback), nullptr);
+		reinterpret_cast<FunctionEnter2*>(FuncEnterStub),
+		reinterpret_cast<FunctionLeave2*>(FuncLeaveStub), nullptr);
 	Logger::DoLog("OctoProfilerEnterLeave::Initialize initialized...");
 	return S_OK;
 }

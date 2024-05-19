@@ -38,9 +38,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="FunctionEnter.asm" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="OctoProfiler.def" />
   </ItemGroup>
   <ItemGroup>
