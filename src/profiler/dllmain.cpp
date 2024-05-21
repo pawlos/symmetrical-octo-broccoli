@@ -3,7 +3,8 @@
 
 static OctoProfilerFactory* factory;
 
-inline std::optional<std::string> GetEnv(const char* key) {
+inline std::optional<std::string> GetEnv(const char* key)
+{
 	if (key == nullptr) {
 		throw std::invalid_argument("Null pointer passed as environment variable name");
 	}
@@ -20,7 +21,8 @@ inline std::optional<std::string> GetEnv(const char* key) {
 	}
 }
 
-inline bool to_bool(std::string str) {
+inline bool to_bool(std::string str)
+{
 	std::istringstream is(str);
 	bool b;
 	is >> std::boolalpha >> b;

@@ -2,7 +2,8 @@
 #include <memory>
 
 
-std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const {
+std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const 
+{
 	ModuleID moduleId;
 	ClassID classId;
 	mdTypeDef defToken;
@@ -39,7 +40,8 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assemblyId) const {
+std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assemblyId) const 
+{
 	WCHAR name[255];
 	ULONG outNameLen;
 	AppDomainID appDomainId;
@@ -48,7 +50,8 @@ std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assembl
 	return std::wstring(name);
 }
 
-std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDomainId) const {
+std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDomainId) const
+{
 	DWORD appDomainNameCount;
 	WCHAR appDomainName[255];
 	ProcessID processId;
@@ -95,7 +98,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
 	return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const 
+std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const
 {	
 	ModuleID moduleId;
 	mdTypeDef defToken;				
