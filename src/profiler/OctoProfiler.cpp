@@ -82,7 +82,6 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 	std::unique_lock<std::mutex> lk(stackWalkMutex);
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	cv.wait_for(lk, std::chrono::seconds(20));
-	Logger::DoLog(std::format("OctoProfiler::Total allocated bytes: {0} [B]", totalAllocatedBytes));
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
 }
