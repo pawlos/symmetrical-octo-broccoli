@@ -36,7 +36,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	}
 	auto versionString = ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
-	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
+	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_MONITOR_GC | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
@@ -517,7 +517,9 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionFinished(void)
 
 HRESULT __stdcall OctoProfiler::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID)
 {
-	return E_NOTIMPL;
+	auto typeName = nameResolver->ResolveTypeNameByObjectId(objectID);
+	Logger::DoLog(std::format(L"OctoProfiler::FinalizeableObjectQueued {0}", typeName.value_or(L"<<unknown>>")));
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::RootReferences2(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[], COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[])

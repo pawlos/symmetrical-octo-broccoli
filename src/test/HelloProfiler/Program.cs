@@ -16,6 +16,10 @@ for (int i = 0; i < 40000; i++)
 {
     allocations.Add(new TestClass());
 }
+
+var testClassWithAFinalizer = new TestClassWithAFinalizer();
+Console.WriteLine(nameof(testClassWithAFinalizer));
+testClassWithAFinalizer = null;
 WaitForAKey(waitForKey);
 
 Console.WriteLine("Profiler - Call stack test");
