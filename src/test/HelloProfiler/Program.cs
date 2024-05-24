@@ -50,6 +50,15 @@ for (int i = 0; i < 10; i++)
 }
 
 WaitForAKey(waitForKey);
+// Some forced GC
+GC.Collect(0);
+Console.WriteLine("Garbage collection 0");
+GC.Collect(1);
+Console.WriteLine("Garbage collection 1");
+GC.Collect(2);
+Console.WriteLine("Garbage collection 2");
+
+WaitForAKey(waitForKey);
 return;
 
 void WaitForAKey(bool wait)
