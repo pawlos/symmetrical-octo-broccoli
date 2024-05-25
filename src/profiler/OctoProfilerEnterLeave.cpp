@@ -28,6 +28,19 @@ void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fr
 	}
 }
 
+void FuncTailStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo)
+{
+	if (clientData != NULL)
+	{
+		auto str = reinterpret_cast<wchar_t*>(clientData);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter(tail) {0}", str));
+	}
+	else
+	{
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::Enter(tail) {0:x}", funcId));
+	}
+}
+
 EXTERN_C_END
 
 HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppvObject)
@@ -91,7 +104,8 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 	this->pInfo->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(nameResolver.get()));
 	this->pInfo->SetEnterLeaveFunctionHooks2(
 		reinterpret_cast<FunctionEnter2*>(FuncEnterStub),
-		reinterpret_cast<FunctionLeave2*>(FuncLeaveStub), nullptr);
+		reinterpret_cast<FunctionLeave2*>(FuncLeaveStub),
+		reinterpret_cast<FunctionTailcall2*>(FuncTailStub));
 	Logger::DoLog("OctoProfilerEnterLeave::Initialize initialized...");
 	return S_OK;
 }
