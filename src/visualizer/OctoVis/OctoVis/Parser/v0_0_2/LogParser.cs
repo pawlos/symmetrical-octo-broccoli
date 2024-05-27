@@ -16,54 +16,18 @@ public class LogParser : IParser
     {
         public ulong Duration => EndTime.HasValue ? EndTime.Value - StartTime : 0;
 
-        public List<EnterExitEntry> Children = new();
+        public readonly List<EnterExitEntry> Children = [];
     }
-
-    private readonly List<EnterExitEntry> _toProcess = new(40_000);
-    private readonly List<EnterExitEntry> _processed = new(40_000);
 
     public ProfilerDataModel Parse(ulong startTicks, StreamReader stream)
     {
-        var model = new ProfilerDataModel();
-        while (!stream.EndOfStream)
+        var topNode = new EnterExitEntry(string.Empty, string.Empty, string.Empty, false, startTicks, null);
+        var (entries, _) = CreateEnterExitNode(topNode, stream, startTicks);
+
+        var model = new ProfilerDataModel
         {
-            var line = stream.ReadLine() ?? string.Empty;
-            if (line.Contains("OctoProfilerEnterLeave::Prepare for shutdown..."))
-            {
-                var endTicks = ParseTimestamp(line);
-                model.TotalTime = TimeSpan.FromMicroseconds(CalculateTimestamp(endTicks, startTicks));
-                model.StartMarker = CalculateTimestamp(startTicks, startTicks);
-                model.EndMarker = CalculateTimestamp(endTicks, startTicks);
-            }
-            else if (line.Contains("OctoProfilerEnterLeave::Detected"))
-            {
-                var match = Regex.Match(line, @"\[[^ ]+\] OctoProfilerEnterLeave::Detected (.+)");
-                model.NetVersion = match.Groups[1].Value;
-            }
-            else if (line.Contains("OctoProfilerEnterLeave::Enter"))
-            {
-                var ticks = ParseTimestamp(line);
-                var (method, @class, module, isTailCall) = ParseEnterLeave(line);
-                if (IsStelemRefMethod(method)) continue;
-                _toProcess.Add(new EnterExitEntry(module, @class, method, isTailCall,
-                    CalculateTimestamp(ticks, startTicks), null));
-            }
-            else if (line.Contains("OctoProfilerEnterLeave::Exit"))
-            {
-                var ticks = ParseTimestamp(line);
-                var (method, @class, module, _) = ParseEnterLeave(line);
-                if (IsStelemRefMethod(method)) continue;
-
-                var item = _toProcess.FindLast(x => x.MethodName == method && x.Module == module && x.Class == @class);
-                if (item is null)
-                    throw new Exception("Could not find previous entry");
-                var index = _toProcess.IndexOf(item);
-                _toProcess.RemoveAt(index);
-                _processed.Add(item with { EndTime = CalculateTimestamp(ticks, startTicks) });
-            }
-        }
-
-        model.EnterExitModel = _processed;
+            EnterExitModel = entries.Children
+        };
         return model;
     }
 
@@ -72,7 +36,7 @@ public class LogParser : IParser
         return method.StartsWith("StelemRef");
     }
 
-    private EnterExitEntry CreateEnterExitNode(EnterExitEntry parent, StreamReader stream, ulong startTicks)
+    private (EnterExitEntry,bool) CreateEnterExitNode(EnterExitEntry parent, StreamReader stream, ulong startTicks)
     {
         while (!stream.EndOfStream)
         {
@@ -81,7 +45,7 @@ public class LogParser : IParser
             {
                 var endTicks = ParseTimestamp(line);
                 parent = parent with { EndTime = CalculateTimestamp(endTicks, startTicks) };
-                return parent;
+                return (parent, true);
             }
 
             if (line.Contains("OctoProfilerEnterLeave::Enter"))
@@ -93,7 +57,11 @@ public class LogParser : IParser
                 {
                     var newNode = new EnterExitEntry(module, @class, method, isTailCall,
                         CalculateTimestamp(ticks, startTicks), null);
-                    newNode = CreateEnterExitNode(newNode, stream, startTicks);
+                    (newNode, var matched) = CreateEnterExitNode(newNode, stream, startTicks);
+                    if (!matched)
+                    {
+                        parent = parent with { EndTime = newNode.EndTime };
+                    }
                     parent.Children.Add(newNode);
                 }
                 else
@@ -101,7 +69,7 @@ public class LogParser : IParser
                     if (parent.MethodName == method && parent.Class == @class && parent.Module == module)
                     {
                         parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
-                        return parent;
+                        return (parent, true);
                     }
 
                     throw new InvalidOperationException("Wrong tail call");
@@ -113,27 +81,27 @@ public class LogParser : IParser
                 var ticks = ParseTimestamp(line);
                 var (method, @class, module, _) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
+                parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
+
                 if (parent.MethodName == method && parent.Class == @class && parent.Module == module)
                 {
-                    parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
-                }
-                else
-                {
-                    throw new InvalidOperationException("Wrong parent end block");
+                    return (parent, true);
                 }
 
-                return parent;
+                return (parent, false);
+
             }
             else
             {
                 if (line.Contains("OctoProfilerEnterLeave::Detected") ||
-                    line.Contains("OctoProfilerEnterLeave::Initialize initialized..."))
+                    line.Contains("OctoProfilerEnterLeave::Initialize initialized...") ||
+                    line.Contains("OctoProfilerEnterLeave::Shutdown..."))
                     continue;
                 throw new InvalidOperationException("Invalid line");
             }
         }
 
-        return parent;
+        return (parent, true);
     }
 
     private (string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)
