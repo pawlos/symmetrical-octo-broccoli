@@ -1,20 +1,28 @@
 #include "NameResolver.h"
 #include <memory>
+#include <format>
 
 
-std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const 
+std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(FunctionID functionId, COR_PRF_FRAME_INFO frameInfo) const
 {
 	ModuleID moduleId;
 	ClassID classId;
 	mdTypeDef defToken;
-	auto hr = pInfo->GetFunctionInfo(functionId, &classId, &moduleId, &defToken);
+	CorElementType elementType;
+	ClassID baseClassId;
+	ULONG rank;
+	ULONG32 pcTypeArgs;
+	ClassID typeArgs[10];
+	ThreadID threadId;
+	auto hr = pInfo->GetFunctionInfo2(functionId, frameInfo, &classId, &moduleId, &defToken, 10, &pcTypeArgs, typeArgs);
 	if (FAILED(hr))
-	{		
+	{
 		return {};
 	}
 
+	hr = pInfo->GetCurrentThreadID(&threadId);
 	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
-	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(& imp));
+	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
@@ -31,7 +39,66 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 
 		if (SUCCEEDED(hr))
 		{
-			auto className = this->ResolveTypeNameByClassId(classId).value_or(L"<<empty>>");
+			hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+			ClassID classToCheck = classId;
+			if (hr == S_OK)
+			{
+				classToCheck = baseClassId;
+			}
+			auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
+			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
+			return moduleName + L";" + className + L";" + std::wstring(functionName) + L";" + std::format(L"{0}", threadId);
+		}
+	}
+
+	return {};
+}
+
+std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const 
+{
+	ModuleID moduleId;
+	ClassID classId;
+	mdTypeDef defToken;
+	
+	auto hr = pInfo->GetFunctionInfo(functionId, &classId, &moduleId, &defToken);
+	if (FAILED(hr))
+	{		
+		return {};
+	}
+
+	if (classId == 0)
+	{
+		return {};
+	}
+	
+	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
+	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
+	if (SUCCEEDED(hr))
+	{
+		WCHAR functionName[255];
+		hr = imp.get()->GetMethodProps(defToken,
+			NULL,
+			functionName,
+			254,
+			0,
+			0,
+			NULL,
+			NULL,
+			NULL,
+			NULL);
+
+		if (SUCCEEDED(hr))
+		{
+			CorElementType elementType;
+			ClassID baseClassId;
+			ULONG rank;
+			hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+			ClassID classToCheck = classId;
+			if (hr == S_OK)
+			{
+				classToCheck = baseClassId;
+			}
+			auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
 			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
 			return moduleName + L";" + className + L";" + std::wstring(functionName);
 		}

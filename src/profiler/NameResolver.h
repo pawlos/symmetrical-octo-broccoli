@@ -9,6 +9,7 @@ class NameResolver
 public:
 	NameResolver(ICorProfilerInfo5* pInfo): pInfo(pInfo) {}
 	std::optional<std::wstring> ResolveFunctionName(FunctionID functionId) const;
+	std::optional<std::wstring> ResolveFunctionNameWithFrameInfo(FunctionID functionId, COR_PRF_FRAME_INFO frameInfo) const;
 	std::optional<std::wstring> ResolveAssemblyName(AssemblyID assemblyId) const;
 	std::optional<std::wstring> ResolveAppDomainName(AppDomainID appDomainId) const;
 	std::optional<std::wstring> ResolveModuleName(ModuleID moduleId) const;

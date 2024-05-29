@@ -3,11 +3,12 @@
 EXTERN_C_START
 
 void FuncEnterStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO *argInfo)
-{			
+{
 	if (clientData != NULL)
 	{
-		auto str = reinterpret_cast<wchar_t*>(clientData);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", str));		
+		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
+		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", str.value_or(L"eee")));
 	}
 	else
 	{
@@ -15,12 +16,13 @@ void FuncEnterStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fr
 	}
 }
 
-void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO* argInfo)
+void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_RANGE* argInfo)
 {
 	if (clientData != NULL)
 	{
-		auto str = reinterpret_cast<wchar_t*>(clientData);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str));
+		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
+		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str.value_or(L"eee")));
 	}
 	else
 	{
@@ -32,8 +34,9 @@ void FuncTailStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fra
 {
 	if (clientData != NULL)
 	{
-		auto str = reinterpret_cast<wchar_t*>(clientData);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter(tail) {0}", str));
+		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
+		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter(tail) {0}", str.value_or(L"eee")));
 	}
 	else
 	{
@@ -71,17 +74,8 @@ ULONG __stdcall OctoProfilerEnterLeave::Release(void)
 
 UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHookFunction)
 {	
-	auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
-	auto functionName = nameResolver->ResolveFunctionName(funcId);
-	*pbHookFunction = false;
-
-	if (functionName.has_value())
-	{
-		auto c_ptr = new std::wstring(functionName.value_or(L"<<unknown>>"));
-		*pbHookFunction = true;
-		return reinterpret_cast<UINT_PTR>(c_ptr->c_str());
-	}
-	return NULL;
+	*pbHookFunction = true;
+	return reinterpret_cast<UINT_PTR>(clientData);	
 }
 
 HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfoUnk)
@@ -94,7 +88,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 	}
 	auto versionString = ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
-	hr = pInfo->SetEventMask2(COR_PRF_MONITOR_ENTERLEAVE, COR_PRF_HIGH_MONITOR_NONE);
+	hr = pInfo->SetEventMask2(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_ENABLE_FRAME_INFO, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfilerEnterLeave::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
