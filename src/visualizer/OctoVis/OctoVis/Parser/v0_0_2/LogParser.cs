@@ -36,7 +36,7 @@ public class LogParser : IParser
         return method.StartsWith("StelemRef");
     }
 
-    private (EnterExitEntry,bool) CreateEnterExitNode(EnterExitEntry parent, StreamReader stream, ulong startTicks)
+    private (EnterExitEntry, bool) CreateEnterExitNode(EnterExitEntry parent, StreamReader stream, ulong startTicks)
     {
         while (!stream.EndOfStream)
         {
@@ -62,11 +62,14 @@ public class LogParser : IParser
                     {
                         parent = parent with { EndTime = newNode.EndTime };
                     }
+
                     parent.Children.Add(newNode);
                 }
                 else
                 {
-                    if (parent.MethodName == method && parent.Class == @class && parent.Module == module)
+                    if (parent.MethodName == method &&
+                        (parent.Class == @class || @class == "<<empty>>") &&
+                        parent.Module == module)
                     {
                         parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
                         return (parent, true);
@@ -81,15 +84,16 @@ public class LogParser : IParser
                 var ticks = ParseTimestamp(line);
                 var (method, @class, module, _) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
-                parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
 
-                if (parent.MethodName == method && parent.Class == @class && parent.Module == module)
+                if (parent.MethodName == method &&
+                    (parent.Class == @class || @class == "<<empty>>")&&
+                    parent.Module == module)
                 {
+                    parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
                     return (parent, true);
                 }
 
                 return (parent, false);
-
             }
             else
             {
