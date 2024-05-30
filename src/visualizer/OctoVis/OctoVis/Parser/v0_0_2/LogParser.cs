@@ -7,6 +7,7 @@ namespace OctoVis.Parser.v0_0_2;
 public class LogParser : IParser
 {
     public record EnterExitEntry(
+        string TreadId,
         string Module,
         string Class,
         string MethodName,
@@ -21,7 +22,7 @@ public class LogParser : IParser
 
     public ProfilerDataModel Parse(ulong startTicks, StreamReader stream)
     {
-        var topNode = new EnterExitEntry(string.Empty, string.Empty, string.Empty, false, startTicks, null);
+        var topNode = CreateTopNode(startTicks);
         var (entries, _) = CreateEnterExitNode(topNode, stream, startTicks);
 
         var model = new ProfilerDataModel
@@ -29,6 +30,11 @@ public class LogParser : IParser
             EnterExitModel = entries.Children
         };
         return model;
+    }
+
+    private static EnterExitEntry CreateTopNode(ulong startTicks)
+    {
+        return new EnterExitEntry(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks, null);
     }
 
     bool IsStelemRefMethod(string method)
@@ -51,11 +57,11 @@ public class LogParser : IParser
             if (line.Contains("OctoProfilerEnterLeave::Enter"))
             {
                 var ticks = ParseTimestamp(line);
-                var (method, @class, module, isTailCall) = ParseEnterLeave(line);
+                var (threadId, method, @class, module, isTailCall) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
                 if (!isTailCall)
                 {
-                    var newNode = new EnterExitEntry(module, @class, method, isTailCall,
+                    var newNode = new EnterExitEntry(threadId, module, @class, method, isTailCall,
                         CalculateTimestamp(ticks, startTicks), null);
                     (newNode, var matched) = CreateEnterExitNode(newNode, stream, startTicks);
                     if (!matched)
@@ -82,7 +88,7 @@ public class LogParser : IParser
             else if (line.Contains("OctoProfilerEnterLeave::Exit"))
             {
                 var ticks = ParseTimestamp(line);
-                var (method, @class, module, _) = ParseEnterLeave(line);
+                var (threadId, method, @class, module, _) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
 
                 if (parent.MethodName == method &&
@@ -108,12 +114,12 @@ public class LogParser : IParser
         return (parent, true);
     }
 
-    private (string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)
+    private (string ThreadId, string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)
     {
-        var match = Regex.Match(line, @".*(Enter|Enter\(tail\)|Exit) ([^;]*);([^;]*);([^;]*)");
+        var match = Regex.Match(line, @".*(Enter|Enter\(tail\)|Exit) ([^;]*);([^;]*);([^;]*);([^;]*)");
 
         var isTalCall = line.Contains("Enter(tail)");
-        return (match.Groups[4].Value, match.Groups[3].Value, match.Groups[2].Value, isTalCall);
+        return (match.Groups[5].Value, match.Groups[4].Value, match.Groups[3].Value, match.Groups[2].Value, isTalCall);
     }
 
 
