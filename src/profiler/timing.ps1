@@ -1,0 +1,1 @@
+Get-Date -Format "yyyy-MM-dd HH:mm:ss" >> timings.txt; Measure-Command { .\run.bat } | Select -ExpandProperty TotalSeconds >> timings.txt
