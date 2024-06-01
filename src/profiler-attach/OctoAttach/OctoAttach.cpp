@@ -1,6 +1,3 @@
-// OctoAttach.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -16,9 +13,16 @@ void Error(const std::string& _s)
     std::cerr.flush();
 }
 
+constexpr auto ErrorCouldNotOpenProcess = -1;
+constexpr auto CLRErrorNoMetaHost = -2;
+constexpr auto CLRErrorNoInstalledRuntimesFound = -3;
+constexpr auto CLRErrorNoLoadedRuntimesFound = -4;
+constexpr auto CLRErrorNoProfilingInterface = -5;
+constexpr auto CLRErrorProfilerCouldNotBeAttached = -6;
+
 int main(int argc, char* argv[])
 {
-    std::cout << "OctoAttach .NET Framework!\n";
+    std::cout << "OctoAttach for .NET Framework!\n";
     int pid = 0;
     if (argc <= 1)
     {
@@ -34,15 +38,15 @@ int main(int argc, char* argv[])
     auto handle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pid);
     if (!handle)
     {
-        Error(std::format("Could not oper process ID: {}", pid));
-        return -2;
+        Error(std::format("Could not open process ID: {}", pid));
+        return ErrorCouldNotOpenProcess;
     }
     ICLRMetaHost* _metahost = nullptr;
     HRESULT hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (LPVOID*)&_metahost);
     if (FAILED(hr))
     {
-        Error("Could not obtain CLR Mata host");
-        return -2;
+        Error("Could not obtain CLR Meta host");
+        return CLRErrorNoMetaHost;
     }
 
     IEnumUnknown *enumIterator = nullptr;
@@ -50,7 +54,7 @@ int main(int argc, char* argv[])
     if (FAILED(hr))
     {
         Error("Could not obtain Installed runtimes enumerator");
-        return -3;
+        return CLRErrorNoInstalledRuntimesFound;
     }
     ICLRRuntimeInfo *runtimeInfo = nullptr;
     ULONG retreivedNum{};
@@ -72,8 +76,8 @@ int main(int argc, char* argv[])
 
     if (!runtimeInfo)
     {
-        Error("No runtime info loaded found. Only works for .NET Framework applications");
-        return -4;
+        Error("No runtime info loaded found. Currently only works for .NET Framework applications");
+        return CLRErrorNoLoadedRuntimesFound;
     }
 
     ICLRProfiling* clrProfiling = nullptr;
@@ -81,7 +85,7 @@ int main(int argc, char* argv[])
     if (FAILED(hr))
     {
         Error("Could not get CLRProfiling interface");
-        return -5;
+        return CLRErrorNoProfilingInterface;
     }
 
     static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
@@ -92,7 +96,7 @@ int main(int argc, char* argv[])
     if (FAILED(hr))
     {
         Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
-        return -6;
+        return CLRErrorProfilerCouldNotBeAttached;
     }
     WaitForSingleObject(handle, INFINITE);
     return 0;
