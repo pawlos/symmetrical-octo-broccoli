@@ -5,6 +5,7 @@
 #include <metahost.h>
 #pragma comment(lib, "mscoree.lib")
 #include <wchar.h>
+#include <Shlwapi.h>
 
 void Error(const std::string& _s)
 {
@@ -13,12 +14,19 @@ void Error(const std::string& _s)
     std::cerr.flush();
 }
 
+void Error(const std::wstring& _s)
+{
+    const std::string s(_s.begin(), _s.end());
+    Error(s);
+}
+
 constexpr auto ErrorCouldNotOpenProcess = -1;
 constexpr auto CLRErrorNoMetaHost = -2;
 constexpr auto CLRErrorNoInstalledRuntimesFound = -3;
 constexpr auto CLRErrorNoLoadedRuntimesFound = -4;
 constexpr auto CLRErrorNoProfilingInterface = -5;
-constexpr auto CLRErrorProfilerCouldNotBeAttached = -6;
+constexpr auto ErrorProfilerDllNotFound = -6;
+constexpr auto CLRErrorProfilerCouldNotBeAttached = -7;
 
 int main(int argc, char* argv[])
 {
@@ -53,7 +61,7 @@ int main(int argc, char* argv[])
     hr = _metahost->EnumerateLoadedRuntimes(handle, &enumIterator);
     if (FAILED(hr))
     {
-        Error("Could not obtain Installed runtimes enumerator");
+        Error("Could not obtain Loaded runtimes enumerator");
         return CLRErrorNoInstalledRuntimesFound;
     }
     ICLRRuntimeInfo *runtimeInfo = nullptr;
@@ -90,7 +98,13 @@ int main(int argc, char* argv[])
 
     static const GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
 
-    std::wstring path = L"c:\\work\\100commitow\\symmetrical-octo-broccoli\\src\\profiler\\x64\\Debug\\OctoProfiler.dll";
+    std::wstring path = L".\\OctoProfiler.dll";
+
+    if (!PathFileExistsW(path.c_str()))
+    {
+        Error(std::format(L"Did not find Profiler dll file. Make sure '{0}' is in the folder.", path));
+        return ErrorProfilerDllNotFound;
+    }
 
     hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), NULL, 0);
     if (FAILED(hr))
