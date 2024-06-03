@@ -27,6 +27,8 @@ constexpr auto CLRErrorNoLoadedRuntimesFound = -4;
 constexpr auto CLRErrorNoProfilingInterface = -5;
 constexpr auto ErrorProfilerDllNotFound = -6;
 constexpr auto CLRErrorProfilerCouldNotBeAttached = -7;
+constexpr auto ErrorCouldNotGetProcessBitness = -8;
+constexpr auto ErrorProcessIs32Bit = -9;
 
 int main(int argc, char* argv[])
 {
@@ -48,6 +50,18 @@ int main(int argc, char* argv[])
     {
         Error(std::format("Could not open process ID: {}", pid));
         return ErrorCouldNotOpenProcess;
+    }
+    BOOL isWow64Process;
+    PBOOL pIsWow64Process = &isWow64Process;
+    if (!IsWow64Process(handle, pIsWow64Process))
+    {
+        Error("Could not obtain process bitness");
+        return ErrorCouldNotGetProcessBitness;
+    }
+    if (isWow64Process)
+    {
+        Error("Process is 32-bit");
+        return ErrorProcessIs32Bit;
     }
     ICLRMetaHost* _metahost = nullptr;
     HRESULT hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (LPVOID*)&_metahost);
