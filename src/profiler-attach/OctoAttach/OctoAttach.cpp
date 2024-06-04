@@ -48,19 +48,19 @@ int main(int argc, char* argv[])
     auto handle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pid);
     if (!handle)
     {
-        Error(std::format("Could not open process ID: {}", pid));
+        Error(std::format("Could not open process ID: {0}.", pid));
         return ErrorCouldNotOpenProcess;
     }
-    BOOL isWow64Process;
+    BOOL isWow64Process = false;
     PBOOL pIsWow64Process = &isWow64Process;
     if (!IsWow64Process(handle, pIsWow64Process))
     {
-        Error("Could not obtain process bitness");
+        Error("Could not obtain process bitness.");
         return ErrorCouldNotGetProcessBitness;
     }
     if (isWow64Process)
     {
-        Error("Process is 32-bit");
+        Error("Process is 32-bit. Currently only works with 64-bit processes.");
         return ErrorProcessIs32Bit;
     }
     ICLRMetaHost* _metahost = nullptr;
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     hr = _metahost->EnumerateLoadedRuntimes(handle, &enumIterator);
     if (FAILED(hr))
     {
-        Error("Could not obtain Loaded runtimes enumerator");
+        Error("Could not obtain Loaded runtimes enumerator.");
         return CLRErrorNoInstalledRuntimesFound;
     }
     ICLRRuntimeInfo *runtimeInfo = nullptr;
