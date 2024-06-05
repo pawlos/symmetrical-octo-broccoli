@@ -8,7 +8,7 @@ void FuncEnterStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fr
 	{
 		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
 		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", str.value_or(L"eee")));
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", str.value_or(L"<empty>")));
 	}
 	else
 	{
@@ -22,7 +22,7 @@ void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fr
 	{
 		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
 		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str.value_or(L"eee")));
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str.value_or(L"<empty>")));
 	}
 	else
 	{
