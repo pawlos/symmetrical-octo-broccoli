@@ -36,7 +36,7 @@ void FuncTailStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fra
 	{
 		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
 		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter(tail) {0}", str.value_or(L"eee")));
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter(tail) {0}", str.value_or(L"<empty>")));
 	}
 	else
 	{
