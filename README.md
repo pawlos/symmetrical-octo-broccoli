@@ -17,6 +17,9 @@ Click the image below to see it in action:
 <img src="img/in_action.png" /></a>
 </p>
 
+> [!NOTE]
+> If you like what you see, please consider :star:
+
 # How to use it #
 There's a `run.bat` script that currently sets the profiler and executes the sample program. This script can be used to gather info
 what needs to be set in order to run the program with the profiler attached.
