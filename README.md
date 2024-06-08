@@ -15,7 +15,7 @@ This project was create as an entry into #100commitow competition.
 Click the image below to see it in action:
 <p align="center">
 <a href="https://www.dropbox.com/scl/fi/04hipywza185yj8gcmw0b/octo-profiler.gif?rlkey=jnq7vz5r4rzdek7kmx1sqiist&e=1&st=4fueg308&dl=0&raw=1">
-<img src="img/in_action.png" /></a>
+<img src="img/in_action.jpeg" /></a>
 </p>
 
 > [!NOTE]
@@ -64,7 +64,7 @@ Running the profiler:
 
 OctoVis can either start the program under the profiler or read the generated file and provide a visualization
 
-![START](img/gui_start.png)
+![START](img/gui_start.jpeg)
 
 Summary tab - general overview of the profiling session
 ![SUMMARY](img/gui_summary.png)
