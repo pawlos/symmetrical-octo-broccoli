@@ -57,6 +57,11 @@ public partial class MainWindow
         var profile = result == MessageBoxResult.No;
         var fileName = $"{Guid.NewGuid().ToString()}.txt";
         var program = PickFile("Open application to profile", "Program|*.exe");
+        if (string.IsNullOrWhiteSpace(program))
+        {
+            MessageBox.Show("Could not find program exe.");
+            return;
+        }
         var p = new Process
         {
             StartInfo =
