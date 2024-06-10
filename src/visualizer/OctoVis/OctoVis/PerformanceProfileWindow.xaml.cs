@@ -4,9 +4,9 @@ using OctoVis.Parser;
 
 namespace OctoVis;
 
-public partial class PerformanceProfileWindow : Window
+public partial class PerformanceProfileWindow : Window, IProfilingWindow
 {
-    private ProfilerDataModel _data;
+    private ProfilerDataModel? _data;
 
     public PerformanceProfileWindow()
     {

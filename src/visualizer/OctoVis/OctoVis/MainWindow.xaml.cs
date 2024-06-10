@@ -54,7 +54,7 @@ public partial class MainWindow
 
         var result = MessageBox.Show("Profile for memory?", "Profile type?", MessageBoxButton.YesNo);
 
-        var profile = result == MessageBoxResult.No;
+        var profileType = result == MessageBoxResult.No;
         var fileName = $"{Guid.NewGuid().ToString()}.txt";
         var program = PickFile("Open application to profile", "Program|*.exe");
         if (string.IsNullOrWhiteSpace(program))
@@ -80,7 +80,7 @@ public partial class MainWindow
                 }
             }
         };
-        if (profile)
+        if (profileType)
         {
             p.StartInfo.EnvironmentVariables.Add("OCTO_MONITOR_ENTERLEAVE", "1");
         }
@@ -89,17 +89,16 @@ public partial class MainWindow
         p.Start();
 
         await p.WaitForExitAsync();
-        if (profile)
+        IProfilingWindow? profilingWindow;
+        if (profileType)
         {
-            var window = new PerformanceProfileWindow();
-            window.ParseFile(fileName);
-            window.Show();
+            profilingWindow = new PerformanceProfileWindow();
         }
         else
         {
-            var window = new MemoryProfileWindow();
-            window.ParseFile(fileName);
-            window.Show();
+            profilingWindow = new MemoryProfileWindow();
         }
+        profilingWindow.ParseFile(fileName);
+        profilingWindow.Show();
     }
 }

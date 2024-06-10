@@ -8,7 +8,7 @@ using OctoVis.Parser;
 
 namespace OctoVis;
 
-public partial class MemoryProfileWindow : Window
+public partial class MemoryProfileWindow : Window, IProfilingWindow
 {
     private ProfilerDataModel _data = new();
     private SettingsDataModel _settings = new();
