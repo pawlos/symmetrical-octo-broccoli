@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using OctoVis.Model;
 using OctoVis.Parser;
@@ -24,5 +25,11 @@ public partial class PerformanceProfileWindow : Window, IProfilingWindow
         _data = data;
         var d = _data;
         DataContext = d;
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        Application.Current.MainWindow?.Close();
     }
 }

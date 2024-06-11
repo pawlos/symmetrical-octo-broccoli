@@ -102,4 +102,10 @@ public partial class MemoryProfileWindow : Window, IProfilingWindow
 
         stw.ShowDialog();
     }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        Application.Current.MainWindow?.Close();
+    }
 }
