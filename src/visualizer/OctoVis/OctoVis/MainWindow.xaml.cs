@@ -2,6 +2,8 @@
 using System.IO;
 using System.Windows;
 using Microsoft.Win32;
+using OctoVis.Model;
+using OctoVis.Parser;
 
 namespace OctoVis;
 
@@ -22,10 +24,8 @@ public partial class MainWindow
     {
         string file = PickFile("Open log file", "Log files|*.txt");
         Hide();
-        var memoryProfileWindow = new MemoryProfileWindow();
-        memoryProfileWindow.ParseFile(file);
-        memoryProfileWindow.Show();
 
+        CreateProfilingWindow(file);
     }
 
     private string PickFile(string title, string allowedExtension)
@@ -89,8 +89,19 @@ public partial class MainWindow
         p.Start();
 
         await p.WaitForExitAsync();
+        CreateProfilingWindow(fileName);
+    }
+
+    private static void CreateProfilingWindow(string fileName)
+    {
+        var data = LogParser.ParseFile(fileName);
+        if (data is null)
+        {
+            MessageBox.Show("Could not parse the log file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
         IProfilingWindow? profilingWindow;
-        if (profileType)
+        if (data is PerformanceDataModel)
         {
             profilingWindow = new PerformanceProfileWindow();
         }
@@ -98,7 +109,7 @@ public partial class MainWindow
         {
             profilingWindow = new MemoryProfileWindow();
         }
-        profilingWindow.ParseFile(fileName);
+        profilingWindow.SetModel(data);
         profilingWindow.Show();
     }
 }

@@ -2,7 +2,7 @@ using OctoVis.Parser.v0_0_2;
 
 namespace OctoVis.Model;
 
-public class ProfilerDataModel
+public class ProfilerDataModel : IDataModel
 {
     public record StackFrame(string Module, string FrameInfo);
 
@@ -34,5 +34,4 @@ public class ProfilerDataModel
     public TimeSpan TotalGcTime { get; set; }
 
     public string NetVersion { get; set; } = string.Empty;
-    public List<LogParser.EnterExitEntry> EnterExitModel { get; set; }
 }

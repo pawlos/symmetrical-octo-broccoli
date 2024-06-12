@@ -1,7 +1,9 @@
+using OctoVis.Model;
+
 namespace OctoVis;
 
 public interface IProfilingWindow
 {
-    void ParseFile(string fileName);
+    void SetModel(IDataModel model);
     void Show();
 }

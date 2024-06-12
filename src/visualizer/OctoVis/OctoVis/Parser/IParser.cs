@@ -5,5 +5,5 @@ namespace OctoVis.Parser;
 
 public interface IParser
 {
-    ProfilerDataModel? Parse(ulong startTicks, StreamReader stream);
+    IDataModel? Parse(ulong startTicks, StreamReader stream);
 }

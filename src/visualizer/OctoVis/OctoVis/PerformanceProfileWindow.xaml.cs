@@ -7,22 +7,16 @@ namespace OctoVis;
 
 public partial class PerformanceProfileWindow : Window, IProfilingWindow
 {
-    private ProfilerDataModel? _data;
+    private PerformanceDataModel? _data;
 
     public PerformanceProfileWindow()
     {
         InitializeComponent();
     }
 
-    public void ParseFile(string fileName)
+    public void SetModel(IDataModel model)
     {
-        var data = LogParser.ParseFile(fileName);
-        if (data is null)
-        {
-            return;
-        }
-
-        _data = data;
+        _data = model as PerformanceDataModel;
         var d = _data;
         DataContext = d;
     }

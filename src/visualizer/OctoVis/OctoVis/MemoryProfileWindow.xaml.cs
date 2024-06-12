@@ -10,14 +10,14 @@ namespace OctoVis;
 
 public partial class MemoryProfileWindow : Window, IProfilingWindow
 {
-    private ProfilerDataModel _data = new();
+    private ProfilerDataModel? _data = new();
     private SettingsDataModel _settings = new();
     public MemoryProfileWindow()
     {
         InitializeComponent();
     }
 
-    public void ParseFile(string fileName)
+    public void SetModel(IDataModel model)
     {
         _settings = new SettingsDataModel
         {
@@ -25,13 +25,8 @@ public partial class MemoryProfileWindow : Window, IProfilingWindow
             TimelineYAxis = SettingsDataModel.DataSize.KiloBytes,
             Filter = string.Empty
         };
-        var data = LogParser.ParseFile(fileName);
-        if (data is null)
-        {
-            return;
-        }
 
-        _data = data;
+        _data = model as ProfilerDataModel;
         var d = ProfilerViewModel.FromDataModel(_data, _settings);
         DataContext = d;
         d.Settings.PropertyChanged += OnPropertyChanged;

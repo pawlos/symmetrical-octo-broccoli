@@ -8,13 +8,13 @@ namespace OctoVis.Control;
 public class TraceCallsControl : FrameworkElement
 {
     public static readonly DependencyProperty EnterExitCallsProperty = DependencyProperty.Register(
-        nameof(EnterExitCalls), typeof(IEnumerable<LogParser.EnterExitEntry>), typeof(TraceCallsControl),
-        new FrameworkPropertyMetadata(default(IEnumerable<LogParser.EnterExitEntry>),
+        nameof(EnterExitCalls), typeof(IEnumerable<LogParser.EnterExitEntryStacked>), typeof(TraceCallsControl),
+        new FrameworkPropertyMetadata(default(IEnumerable<LogParser.EnterExitEntryStacked>),
             FrameworkPropertyMetadataOptions.AffectsRender));
 
-    public IEnumerable<LogParser.EnterExitEntry> EnterExitCalls
+    public IEnumerable<LogParser.EnterExitEntryStacked> EnterExitCalls
     {
-        get => (IEnumerable<LogParser.EnterExitEntry>)GetValue(EnterExitCallsProperty);
+        get => (IEnumerable<LogParser.EnterExitEntryStacked>)GetValue(EnterExitCallsProperty);
         set => SetValue(EnterExitCallsProperty, value);
     }
 

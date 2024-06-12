@@ -7,6 +7,14 @@ namespace OctoVis.Parser.v0_0_2;
 public class LogParser : IParser
 {
     public record EnterExitEntry(
+        string ThreadId,
+        string Module,
+        string Class,
+        string MethodName,
+        bool IsTailCall,
+        ulong Ticks);
+
+    public record EnterExitEntryStacked(
         string TreadId,
         string Module,
         string Class,
@@ -17,24 +25,57 @@ public class LogParser : IParser
     {
         public ulong Duration => EndTime.HasValue ? EndTime.Value - StartTime : 0;
 
-        public readonly List<EnterExitEntry> Children = [];
+        public readonly List<EnterExitEntryStacked> Children = [];
     }
 
-    public ProfilerDataModel Parse(ulong startTicks, StreamReader stream)
+    public IDataModel Parse(ulong startTicks, StreamReader stream)
     {
         var topNode = CreateTopNode(startTicks);
-        var (entries, _) = CreateEnterExitNode(topNode, stream, startTicks);
+        var entries = ParseLog(stream, out var endTicks);
+        var threads = CreateEnterExitNode(topNode, entries);
 
-        var model = new ProfilerDataModel
+        var model = new PerformanceDataModel
         {
-            EnterExitModel = entries.Children
+            EnterExitModel = threads,
+            StartMarker = startTicks,
+            EndMarker = endTicks
         };
         return model;
     }
 
-    private static EnterExitEntry CreateTopNode(ulong startTicks)
+    private List<EnterExitEntry> ParseLog(StreamReader stream, out ulong endTicks)
     {
-        return new EnterExitEntry(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks, null);
+        var entries = new List<EnterExitEntry>();
+        endTicks = 0;
+        while (!stream.EndOfStream)
+        {
+            var line = stream.ReadLine() ?? string.Empty;
+            if (line.Contains("OctoProfilerEnterLeave::Prepare for shutdown..."))
+            {
+                endTicks = ParseTimestamp(line);
+            }
+            else if (line.Contains("OctoProfilerEnterLeave::Enter") ||
+                     line.Contains("OctoProfilerEnterLeave::Exit"))
+            {
+                var ticks = ParseTimestamp(line);
+                var (threadId, method, @class, module, isTailCall) = ParseEnterLeave(line);
+                if (IsStelemRefMethod(method)) continue;
+                entries.Add(new EnterExitEntry(threadId, module, @class, module, isTailCall, ticks));
+            }
+            else if (line.Contains("OctoProfilerEnterLeave::Detected") ||
+                     line.Contains("OctoProfilerEnterLeave::Initialize initialized...") ||
+                     line.Contains("OctoProfilerEnterLeave::Shutdown..."))
+            {
+            }
+            else throw new InvalidOperationException("Invalid line");
+        }
+
+        return entries;
+    }
+
+    private static EnterExitEntryStacked CreateTopNode(ulong startTicks)
+    {
+        return new EnterExitEntryStacked(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks, null);
     }
 
     bool IsStelemRefMethod(string method)
@@ -42,76 +83,15 @@ public class LogParser : IParser
         return method.StartsWith("StelemRef");
     }
 
-    private (EnterExitEntry, bool) CreateEnterExitNode(EnterExitEntry parent, StreamReader stream, ulong startTicks)
+    private List<EnterExitEntryStacked> CreateEnterExitNode(
+        EnterExitEntryStacked parent, List<EnterExitEntry> entries)
     {
-        while (!stream.EndOfStream)
-        {
-            var line = stream.ReadLine() ?? string.Empty;
-            if (line.Contains("OctoProfilerEnterLeave::Prepare for shutdown..."))
-            {
-                var endTicks = ParseTimestamp(line);
-                parent = parent with { EndTime = CalculateTimestamp(endTicks, startTicks) };
-                return (parent, true);
-            }
+        var entriesGroupedByThread = entries.GroupBy(x => x.ThreadId)
+            .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Ticks).ToList());
 
-            if (line.Contains("OctoProfilerEnterLeave::Enter"))
-            {
-                var ticks = ParseTimestamp(line);
-                var (threadId, method, @class, module, isTailCall) = ParseEnterLeave(line);
-                if (IsStelemRefMethod(method)) continue;
-                if (!isTailCall)
-                {
-                    var newNode = new EnterExitEntry(threadId, module, @class, method, isTailCall,
-                        CalculateTimestamp(ticks, startTicks), null);
-                    (newNode, var matched) = CreateEnterExitNode(newNode, stream, startTicks);
-                    if (!matched)
-                    {
-                        parent = parent with { EndTime = newNode.EndTime };
-                    }
+        var list = new List<EnterExitEntryStacked>();
 
-                    parent.Children.Add(newNode);
-                }
-                else
-                {
-                    if (parent.MethodName == method &&
-                        (parent.Class == @class || @class == "<<empty>>") &&
-                        parent.Module == module)
-                    {
-                        parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
-                        return (parent, true);
-                    }
-
-                    throw new InvalidOperationException("Wrong tail call");
-                }
-            }
-
-            else if (line.Contains("OctoProfilerEnterLeave::Exit"))
-            {
-                var ticks = ParseTimestamp(line);
-                var (threadId, method, @class, module, _) = ParseEnterLeave(line);
-                if (IsStelemRefMethod(method)) continue;
-
-                if (parent.MethodName == method &&
-                    (parent.Class == @class || @class == "<<empty>>")&&
-                    parent.Module == module)
-                {
-                    parent = parent with { EndTime = CalculateTimestamp(ticks, startTicks) };
-                    return (parent, true);
-                }
-
-                return (parent, false);
-            }
-            else
-            {
-                if (line.Contains("OctoProfilerEnterLeave::Detected") ||
-                    line.Contains("OctoProfilerEnterLeave::Initialize initialized...") ||
-                    line.Contains("OctoProfilerEnterLeave::Shutdown..."))
-                    continue;
-                throw new InvalidOperationException("Invalid line");
-            }
-        }
-
-        return (parent, true);
+        return list;
     }
 
     private (string ThreadId, string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)

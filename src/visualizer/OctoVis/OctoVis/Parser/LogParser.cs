@@ -7,7 +7,7 @@ namespace OctoVis.Parser;
 
 public static class LogParser
 {
-    public static ProfilerDataModel? ParseFile(string fileName)
+    public static IDataModel? ParseFile(string fileName)
     {
         if (!File.Exists(fileName))
         {

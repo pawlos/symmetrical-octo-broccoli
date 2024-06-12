@@ -6,7 +6,7 @@ namespace OctoVis.Parser.v0_0_1;
 
 public class LogParser : IParser
 {
-    public ProfilerDataModel Parse(ulong startTicks, StreamReader stream)
+    public IDataModel Parse(ulong startTicks, StreamReader stream)
     {
         uint totalMemoryAllocated = 0;
         ulong? gcStartEventTicks = null;
