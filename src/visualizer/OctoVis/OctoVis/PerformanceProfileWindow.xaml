@@ -7,6 +7,14 @@
         mc:Ignorable="d"
         Title="PerformanceProfileWindow" Height="450" Width="800">
     <Grid>
-        <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Run time:" />
+            <Label Content="{Binding RunTime}" />
+        </StackPanel>
+        <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" Grid.Row="1"/>
     </Grid>
 </Window>
