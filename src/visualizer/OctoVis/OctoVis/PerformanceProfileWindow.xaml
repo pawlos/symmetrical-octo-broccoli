@@ -9,12 +9,17 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
+            <RowDefinition Height="40" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
             <Label Content="Run time:" />
             <Label Content="{Binding RunTime}" />
         </StackPanel>
-        <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" Grid.Row="1"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <Label Content=".NET detected:" />
+            <Label Content="{Binding NetVersion}" />
+        </StackPanel>
+        <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" Grid.Row="2"/>
     </Grid>
 </Window>

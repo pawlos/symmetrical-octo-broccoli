@@ -31,22 +31,24 @@ public class LogParser : IParser
     public IDataModel Parse(ulong startTicks, StreamReader stream)
     {
         var topNode = CreateTopNode(startTicks);
-        var entries = ParseLog(stream, out var endTicks);
+        var entries = ParseLog(stream, out var endTicks, out var netVersion);
         var threads = CreateEnterExitNode(topNode, entries);
 
         var model = new PerformanceDataModel
         {
             EnterExitModel = threads,
             StartMarker = startTicks,
-            EndMarker = endTicks
+            EndMarker = endTicks,
+            NetVersion = netVersion
         };
         return model;
     }
 
-    private List<EnterExitEntry> ParseLog(StreamReader stream, out ulong endTicks)
+    private List<EnterExitEntry> ParseLog(StreamReader stream, out ulong endTicks, out string netVersion)
     {
         var entries = new List<EnterExitEntry>();
         endTicks = 0;
+        netVersion = string.Empty;
         while (!stream.EndOfStream)
         {
             var line = stream.ReadLine() ?? string.Empty;
@@ -62,9 +64,13 @@ public class LogParser : IParser
                 if (IsStelemRefMethod(method)) continue;
                 entries.Add(new EnterExitEntry(threadId, module, @class, module, isTailCall, ticks));
             }
-            else if (line.Contains("OctoProfilerEnterLeave::Detected") ||
-                     line.Contains("OctoProfilerEnterLeave::Initialize initialized...") ||
-                     line.Contains("OctoProfilerEnterLeave::Shutdown..."))
+            else if (line.Contains("OctoProfilerEnterLeave::Detected"))
+            {
+                var match = Regex.Match(line, @"\[[^ ]+\] OctoProfilerEnterLeave::Detected (.+)");
+                netVersion = match.Groups[1].Value;
+            }
+            else if (line.Contains("OctoProfilerEnterLeave::Initialize initialized...") ||
+                  line.Contains("OctoProfilerEnterLeave::Shutdown..."))
             {
             }
             else throw new InvalidOperationException("Invalid line");

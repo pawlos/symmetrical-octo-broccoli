@@ -9,5 +9,8 @@ public class PerformanceDataModel : IDataModel
     public ulong EndMarker { get; set; }
 
     public TimeSpan RunTime => TimeSpan.FromTicks((long)(EndMarker - StartMarker));
+
+    public string NetVersion { get; set; }
+
     public List<LogParser.EnterExitEntryStacked> EnterExitModel { get; set; }
 }
