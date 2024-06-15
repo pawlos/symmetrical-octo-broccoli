@@ -13,4 +13,6 @@ public class PerformanceDataModel : IDataModel
     public string NetVersion { get; set; }
 
     public List<LogParser.EnterExitEntryStacked> EnterExitModel { get; set; }
+
+    public List<LogParser.ThreadPerfInfo> ThreadPerfInfo { get; set; }
 }

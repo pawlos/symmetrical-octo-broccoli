@@ -11,6 +11,7 @@
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
             <Label Content="Run time:" />
@@ -20,6 +21,7 @@
             <Label Content=".NET detected:" />
             <Label Content="{Binding NetVersion}" />
         </StackPanel>
-        <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" Grid.Row="2"/>
+        <control:ThreadsControl ThreadsPerfInfo="{Binding ThreadPerfInfo}" Grid.Row="2"/>
+        <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" Grid.Row="3"/>
     </Grid>
 </Window>

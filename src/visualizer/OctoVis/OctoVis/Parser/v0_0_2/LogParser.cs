@@ -14,6 +14,10 @@ public class LogParser : IParser
         bool IsTailCall,
         ulong Ticks);
 
+    public record ThreadPerfInfo(
+        string ThreadId,
+        List<ulong> Ticks);
+
     public record EnterExitEntryStacked(
         string TreadId,
         string Module,
@@ -33,13 +37,16 @@ public class LogParser : IParser
         var topNode = CreateTopNode(startTicks);
         var entries = ParseLog(stream, out var endTicks, out var netVersion);
         var threads = CreateEnterExitNode(topNode, entries);
+        var groupByThreads = entries.GroupBy(x => x.ThreadId)
+            .ToDictionary(x => x.Key, x => x.Select(y => y.Ticks).ToList());
 
         var model = new PerformanceDataModel
         {
             EnterExitModel = threads,
             StartMarker = startTicks,
             EndMarker = endTicks,
-            NetVersion = netVersion
+            NetVersion = netVersion,
+            ThreadPerfInfo = groupByThreads.Select(x => new ThreadPerfInfo(x.Key, x.Value)).ToList()
         };
         return model;
     }
