@@ -9,9 +9,9 @@ public class ThreadsControl : FrameworkElement
 {
     public static readonly DependencyProperty ThreadsPerfInfoProperty = DependencyProperty.Register(
         nameof(ThreadsPerfInfo), typeof(List<LogParser.ThreadPerfInfo>), typeof(ThreadsControl),
-        new FrameworkPropertyMetadata(default(List<LogParser.ThreadPerfInfo>), FrameworkPropertyMetadataOptions.AffectsRender));
+        new FrameworkPropertyMetadata(default(List<LogParser.ThreadPerfInfo>?), FrameworkPropertyMetadataOptions.AffectsRender));
 
-    public List<LogParser.ThreadPerfInfo> ThreadsPerfInfo
+    public List<LogParser.ThreadPerfInfo>? ThreadsPerfInfo
     {
         get => (List<LogParser.ThreadPerfInfo>)GetValue(ThreadsPerfInfoProperty);
         set => SetValue(ThreadsPerfInfoProperty, value);
@@ -19,7 +19,7 @@ public class ThreadsControl : FrameworkElement
     protected override void OnRender(DrawingContext drawingContext)
     {
         base.OnRender(drawingContext);
-        if (ThreadsPerfInfo is null) return;
+        if (ThreadsPerfInfo is null or { Count: 0}) return;
 
         var posY = 20;
         var lineHeight = 20;
