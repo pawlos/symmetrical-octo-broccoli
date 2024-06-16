@@ -8,7 +8,8 @@ namespace OctoVis.Control;
 public class ThreadsControl : FrameworkElement
 {
     public static readonly DependencyProperty ThreadsPerfInfoProperty = DependencyProperty.Register(
-        nameof(ThreadsPerfInfo), typeof(List<LogParser.ThreadPerfInfo>), typeof(ThreadsControl), new PropertyMetadata(default(List<LogParser.ThreadPerfInfo>)));
+        nameof(ThreadsPerfInfo), typeof(List<LogParser.ThreadPerfInfo>), typeof(ThreadsControl),
+        new FrameworkPropertyMetadata(default(List<LogParser.ThreadPerfInfo>), FrameworkPropertyMetadataOptions.AffectsRender));
 
     public List<LogParser.ThreadPerfInfo> ThreadsPerfInfo
     {
@@ -21,6 +22,7 @@ public class ThreadsControl : FrameworkElement
         if (ThreadsPerfInfo is null) return;
 
         var posY = 20;
+        var lineHeight = 20;
         foreach (var perfInfo in ThreadsPerfInfo)
         {
             var ft = new FormattedText(
@@ -37,7 +39,10 @@ public class ThreadsControl : FrameworkElement
                 TextFormattingMode.Display,
                 72);
             drawingContext.DrawText(ft, new Point(20, posY));
-            posY += 20;
+            var scb = new SolidColorBrush(Colors.Transparent);
+            drawingContext.DrawRectangle(scb, new Pen(new SolidColorBrush(Colors.Green), 1.0), new Rect(
+                20 + ft.Width + 10, posY, ActualWidth - (20 + ft.Width + 20), lineHeight));
+            posY += 30;
         }
 
     }
