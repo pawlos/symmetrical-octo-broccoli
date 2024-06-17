@@ -16,6 +16,17 @@ public class ThreadsControl : FrameworkElement
         get => (List<LogParser.ThreadPerfInfo>)GetValue(ThreadsPerfInfoProperty);
         set => SetValue(ThreadsPerfInfoProperty, value);
     }
+
+    public static readonly DependencyProperty ForegroundProperty = DependencyProperty.Register(
+        nameof(Foreground), typeof(Color), typeof(ThreadsControl), new FrameworkPropertyMetadata(
+            Colors.Green, FrameworkPropertyMetadataOptions.AffectsRender));
+
+    public Color Foreground
+    {
+        get => (Color)GetValue(ForegroundProperty);
+        set => SetValue(ForegroundProperty, value);
+    }
+
     protected override void OnRender(DrawingContext drawingContext)
     {
         base.OnRender(drawingContext);
@@ -34,13 +45,13 @@ public class ThreadsControl : FrameworkElement
                     FontWeights.Normal,
                     FontStretches.Normal),
                 12,
-                new SolidColorBrush(Colors.Green),
+                new SolidColorBrush(Foreground),
                 null,
                 TextFormattingMode.Display,
                 72);
             drawingContext.DrawText(ft, new Point(20, posY));
             var scb = new SolidColorBrush(Colors.Transparent);
-            drawingContext.DrawRectangle(scb, new Pen(new SolidColorBrush(Colors.Green), 1.0), new Rect(
+            drawingContext.DrawRectangle(scb, new Pen(new SolidColorBrush(Foreground), 1.0), new Rect(
                 20 + ft.Width + 10, posY, ActualWidth - (20 + ft.Width + 20), lineHeight));
             posY += 30;
         }

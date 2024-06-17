@@ -21,7 +21,8 @@
             <Label Content=".NET detected:" />
             <Label Content="{Binding NetVersion}" />
         </StackPanel>
-        <control:ThreadsControl ThreadsPerfInfo="{Binding ThreadPerfInfo}" Grid.Row="2"/>
+        <control:ThreadsControl ThreadsPerfInfo="{Binding ThreadPerfInfo}"
+                                Foreground="Firebrick" Grid.Row="2"/>
         <control:TraceCallsControl EnterExitCalls="{Binding EnterExitModel}" Grid.Row="3"/>
     </Grid>
 </Window>
