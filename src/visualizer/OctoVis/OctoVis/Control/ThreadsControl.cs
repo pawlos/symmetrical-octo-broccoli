@@ -32,6 +32,9 @@ public class ThreadsControl : FrameworkElement
         base.OnRender(drawingContext);
         if (ThreadsPerfInfo is null or { Count: 0}) return;
 
+        var minTimestamp = ThreadsPerfInfo.SelectMany(x => x.Time).MinBy(x => x);
+        var maxTimestamp = ThreadsPerfInfo.SelectMany(x => x.Time).MaxBy(x => x);
+
         var posY = 20;
         var lineHeight = 20;
         foreach (var perfInfo in ThreadsPerfInfo)
@@ -51,8 +54,19 @@ public class ThreadsControl : FrameworkElement
                 72);
             drawingContext.DrawText(ft, new Point(20, posY));
             var scb = new SolidColorBrush(Colors.Transparent);
+            var width = ActualWidth - (20 + ft.Width + 20);
+            var left = 20 + ft.Width + 10;
             drawingContext.DrawRectangle(scb, new Pen(new SolidColorBrush(Foreground), 1.0), new Rect(
-                20 + ft.Width + 10, posY, ActualWidth - (20 + ft.Width + 20), lineHeight));
+                left, posY, width, lineHeight));
+            foreach (var tick in perfInfo.Time)
+            {
+                var top = (tick - minTimestamp);
+                var bottom = (float)(maxTimestamp - minTimestamp);
+                var pos = left + width * (top / bottom);
+
+                drawingContext.DrawLine(new Pen(new SolidColorBrush(Colors.Red), 1.0),
+                    new Point(pos, posY), new Point(pos, posY + 20));
+            }
             posY += 30;
         }
 

@@ -16,7 +16,7 @@ public class LogParser : IParser
 
     public record ThreadPerfInfo(
         string ThreadId,
-        List<ulong> Ticks);
+        List<double> Time);
 
     public record EnterExitEntryStacked(
         string TreadId,
@@ -46,7 +46,10 @@ public class LogParser : IParser
             StartMarker = startTicks,
             EndMarker = endTicks,
             NetVersion = netVersion,
-            ThreadPerfInfo = groupByThreads.Select(x => new ThreadPerfInfo(x.Key, x.Value)).ToList()
+            ThreadPerfInfo = groupByThreads.Select(
+                    x => new ThreadPerfInfo(x.Key,
+                        x.Value.Select(t => TimeSpan.FromTicks((long)t).TotalMicroseconds).ToList()))
+                .ToList()
         };
         return model;
     }
@@ -77,7 +80,7 @@ public class LogParser : IParser
                 netVersion = match.Groups[1].Value;
             }
             else if (line.Contains("OctoProfilerEnterLeave::Initialize initialized...") ||
-                  line.Contains("OctoProfilerEnterLeave::Shutdown..."))
+                     line.Contains("OctoProfilerEnterLeave::Shutdown..."))
             {
             }
             else throw new InvalidOperationException("Invalid line");
@@ -88,7 +91,8 @@ public class LogParser : IParser
 
     private static EnterExitEntryStacked CreateTopNode(ulong startTicks)
     {
-        return new EnterExitEntryStacked(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks, null);
+        return new EnterExitEntryStacked(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks,
+            null);
     }
 
     bool IsStelemRefMethod(string method)
