@@ -58,14 +58,17 @@ public class ThreadsControl : FrameworkElement
             var left = 20 + ft.Width + 10;
             drawingContext.DrawRectangle(scb, new Pen(new SolidColorBrush(Foreground), 1.0), new Rect(
                 left, posY, width, lineHeight));
+            var oldPos = -1.0d;
             foreach (var tick in perfInfo.Time)
             {
                 var top = (tick - minTimestamp);
                 var bottom = (float)(maxTimestamp - minTimestamp);
                 var pos = left + width * (top / bottom);
 
+                if (!(Math.Abs(oldPos - pos) >= 1)) continue;
                 drawingContext.DrawLine(new Pen(new SolidColorBrush(Colors.Red), 1.0),
                     new Point(pos, posY), new Point(pos, posY + 20));
+                oldPos = pos;
             }
             posY += 30;
         }
