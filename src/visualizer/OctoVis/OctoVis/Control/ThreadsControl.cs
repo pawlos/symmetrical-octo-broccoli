@@ -27,6 +27,16 @@ public class ThreadsControl : FrameworkElement
         set => SetValue(ForegroundProperty, value);
     }
 
+    public static readonly DependencyProperty GraphFillColorProperty = DependencyProperty.Register(
+        nameof(GraphFillColor), typeof(Color), typeof(ThreadsControl), new FrameworkPropertyMetadata(
+            Colors.Red, FrameworkPropertyMetadataOptions.AffectsRender));
+
+    public Color GraphFillColor
+    {
+        get => (Color)GetValue(GraphFillColorProperty);
+        set => SetValue(GraphFillColorProperty, value);
+    }
+
     protected override void OnRender(DrawingContext drawingContext)
     {
         base.OnRender(drawingContext);
@@ -37,26 +47,30 @@ public class ThreadsControl : FrameworkElement
 
         var posY = 20;
         var lineHeight = 20;
+        var borderBrush = new SolidColorBrush(Foreground);
+        var borderPen = new Pen(borderBrush, 1.0);
+        var fillPen = new Pen(new SolidColorBrush(GraphFillColor), 1.0);
+        var typeface = new Typeface(new FontFamily("Segoe UI"),
+            FontStyles.Normal,
+            FontWeights.Normal,
+            FontStretches.Normal);
+        var scb = new SolidColorBrush(Colors.Transparent);
         foreach (var perfInfo in ThreadsPerfInfo)
         {
             var ft = new FormattedText(
                 perfInfo.ThreadId,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(new FontFamily("Segoe UI"),
-                    FontStyles.Normal,
-                    FontWeights.Normal,
-                    FontStretches.Normal),
+                typeface,
                 12,
-                new SolidColorBrush(Foreground),
+                borderBrush,
                 null,
                 TextFormattingMode.Display,
                 72);
             drawingContext.DrawText(ft, new Point(20, posY));
-            var scb = new SolidColorBrush(Colors.Transparent);
             var width = ActualWidth - (20 + ft.Width + 20);
             var left = 20 + ft.Width + 10;
-            drawingContext.DrawRectangle(scb, new Pen(new SolidColorBrush(Foreground), 1.0), new Rect(
+            drawingContext.DrawRectangle(scb, borderPen, new Rect(
                 left, posY, width, lineHeight));
             var oldPos = -1.0d;
             foreach (var tick in perfInfo.Time)
@@ -66,7 +80,7 @@ public class ThreadsControl : FrameworkElement
                 var pos = left + width * (top / bottom);
 
                 if (!(Math.Abs(oldPos - pos) >= 1)) continue;
-                drawingContext.DrawLine(new Pen(new SolidColorBrush(Colors.Red), 1.0),
+                drawingContext.DrawLine(fillPen,
                     new Point(pos, posY), new Point(pos, posY + 20));
                 oldPos = pos;
             }
