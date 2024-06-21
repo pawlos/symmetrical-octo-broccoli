@@ -7,6 +7,13 @@ namespace OctoVis.Control;
 
 public class ThreadsControl : FrameworkElement
 {
+    private readonly Typeface _typeface = new(new FontFamily("Segoe UI"),
+        FontStyles.Normal,
+        FontWeights.Normal,
+        FontStretches.Normal);
+
+    private readonly SolidColorBrush _transparentBrush = new(Colors.Transparent);
+
     public static readonly DependencyProperty ThreadsPerfInfoProperty = DependencyProperty.Register(
         nameof(ThreadsPerfInfo), typeof(List<LogParser.ThreadPerfInfo>), typeof(ThreadsControl),
         new FrameworkPropertyMetadata(default(List<LogParser.ThreadPerfInfo>?), FrameworkPropertyMetadataOptions.AffectsRender));
@@ -50,18 +57,13 @@ public class ThreadsControl : FrameworkElement
         var borderBrush = new SolidColorBrush(Foreground);
         var borderPen = new Pen(borderBrush, 1.0);
         var fillPen = new Pen(new SolidColorBrush(GraphFillColor), 1.0);
-        var typeface = new Typeface(new FontFamily("Segoe UI"),
-            FontStyles.Normal,
-            FontWeights.Normal,
-            FontStretches.Normal);
-        var scb = new SolidColorBrush(Colors.Transparent);
         foreach (var perfInfo in ThreadsPerfInfo)
         {
             var ft = new FormattedText(
                 perfInfo.ThreadId,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
-                typeface,
+                _typeface,
                 12,
                 borderBrush,
                 null,
@@ -70,7 +72,7 @@ public class ThreadsControl : FrameworkElement
             drawingContext.DrawText(ft, new Point(20, posY));
             var width = ActualWidth - (20 + ft.Width + 20);
             var left = 20 + ft.Width + 10;
-            drawingContext.DrawRectangle(scb, borderPen, new Rect(
+            drawingContext.DrawRectangle(_transparentBrush, borderPen, new Rect(
                 left, posY, width, lineHeight));
             var oldPos = -1.0d;
             foreach (var tick in perfInfo.Time)

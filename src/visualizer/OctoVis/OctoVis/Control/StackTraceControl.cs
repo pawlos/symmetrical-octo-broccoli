@@ -15,13 +15,29 @@ public class StackTraceControl : FrameworkElement
         Cold
     }
 
-    private record Tuple(Guid Id, string Entry, double Fraction);
     private record RectTooltip(Rect BoundingBox, string Tooltip);
 
     private readonly List<RectTooltip> _tooltipsCoords = new();
 
-    private readonly Color[] _flameColors = [Colors.Orange, Colors.Yellow, Colors.Chocolate, Colors.Goldenrod, Colors.Coral];
-    private readonly Color[] _coldColors = [Colors.Blue, Colors.SteelBlue, Colors.CadetBlue, Colors.Navy, Colors.MediumAquamarine];
+    private readonly SolidColorBrush[] _flameColorsBrushes = [
+        new SolidColorBrush(Colors.Orange),
+        new SolidColorBrush(Colors.Yellow),
+        new SolidColorBrush(Colors.Chocolate),
+        new SolidColorBrush(Colors.Goldenrod),
+        new SolidColorBrush(Colors.Coral)];
+    private readonly SolidColorBrush[] _coldColorsBrushes = [
+        new SolidColorBrush(Colors.Blue),
+        new SolidColorBrush(Colors.SteelBlue),
+        new SolidColorBrush(Colors.CadetBlue),
+        new SolidColorBrush(Colors.Navy),
+        new SolidColorBrush(Colors.MediumAquamarine)];
+
+    private readonly SolidColorBrush _transparentBrush = new(Colors.Transparent);
+
+    private readonly Typeface _typeface = new Typeface(new FontFamily("Segoe UI"),
+        FontStyles.Normal,
+        FontWeights.Normal,
+        FontStretches.Normal);
 
     public static readonly DependencyProperty PaletteProperty = DependencyProperty.Register(
         nameof(Palette), typeof(ColorPalette), typeof(StackTraceControl),
@@ -59,7 +75,7 @@ public class StackTraceControl : FrameworkElement
     {
         base.OnRender(drawingContext);
         _tooltipsCoords.Clear();
-        drawingContext.DrawRectangle(new SolidColorBrush(Colors.Transparent),
+        drawingContext.DrawRectangle(_transparentBrush,
             new Pen(Brushes.Transparent, 0.0), new Rect(0, 0, ActualWidth, ActualHeight));
 
         var elementHeight = 20 * Zoom;
@@ -70,14 +86,14 @@ public class StackTraceControl : FrameworkElement
             int i = 0;
             foreach (var info in stack)
             {
-                var color = GetColor(i);
+                var brush = GetBrush(i);
                 var size = ActualWidth / StackFrames.Count;
                 var rect = new Rect(
                     new Point(idx * size, posY),
                     new Point((idx + 1) * size, posY + elementHeight));
                 drawingContext.PushClip(new RectangleGeometry(rect));
-                drawingContext.DrawRectangle(new SolidColorBrush(color),
-                    new Pen(new SolidColorBrush(Colors.Transparent), 2.0),
+                drawingContext.DrawRectangle(brush,
+                    new Pen(_transparentBrush, 2.0),
                     rect);
                 _tooltipsCoords.Add(new RectTooltip(rect, info.FrameInfo));
 
@@ -87,10 +103,7 @@ public class StackTraceControl : FrameworkElement
                         info.FrameInfo,
                         CultureInfo.CurrentCulture,
                         FlowDirection.LeftToRight,
-                        new Typeface(new FontFamily("Segoe UI"),
-                            FontStyles.Normal,
-                            FontWeights.Normal,
-                            FontStretches.Normal),
+                        _typeface,
                         12 * Zoom,
                         GetFontColor,
                         null,
@@ -106,9 +119,9 @@ public class StackTraceControl : FrameworkElement
         }
     }
 
-    private Color GetColor(int i) => Palette == ColorPalette.Cold
-        ? _coldColors[i % _coldColors.Length]
-        : _flameColors[i % _flameColors.Length];
+    private SolidColorBrush GetBrush(int i) => Palette == ColorPalette.Cold
+        ? _coldColorsBrushes[i % _coldColorsBrushes.Length]
+        : _flameColorsBrushes[i % _flameColorsBrushes.Length];
 
     private Brush GetFontColor => Palette == ColorPalette.Cold ? Brushes.WhiteSmoke : Brushes.Black;
 
