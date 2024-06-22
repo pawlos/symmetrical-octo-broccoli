@@ -57,8 +57,17 @@ GC.Collect(1);
 Console.WriteLine("Garbage collection 1");
 GC.Collect(2);
 Console.WriteLine("Garbage collection 2");
-
 WaitForAKey(waitForKey);
+Console.WriteLine("Threads");
+var thread = new Thread(new ThreadStart(() =>
+{
+    Console.WriteLine("Call from another thread");
+    Thread.Sleep(100);
+}))
+{
+    Name = "Custom thread"
+};
+thread.Join();
 return;
 
 void WaitForAKey(bool wait)
