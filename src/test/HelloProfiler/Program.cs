@@ -59,14 +59,15 @@ GC.Collect(2);
 Console.WriteLine("Garbage collection 2");
 WaitForAKey(waitForKey);
 Console.WriteLine("Threads");
-var thread = new Thread(new ThreadStart(() =>
+var thread = new Thread(() =>
 {
     Console.WriteLine("Call from another thread");
     Thread.Sleep(100);
-}))
+})
 {
     Name = "Custom thread"
 };
+thread.Start();
 thread.Join();
 return;
 
