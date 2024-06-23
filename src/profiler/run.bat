@@ -6,14 +6,19 @@ SET CORECLR_PROFILER={8A8CC829-CCF2-49FE-BBAE-0F022228071A}
 SET COR_PROFILER_PATH=.\x64\Release\OctoProfiler.dll
 SET CORECLR_PROFILER_PATH_64=.\x64\Release\OctoProfiler.dll
 SET OCTO_PROFILER_FILE=log.txt
+SET TEST_PROGRAM=..\test\HelloProfiler\bin\Debug\net6.0\HelloProfiler.exe
 IF "%1" == "ENTERLEAVE" (
     SET OCTO_MONITOR_ENTERLEAVE=true
 )
 IF "%1" == "DEBUGNEW" (
-    "WinDbgX" "..\test\HelloProfiler\bin\Debug\net6.0\HelloProfiler.exe"
+    "WinDbgX" %TEST_PROGRAM%
+    GOTO :END
 )
 IF "%1" == "DEBUG" (
-    "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\windbg.exe" "..\test\HelloProfiler\bin\Debug\net6.0\HelloProfiler.exe"
+    "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\windbg.exe" %TEST_PROGRAM%
+    GOTO :END
 ) ELSE (
-    START /WAIT /B ..\test\HelloProfiler\bin\Debug\net6.0\HelloProfiler.exe
+    START /WAIT /B %TEST_PROGRAM%
 )
+
+:END
