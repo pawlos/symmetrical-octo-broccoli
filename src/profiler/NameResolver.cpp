@@ -21,6 +21,15 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 	}
 
 	hr = pInfo->GetCurrentThreadID(&threadId);
+	std::wstring threadName = std::format(L"{0}", threadId);
+	HANDLE thread = GetCurrentThread();
+	PWSTR threadDescription = nullptr;
+	hr = GetThreadDescription(thread, &threadDescription);
+	if (SUCCEEDED(hr))
+	{
+		threadName = threadDescription;
+	}
+
 	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
 	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
 	if (SUCCEEDED(hr))
@@ -47,7 +56,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 			}
 			auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
 			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
-			return moduleName + L";" + className + L";" + std::wstring(functionName) + L";" + std::format(L"{0}", threadId);
+			return moduleName + L";" + className + L";" + std::wstring(functionName) + L";" + threadName;
 		}
 	}
 
