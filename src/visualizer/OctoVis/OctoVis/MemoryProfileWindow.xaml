@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-        xmlns:local="clr-namespace:OctoVis"
         xmlns:converters="clr-namespace:OctoVis.Converters"
         mc:Ignorable="d"
         Title="MemoryProfileWindow" Height="450" Width="800">
