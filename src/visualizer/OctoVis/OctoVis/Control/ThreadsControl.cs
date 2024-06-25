@@ -57,10 +57,11 @@ public class ThreadsControl : FrameworkElement
         var borderBrush = new SolidColorBrush(Foreground);
         var borderPen = new Pen(borderBrush, 1.0);
         var fillPen = new Pen(new SolidColorBrush(GraphFillColor), 1.0);
+        Dictionary<string, FormattedText> formattedTexts = new();
         foreach (var perfInfo in ThreadsPerfInfo)
         {
             var ft = new FormattedText(
-                perfInfo.ThreadId,
+                perfInfo.ThreadName,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 _typeface,
@@ -69,9 +70,16 @@ public class ThreadsControl : FrameworkElement
                 null,
                 TextFormattingMode.Display,
                 72);
+            formattedTexts.Add(perfInfo.ThreadName, ft);
+        }
+
+        var maxWidth = formattedTexts.MaxBy(x => x.Value.Width).Value.Width;
+        foreach (var perfInfo in ThreadsPerfInfo)
+        {
+            var ft = formattedTexts[perfInfo.ThreadName];
             drawingContext.DrawText(ft, new Point(20, posY));
-            var width = ActualWidth - (20 + ft.Width + 20);
-            var left = 20 + ft.Width + 10;
+            var width = ActualWidth - (20 + maxWidth + 20);
+            var left = 20 + maxWidth + 10;
             drawingContext.DrawRectangle(_transparentBrush, borderPen, new Rect(
                 left, posY, width, lineHeight));
             var oldPos = -1.0d;

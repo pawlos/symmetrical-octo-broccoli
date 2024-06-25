@@ -15,7 +15,7 @@ public class LogParser : IParser
         ulong Ticks);
 
     public record ThreadPerfInfo(
-        string ThreadId,
+        string ThreadName,
         List<double> Time);
 
     public record EnterExitEntryStacked(
