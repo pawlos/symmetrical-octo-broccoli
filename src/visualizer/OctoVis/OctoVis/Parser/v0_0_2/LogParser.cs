@@ -7,7 +7,7 @@ namespace OctoVis.Parser.v0_0_2;
 public class LogParser : IParser
 {
     public record EnterExitEntry(
-        string ThreadId,
+        string ThreadName,
         string Module,
         string Class,
         string MethodName,
@@ -37,7 +37,7 @@ public class LogParser : IParser
         var topNode = CreateTopNode(startTicks);
         var entries = ParseLog(stream, out var endTicks, out var netVersion);
         var threads = CreateEnterExitNode(topNode, entries);
-        var groupByThreads = entries.GroupBy(x => x.ThreadId)
+        var groupByThreads = entries.GroupBy(x => x.ThreadName)
             .ToDictionary(x => x.Key, x => x.Select(y => y.Ticks).ToList());
 
         var model = new PerformanceDataModel
@@ -70,9 +70,10 @@ public class LogParser : IParser
                      line.Contains("OctoProfilerEnterLeave::Exit"))
             {
                 var ticks = ParseTimestamp(line);
-                var (threadId, method, @class, module, isTailCall) = ParseEnterLeave(line);
+                var (threadName, method, @class, module, isTailCall) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
-                entries.Add(new EnterExitEntry(threadId, module, @class, module, isTailCall, ticks));
+                threadName = string.IsNullOrEmpty(threadName) ? "Main thread" : threadName;
+                entries.Add(new EnterExitEntry(threadName, module, @class, module, isTailCall, ticks));
             }
             else if (line.Contains("OctoProfilerEnterLeave::Detected"))
             {
@@ -103,7 +104,7 @@ public class LogParser : IParser
     private List<EnterExitEntryStacked> CreateEnterExitNode(
         EnterExitEntryStacked parent, List<EnterExitEntry> entries)
     {
-        var entriesGroupedByThread = entries.GroupBy(x => x.ThreadId)
+        var entriesGroupedByThread = entries.GroupBy(x => x.ThreadName)
             .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Ticks).ToList());
 
         var list = new List<EnterExitEntryStacked>();
@@ -111,7 +112,7 @@ public class LogParser : IParser
         return list;
     }
 
-    private (string ThreadId, string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)
+    private (string ThreadName, string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)
     {
         var match = Regex.Match(line, @".*(Enter|Enter\(tail\)|Exit) ([^;]*);([^;]*);([^;]*);([^;]*)");
 

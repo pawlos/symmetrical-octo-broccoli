@@ -15,7 +15,7 @@ namespace OctoVis.ViewModel;
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
     public record TypeAllocationsEntry(string Name, double TotalAllocations, uint Count, uint UniqueStackTraces, List<List<ProfilerDataModel.StackFrame>> StackFrames);
-    public record ExceptionTable(string Name, string ThreadId, int Count);
+    public record ExceptionTable(string Name, string ThreadName, int Count);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
     {
@@ -192,8 +192,8 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
             }
         ];
         profilerViewModel.ExceptionCountInfo = data.ExceptionsInfo
-            .GroupBy(x => new {x.Value.ExceptionType, x.Value.ThreadId})
-            .Select(x => new ExceptionTable(x.Key.ExceptionType, x.Key.ThreadId, x.Count()))
+            .GroupBy(x => new {x.Value.ExceptionType, x.Value.ThreadName})
+            .Select(x => new ExceptionTable(x.Key.ExceptionType, x.Key.ThreadName, x.Count()))
             .ToArray();
         profilerViewModel.Settings = new SettingsViewModel(settings);
         return profilerViewModel;

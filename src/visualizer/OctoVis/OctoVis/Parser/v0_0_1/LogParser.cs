@@ -49,19 +49,20 @@ public class LogParser : IParser
             else if (line.Contains("OctoProfiler::ThreadCreated"))
             {
                 var time = ParseTimestamp(line);
-                //  [{0},{1}]
-                var match = Regex.Match(line, @"OctoProfiler::ThreadCreated \[(\d+),(\d+)\]");
+                var match = Regex.Match(line, @"OctoProfiler::ThreadCreated \[(\d+),(\d+),([^\]]*)\]");
                 var threadId = int.Parse(match.Groups[1].Value);
                 var managedId = ulong.Parse(match.Groups[2].Value);
+                var threadName = match.Groups[3].Value;
                 model.Threads.Add(new ProfilerDataModel.ThreadInfo(
                     CalculateTimestamp(time, startTicks),
                     threadId,
-                    managedId));
+                    managedId,
+                    string.IsNullOrEmpty(threadName) ? "Main thread" : threadName));
             }
             else if (line.Contains("OctoProfiler::ExceptionThrown"))
             {
                 var currentTicks = ParseTimestamp(line);
-                var (exceptionType, threadId) = ParseException(line);
+                var (exceptionType, threadId, threadName) = ParseException(line);
 
                 var stack = new List<ProfilerDataModel.StackFrame>();
                 var stackFrame = stream.ReadLine();
@@ -78,6 +79,7 @@ public class LogParser : IParser
                 model.ExceptionsInfo.Add(point.Time, new ProfilerDataModel.ExceptionInfo(
                     exceptionType,
                     threadId,
+                    string.IsNullOrEmpty(threadName) ? "Main thread" : threadName,
                     stack));
             }
         }
@@ -136,10 +138,10 @@ public class LogParser : IParser
         return ulong.Parse(match.Groups[1].Value);
     }
 
-    private static (string,string) ParseException(string line)
+    private static (string,string,string) ParseException(string line)
     {
-        var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::ExceptionThrown (.*) on thread (.*)");
-        return (match.Groups[1].Value, match.Groups[2].Value);
+        var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::ExceptionThrown (.*) on thread (\d+),(.*)");
+        return (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value);
     }
 
     private static ulong CalculateTimestamp(ulong currentTicks, ulong startTicks)

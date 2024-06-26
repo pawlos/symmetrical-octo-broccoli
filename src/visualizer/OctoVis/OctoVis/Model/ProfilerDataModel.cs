@@ -6,9 +6,9 @@ public class ProfilerDataModel : IDataModel
 {
     public record StackFrame(string Module, string FrameInfo);
 
-    public record ThreadInfo(ulong Time, int NativeThreadId, ulong ManagedThreadId);
+    public record ThreadInfo(ulong Time, int NativeThreadId, ulong ManagedThreadId, string ThreadName);
 
-    public record ExceptionInfo(string ExceptionType, string ThreadId, List<StackFrame> StackTrace);
+    public record ExceptionInfo(string ExceptionType, string ThreadId, string ThreadName, List<StackFrame> StackTrace);
     public Dictionary<string, (uint TotalMemory, uint Count)> TypeAllocationInfo { get; set; } = new();
 
     public Dictionary<Guid, (string Type, List<StackFrame> StackTraces)> ObjectAllocationPath = new();
