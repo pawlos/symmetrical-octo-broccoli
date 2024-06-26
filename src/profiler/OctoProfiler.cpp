@@ -226,7 +226,9 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
-	Logger::DoLog(std::format("OctoProfiler::ThreadCreated [{0},{1}]", win32ThreadId, threadId));
+
+	auto threadName = nameResolver->ResolveCurrentThreadName();
+	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32ThreadId, threadId, threadName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -396,7 +398,11 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		Logger::Error("Could not obtain current thread.");
 		return E_FAIL;
 	}
-	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0} on thread {1}", typeName.value_or(L"<<no info>>"), threadId));
+	auto threadName = nameResolver->ResolveCurrentThreadName();
+	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0} on thread {1},{2}",
+		typeName.value_or(L"<<no info>>"),
+		threadId,
+		threadName.value_or(L"<<no info>>")));
 	stackWalkMutex.lock();
 	hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(nameResolver.get()), NULL, 0);
 	stackWalkMutex.unlock();

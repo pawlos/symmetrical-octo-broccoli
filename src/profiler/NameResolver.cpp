@@ -21,14 +21,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 	}
 
 	hr = pInfo->GetCurrentThreadID(&threadId);
-	std::wstring threadName = std::format(L"{0}", threadId);
-	HANDLE thread = GetCurrentThread();
-	PWSTR threadDescription = nullptr;
-	hr = GetThreadDescription(thread, &threadDescription);
-	if (SUCCEEDED(hr))
-	{
-		threadName = threadDescription;
-	}
+	auto threadName = this->ResolveCurrentThreadName();
 
 	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
 	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
@@ -56,7 +49,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 			}
 			auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
 			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
-			return moduleName + L";" + className + L";" + std::wstring(functionName) + L";" + threadName;
+			return moduleName + L";" + className + L";" + std::wstring(functionName) + L";" + threadName.value_or(std::format(L"{0}", threadId));
 		}
 	}
 
@@ -242,4 +235,16 @@ std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) c
 	ULONG size;
 	auto hr = pInfo->GetModuleInfo(moduleId, &baseLoadAddress, 1024, &size, moduleName, &assemblyId);
 	return std::wstring(moduleName);
+}
+
+std::optional<std::wstring> NameResolver::ResolveCurrentThreadName() const
+{
+	HANDLE thread = GetCurrentThread();
+	PWSTR threadDescription = nullptr;
+	auto hr = GetThreadDescription(thread, &threadDescription);
+	if (SUCCEEDED(hr))
+	{
+		return threadDescription;
+	}
+	return {};
 }
