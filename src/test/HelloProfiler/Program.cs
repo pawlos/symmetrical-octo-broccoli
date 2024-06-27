@@ -26,6 +26,9 @@ Console.WriteLine("Profiler - Call stack test");
 await Function1();
 Console.WriteLine("Profile test program - done");
 WaitForAKey(waitForKey);
+Console.WriteLine("Changing the main thread name");
+Thread.CurrentThread.Name = "New name for Main thread";
+Console.WriteLine("Changing the main thread name - done");
 
 Console.WriteLine("Profiler - Allocations test");
 var test = new int[256];
