@@ -52,7 +52,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppv
 		riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog(std::format("OctoProfilerEnterLeave::QueryInterface - ProfilerCallback {0:8x}", riid.Data1));
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::QueryInterface - ProfilerCallback {0}", FormatIID(riid)));
 		*ppvObject = this;
 		this->AddRef();
 		return S_OK;

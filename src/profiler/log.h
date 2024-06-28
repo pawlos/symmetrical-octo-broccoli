@@ -46,3 +46,5 @@ public:
         m_os = &std::cout;
     }
 };
+
+std::string FormatIID(const REFIID refiid);
