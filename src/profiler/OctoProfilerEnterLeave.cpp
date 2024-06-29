@@ -1,8 +1,6 @@
 #include "OctoProfilerEnterLeave.h"
 
-EXTERN_C_START
-
-void FuncEnterStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO *argInfo)
+void FuncEnter(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO *argInfo)
 {
 	if (clientData != NULL)
 	{
@@ -16,7 +14,7 @@ void FuncEnterStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fr
 	}
 }
 
-void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_RANGE* argInfo)
+void FuncLeave(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_RANGE* argInfo)
 {
 	if (clientData != NULL)
 	{
@@ -30,7 +28,7 @@ void FuncLeaveStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fr
 	}
 }
 
-void FuncTailStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo)
+void FuncTail(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo)
 {
 	if (clientData != NULL)
 	{
@@ -43,8 +41,6 @@ void FuncTailStub(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO fra
 		Logger::DoLog(std::format("OctoProfilerEnterLeave::Enter(tail) {0:x}", funcId));
 	}
 }
-
-EXTERN_C_END
 
 HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppvObject)
 {
@@ -97,9 +93,9 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 	this->nameResolver = std::shared_ptr<NameResolver>(new NameResolver(pInfo));
 	this->pInfo->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(nameResolver.get()));
 	this->pInfo->SetEnterLeaveFunctionHooks2(
-		reinterpret_cast<FunctionEnter2*>(FuncEnterStub),
-		reinterpret_cast<FunctionLeave2*>(FuncLeaveStub),
-		reinterpret_cast<FunctionTailcall2*>(FuncTailStub));
+		reinterpret_cast<FunctionEnter2*>(FuncEnter),
+		reinterpret_cast<FunctionLeave2*>(FuncLeave),
+		reinterpret_cast<FunctionTailcall2*>(FuncTail));
 	Logger::DoLog("OctoProfilerEnterLeave::Initialize initialized...");
 	return S_OK;
 }
