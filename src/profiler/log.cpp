@@ -14,7 +14,7 @@ void Logger::DoLog(const std::string& _s)
     m.lock();
     (*g_logger->m_os) << "[" << now.time_since_epoch() << "] ";
     (*g_logger->m_os) << _s;
-    (*g_logger->m_os) << std::endl;
+    (*g_logger->m_os) << '\n';
     g_logger->m_os->flush();
     m.unlock();
 }
@@ -30,7 +30,7 @@ void Logger::Error(const std::string& _s)
     auto now = std::chrono::high_resolution_clock::now();
     std::cerr << "[" << now.time_since_epoch() << "] ";
     std::cerr << "\033[31m" << _s << "\033[0m";
-    std::cerr << std::endl;
+    std::cerr << '\n';
     std::cerr.flush();
 }
 

@@ -4,13 +4,12 @@
 #include <format>
 #include <metahost.h>
 #pragma comment(lib, "mscoree.lib")
-#include <wchar.h>
 #include <Shlwapi.h>
 
 void Error(const std::string& _s)
 {
     std::cerr << "\033[31m" << _s << "\033[0m";
-    std::cerr << std::endl;
+    std::cerr << '\n';
     std::cerr.flush();
 }
 
@@ -88,7 +87,7 @@ int main(int argc, char* argv[])
         hr = runtimeInfo->GetVersionString(runtimeVersion, &versionInfoLen);
         auto _version = std::wstring(runtimeVersion);
         const std::string version(_version.begin(), _version.end());
-        std::cout << "Loaded runtime: " << version  << std::endl;
+        std::cout << "Loaded runtime: " << version  << '\n';
         if (runtimeInfo)
         {
             break;
