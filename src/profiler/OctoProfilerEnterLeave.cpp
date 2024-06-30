@@ -1,12 +1,17 @@
 #include "OctoProfilerEnterLeave.h"
-
+#include <map>
+std::map<FunctionID, std::wstring> functionNameDict;
 void FuncEnter(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO *argInfo)
 {
 	if (clientData != NULL)
 	{
-		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
-		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", str.value_or(L"<empty>")));
+		if (!functionNameDict.contains(funcId))
+		{
+			auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
+			auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
+			functionNameDict.emplace(funcId, str.value_or(L"<empty>"));
+		}
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", functionNameDict[funcId]));
 	}
 	else
 	{
@@ -18,9 +23,8 @@ void FuncLeave(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameI
 {
 	if (clientData != NULL)
 	{
-		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
-		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str.value_or(L"<empty>")));
+		std::wstring str = functionNameDict[funcId];
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str));
 	}
 	else
 	{

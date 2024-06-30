@@ -2,19 +2,17 @@
 #include "cor.h"
 #include "corprof.h"
 #include "atlbase.h"
-#include <stdio.h>
 #include "log.h"
 #include "NameResolver.h"
 #include <mutex>
 
 class OctoProfiler : public ICorProfilerCallback3 {
-private:
 	std::string version = "v0.0.1";
 	CComQIPtr<ICorProfilerInfo5> pInfo;
-	std::unique_ptr<NameResolver> nameResolver {};	
+	std::unique_ptr<NameResolver> nameResolver {};
 	std::mutex stackWalkMutex{};
 	std::optional<std::wstring> ResolveNetRuntimeVersion() const;
-public:		
+public:
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef(void) override;
