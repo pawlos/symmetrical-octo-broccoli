@@ -2,7 +2,7 @@
 
 HRESULT __stdcall OctoProfilerFactory::QueryInterface(REFIID riid, void** ppvObject)
 {
-	static const GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+	static constexpr GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
 	Logger::DoLog("OctoProfilerFactory::QueryInterface");
 	if (riid == CLSID_ClassFactoryGuid)
 	{
