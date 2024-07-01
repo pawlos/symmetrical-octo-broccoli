@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
         return ErrorProcessIs32Bit;
     }
     ICLRMetaHost* _metahost = nullptr;
-    HRESULT hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (LPVOID*)&_metahost);
+    HRESULT hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, reinterpret_cast<LPVOID*>(&_metahost));
     if (FAILED(hr))
     {
         Error("Could not obtain CLR Meta host");
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     }
 
     ICLRProfiling* clrProfiling = nullptr;
-    hr = runtimeInfo->GetInterface(CLSID_CLRProfiling, IID_ICLRProfiling, (LPVOID*)&clrProfiling);
+    hr = runtimeInfo->GetInterface(CLSID_CLRProfiling, IID_ICLRProfiling, reinterpret_cast<LPVOID*>(&clrProfiling));
     if (FAILED(hr))
     {
         Error("Could not get CLRProfiling interface");

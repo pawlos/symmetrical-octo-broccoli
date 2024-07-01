@@ -28,7 +28,7 @@ HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFII
 {
 	Logger::DoLog(std::format("OctoProfilerFactory::CreateInstance - {0}", FormatIID(riid)));
 
-	profiler = (this->m_doProfileEnterLeave ? (ICorProfilerCallback3*)new OctoProfilerEnterLeave() : new OctoProfiler());
+	profiler = (this->m_doProfileEnterLeave ? static_cast<ICorProfilerCallback3*>(new OctoProfilerEnterLeave()) : new OctoProfiler());
 	*ppvObject = profiler;
 	return S_OK;
 }
