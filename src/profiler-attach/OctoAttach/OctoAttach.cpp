@@ -78,9 +78,9 @@ int main(int argc, char* argv[])
         return CLRErrorNoInstalledRuntimesFound;
     }
     ICLRRuntimeInfo *runtimeInfo = nullptr;
-    ULONG retreivedNum{};
-    hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retreivedNum);
-    while (retreivedNum > 0)
+    ULONG retrievedNum{};
+    hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrievedNum);
+    while (retrievedNum > 0)
     {
         WCHAR runtimeVersion[255];
         ULONG versionInfoLen;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
         {
             break;
         }
-        hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retreivedNum);
+        hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrievedNum);
     }
 
     if (!runtimeInfo)
