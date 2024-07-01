@@ -47,4 +47,4 @@ public:
     }
 };
 
-std::string FormatIID(const REFIID refiid);
+std::string FormatIID(REFIID refiid);
