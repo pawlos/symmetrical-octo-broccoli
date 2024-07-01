@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
         return ErrorProfilerDllNotFound;
     }
 
-    hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), NULL, 0);
+    hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), nullptr, 0);
     if (FAILED(hr))
     {
         Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
