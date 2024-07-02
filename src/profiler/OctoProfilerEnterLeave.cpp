@@ -108,7 +108,7 @@ std::optional<std::wstring> OctoProfilerEnterLeave::ResolveNetRuntimeVersion() c
 {
 	USHORT clrRuntimeId{ 0 };
 	COR_PRF_RUNTIME_TYPE pRuntimeType{};
-	USHORT pMajorVerion{ 0 };
+	USHORT pMajorVersion{ 0 };
 	USHORT pMinorVersion{ 0 };
 	USHORT pBuildNumber{ 0 };
 	USHORT pQFEVersion{ 0 };
@@ -117,7 +117,7 @@ std::optional<std::wstring> OctoProfilerEnterLeave::ResolveNetRuntimeVersion() c
 	auto hr = pInfo->GetRuntimeInformation(
 		&clrRuntimeId,
 		&pRuntimeType,
-		&pMajorVerion,
+		&pMajorVersion,
 		&pMinorVersion,
 		&pBuildNumber,
 		&pQFEVersion,
