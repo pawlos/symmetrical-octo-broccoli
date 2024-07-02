@@ -73,9 +73,9 @@ ULONG __stdcall OctoProfilerEnterLeave::Release(void)
 }
 
 UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHookFunction)
-{	
+{
 	*pbHookFunction = true;
-	return reinterpret_cast<UINT_PTR>(clientData);	
+	return reinterpret_cast<UINT_PTR>(clientData);
 }
 
 HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfoUnk)

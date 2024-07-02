@@ -505,7 +505,7 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL 
 	auto gen0 = generationCollected[COR_PRF_GC_GEN_0] ? "GEN0" : "";
 	auto gen1 = generationCollected[COR_PRF_GC_GEN_1] ? "GEN1" : "";
 	auto gen2 = generationCollected[COR_PRF_GC_GEN_2] ? "GEN2" : "";
-	auto genLoh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";	
+	auto genLoh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";
 	Logger::DoLog(std::format("OctoProfiler::GarbageCollectionStarted [{0}] [{1}] [{2}] [{3}]", gen0, gen1, gen2, genLoh));
 	return S_OK;
 }
@@ -543,7 +543,7 @@ HRESULT __stdcall OctoProfiler::HandleDestroyed(GCHandleID handleId)
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) 
+HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData)
 {
 	Logger::DoLog("OctoProfiler::InitializeForAttach");
 	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));

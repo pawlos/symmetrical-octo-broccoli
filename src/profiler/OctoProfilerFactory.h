@@ -9,7 +9,7 @@ class OctoProfilerFactory : public IClassFactory
 public:
 	ICorProfilerCallback3* profiler = nullptr;
 	OctoProfilerFactory(bool doProfileEnterLeave) : m_doProfileEnterLeave(doProfileEnterLeave) {}
-private:	
+private:
 	bool m_doProfileEnterLeave = false;
 	// Inherited via IClassFactory
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;

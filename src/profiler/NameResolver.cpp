@@ -109,7 +109,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assemblyId) const 
+std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assemblyId) const
 {
 	WCHAR name[255];
 	ULONG outNameLen;
