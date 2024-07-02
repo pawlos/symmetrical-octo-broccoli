@@ -8,7 +8,6 @@
 
 class OctoProfilerEnterLeave : public ICorProfilerCallback3
 {
-private:
 	std::string version = "v0.0.2";
 	CComQIPtr<ICorProfilerInfo5> pInfo;
 	std::shared_ptr<NameResolver> nameResolver{};

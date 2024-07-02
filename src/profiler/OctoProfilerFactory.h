@@ -2,7 +2,6 @@
 #include "unknwn.h"
 #include "OctoProfiler.h"
 #include "OctoProfilerEnterLeave.h"
-#include <stdio.h>
 
 class OctoProfilerFactory : public IClassFactory
 {
