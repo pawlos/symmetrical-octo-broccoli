@@ -53,6 +53,6 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID r
 	factory = new OctoProfilerFactory(doProgfileEnterLeave);
 
 	*ppv = factory;
-		
+
 	return S_OK;
 }

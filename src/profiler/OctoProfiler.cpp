@@ -341,7 +341,7 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 }
 
 HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAME_INFO frameInfo, ULONG32 contextSize, BYTE context[], void* clientData)
-{	
+{
 	if (!funcId)
 	{
 		Logger::DoLog(std::format("OctoProfiler::Native frame {0:x}", ip));
@@ -559,19 +559,19 @@ HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUn
 		Logger::Error(std::format("OctoProfiler::InitializeForAttach - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
+	this->nameResolver = std::make_unique<NameResolver>(pInfo);
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ProfilerAttachComplete()
-{	
+{
 	Logger::DoLog("OctoProfiler::ProfilerAttachComplete");
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ProfilerDetachSucceeded()
-{	
+{
 	Logger::DoLog("OctoProfiler::ProfilerDetachSucceeded");
 	return S_OK;
 }

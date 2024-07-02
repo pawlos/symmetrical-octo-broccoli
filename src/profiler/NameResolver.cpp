@@ -56,15 +56,15 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 	return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const 
+std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const
 {
 	ModuleID moduleId;
 	ClassID classId;
 	mdTypeDef defToken;
-	
+
 	auto hr = pInfo->GetFunctionInfo(functionId, &classId, &moduleId, &defToken);
 	if (FAILED(hr))
-	{		
+	{
 		return {};
 	}
 
@@ -126,7 +126,7 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 	ProcessID processId;
 	auto hr = pInfo->GetAppDomainInfo(appDomainId, 255, &appDomainNameCount, appDomainName, &processId);
 	if (FAILED(hr))
-	{		
+	{
 		return {};
 	}
 
@@ -168,9 +168,9 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
 }
 
 std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const
-{	
+{
 	ModuleID moduleId;
-	mdTypeDef defToken;				
+	mdTypeDef defToken;
 	auto hr = pInfo->GetClassIDInfo(
 		classId,
 		&moduleId,
@@ -193,7 +193,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 				&extends);
 
 			return std::wstring(typeName);
-		}		
+		}
 	}
 	return {};
 }

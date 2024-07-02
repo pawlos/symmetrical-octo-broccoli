@@ -10,7 +10,7 @@
 class Logger {
 protected:
 	std::ostream* m_os;
-public:	
+public:
     static void Initialize(Logger* instance);
     static void DoLog(const std::string& _s);
     static void DoLog(const std::wstring& _s);
