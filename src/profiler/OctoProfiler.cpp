@@ -362,14 +362,14 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 	SIZE_T bytesAllocated;
 	auto hr = pInfo->GetObjectSize2(objectId, &bytesAllocated);
 	if (SUCCEEDED(hr))
-	{		
+	{
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytesAllocated, typeName.value_or(L"<<no info>>")));
 		stackWalkMutex.lock();
-		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), NULL, 0);
+		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), nullptr, 0);
 		stackWalkMutex.unlock();
 		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 		return S_OK;
-	}	
+	}
 	return E_FAIL;
 }
 
@@ -404,7 +404,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		threadId,
 		threadName.value_or(L"<<no info>>")));
 	stackWalkMutex.lock();
-	hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(nameResolver.get()), NULL, 0);
+	hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(nameResolver.get()), nullptr, 0);
 	stackWalkMutex.unlock();
 	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 	return S_OK;
