@@ -28,16 +28,16 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
-		hr = imp.get()->GetMethodProps(defToken,
-			NULL,
+		hr = imp->GetMethodProps(defToken,
+			nullptr,
 			functionName,
 			254,
-			0,
-			0,
-			NULL,
-			NULL,
-			NULL,
-			NULL);
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr);
 
 		if (SUCCEEDED(hr))
 		{
@@ -72,22 +72,22 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	{
 		return {};
 	}
-	
-	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
+
+	auto imp = std::shared_ptr<IMetaDataImport>();
 	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
-		hr = imp.get()->GetMethodProps(defToken,
-			NULL,
+		hr = imp->GetMethodProps(defToken,
+			nullptr,
 			functionName,
 			254,
-			0,
-			0,
-			NULL,
-			NULL,
-			NULL,
-			NULL);
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr);
 
 		if (SUCCEEDED(hr))
 		{
