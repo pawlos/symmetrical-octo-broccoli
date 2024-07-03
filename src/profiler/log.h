@@ -31,7 +31,7 @@ public:
     {
         if (m_os)
         {
-            std::ofstream* of = static_cast<std::ofstream*>(m_os);
+            std::ofstream* of = dynamic_cast<std::ofstream*>(m_os);
             of->close();
             delete m_os;
         }
@@ -47,4 +47,4 @@ public:
     }
 };
 
-std::string FormatIID(REFIID refiid);
+std::string FormatIID(REFIID guid);

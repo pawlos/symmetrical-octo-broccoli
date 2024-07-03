@@ -16,12 +16,12 @@ HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 	return E_NOINTERFACE;
 }
 
-ULONG __stdcall OctoProfiler::AddRef(void)
+ULONG __stdcall OctoProfiler::AddRef()
 {
 	return 1;
 }
 
-ULONG __stdcall OctoProfiler::Release(void)
+ULONG __stdcall OctoProfiler::Release()
 {
 	return 0;
 }
@@ -29,7 +29,7 @@ ULONG __stdcall OctoProfiler::Release(void)
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
 	Logger::DoLog(std::format("OctoProfiler::Initialize started...{0}", this->version));
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, (void**)&pInfo);
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));
 	if (FAILED(hr))
 	{
 		return E_FAIL;
@@ -42,7 +42,7 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 		Logger::Error(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::unique_ptr<NameResolver>(new NameResolver(pInfo));
+	this->nameResolver = std::make_unique<NameResolver>(pInfo);
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }
@@ -79,7 +79,7 @@ std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {
 	std::condition_variable cv;
-	std::unique_lock<std::mutex> lk(stackWalkMutex);
+	std::unique_lock lk(stackWalkMutex);
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	cv.wait_for(lk, std::chrono::seconds(20));
 	Logger::DoLog("OctoProfiler::Shutdown...");
@@ -348,7 +348,7 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 	}
 	else
 	{
-		NameResolver* nameResolver = reinterpret_cast<NameResolver*>(clientData);
+		auto nameResolver = static_cast<NameResolver*>(clientData);
 		auto functionName = nameResolver->ResolveFunctionName(funcId);
 		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", functionName.value_or(L"<<no info>>"), ip));
 	}

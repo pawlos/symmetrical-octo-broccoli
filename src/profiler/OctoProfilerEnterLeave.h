@@ -15,8 +15,8 @@ class OctoProfilerEnterLeave : public ICorProfilerCallback3
 public:
 	// Inherited via ICorProfilerCallback3
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
-	ULONG __stdcall AddRef(void) override;
-	ULONG __stdcall Release(void) override;
+	ULONG __stdcall AddRef() override;
+	ULONG __stdcall Release() override;
 	HRESULT __stdcall Initialize(IUnknown* pICorProfilerInfoUnk) override;
 	HRESULT __stdcall Shutdown(void) override;
 	HRESULT __stdcall AppDomainCreationStarted(AppDomainID appDomainId) override;

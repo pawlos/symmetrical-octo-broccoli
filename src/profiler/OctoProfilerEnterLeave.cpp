@@ -94,12 +94,12 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 		Logger::Error(std::format("OctoProfilerEnterLeave::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::shared_ptr<NameResolver>(new NameResolver(pInfo));
+	this->nameResolver = std::make_shared<NameResolver>(pInfo);
 	this->pInfo->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(nameResolver.get()));
 	this->pInfo->SetEnterLeaveFunctionHooks2(
-		reinterpret_cast<FunctionEnter2*>(FuncEnter),
-		reinterpret_cast<FunctionLeave2*>(FuncLeave),
-		reinterpret_cast<FunctionTailcall2*>(FuncTail));
+		FuncEnter,
+		FuncLeave,
+		FuncTail);
 	Logger::DoLog("OctoProfilerEnterLeave::Initialize initialized...");
 	return S_OK;
 }

@@ -100,8 +100,8 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 			{
 				classToCheck = baseClassId;
 			}
-			auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
-			auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
+			const auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
+			const auto moduleName = this->ResolveModuleName(moduleId).value_or(L"");
 			return moduleName + L";" + className + L";" + std::wstring(functionName);
 		}
 	}
@@ -115,8 +115,10 @@ std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assembl
 	ULONG outNameLen;
 	AppDomainID appDomainId;
 	ModuleID moduleId;
-	auto hr = pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
-	return std::wstring(name);
+	const auto hr = pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
+	if (SUCCEEDED(hr))
+		return std::wstring(name);
+	return {};
 }
 
 std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDomainId) const
@@ -221,10 +223,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(Ob
 		if (!name) return name;
 		return name.value() + L"[]";
 	}
-	else
-	{
-		return this->ResolveTypeNameByClassId(classId);
-	}
+	return this->ResolveTypeNameByClassId(classId);
 }
 
 std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) const
