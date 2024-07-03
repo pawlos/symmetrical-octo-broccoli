@@ -80,23 +80,23 @@ UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHo
 
 HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	Logger::DoLog(std::format("OctoProfilerEnterLeave::Initialize started...{0}", this->version));
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));
+	Logger::DoLog(std::format("OctoProfilerEnterLeave::Initialize started...{0}", this->version_));
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&profiler_info_));
 	if (FAILED(hr))
 	{
 		return E_FAIL;
 	}
 	auto versionString = ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
-	hr = pInfo->SetEventMask2(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_ENABLE_FRAME_INFO, COR_PRF_HIGH_MONITOR_NONE);
+	hr = profiler_info_->SetEventMask2(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_ENABLE_FRAME_INFO, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfilerEnterLeave::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::make_shared<NameResolver>(pInfo);
-	this->pInfo->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(nameResolver.get()));
-	this->pInfo->SetEnterLeaveFunctionHooks2(
+	this->name_resolver_ = std::make_shared<NameResolver>(profiler_info_);
+	this->profiler_info_->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(name_resolver_.get()));
+	this->profiler_info_->SetEnterLeaveFunctionHooks2(
 		FuncEnter,
 		FuncLeave,
 		FuncTail);
@@ -114,7 +114,7 @@ std::optional<std::wstring> OctoProfilerEnterLeave::ResolveNetRuntimeVersion() c
 	USHORT pQFEVersion{ 0 };
 	ULONG pVersionStringLen{ 0 };
 	WCHAR versionString[256];
-	auto hr = pInfo->GetRuntimeInformation(
+	auto hr = profiler_info_->GetRuntimeInformation(
 		&clrRuntimeId,
 		&pRuntimeType,
 		&pMajorVersion,

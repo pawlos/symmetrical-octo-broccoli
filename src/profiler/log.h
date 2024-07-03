@@ -9,7 +9,7 @@
 
 class Logger {
 protected:
-	std::ostream* m_os;
+	std::ostream* os_;
 public:
     static void Initialize(Logger* instance);
     static void DoLog(const std::string& _s);
@@ -20,20 +20,20 @@ public:
 
 class FileLogger : public Logger
 {
-    std::string m_filename;
+    std::string filename_;
 public:
     explicit FileLogger(const std::string& _s)
-        : m_filename(_s)
+        : filename_(_s)
     {
-        m_os = new std::ofstream(m_filename.c_str());
+        os_ = new std::ofstream(filename_.c_str());
     }
     ~FileLogger()
     {
-        if (m_os)
+        if (os_)
         {
-            std::ofstream* of = dynamic_cast<std::ofstream*>(m_os);
+            std::ofstream* of = dynamic_cast<std::ofstream*>(os_);
             of->close();
-            delete m_os;
+            delete os_;
         }
     }
 };
@@ -43,7 +43,7 @@ class StdOutLogger : public Logger
 public:
     StdOutLogger()
     {
-        m_os = &std::cout;
+        os_ = &std::cout;
     }
 };
 

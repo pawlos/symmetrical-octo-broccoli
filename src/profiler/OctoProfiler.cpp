@@ -28,21 +28,21 @@ ULONG __stdcall OctoProfiler::Release()
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-	Logger::DoLog(std::format("OctoProfiler::Initialize started...{0}", this->version));
-	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));
+	Logger::DoLog(std::format("OctoProfiler::Initialize started...{0}", this->version_));
+	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&p_info_));
 	if (FAILED(hr))
 	{
 		return E_FAIL;
 	}
 	auto versionString = ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
-	hr = pInfo->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_MONITOR_GC | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
+	hr = p_info_->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_MONITOR_GC | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::make_unique<NameResolver>(pInfo);
+	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }
@@ -57,7 +57,7 @@ std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
 	USHORT pQFEVersion{ 0 };
 	ULONG pVersionStringLen{ 0 };
 	WCHAR versionString[256];
-	auto hr = pInfo->GetRuntimeInformation(
+	auto hr = p_info_->GetRuntimeInformation(
 		&clrRuntimeId,
 		&pRuntimeType,
 		&pMajorVersion,
@@ -79,7 +79,7 @@ std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
 HRESULT __stdcall OctoProfiler::Shutdown(void)
 {
 	std::condition_variable cv;
-	std::unique_lock lk(stackWalkMutex);
+	std::unique_lock lk(stack_walk_mutex_);
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	cv.wait_for(lk, std::chrono::seconds(20));
 	Logger::DoLog("OctoProfiler::Shutdown...");
@@ -88,7 +88,7 @@ HRESULT __stdcall OctoProfiler::Shutdown(void)
 
 HRESULT __stdcall OctoProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
 {
-	auto appDomainName = nameResolver->ResolveAppDomainName(appDomainId);
+	auto appDomainName = name_resolver_->ResolveAppDomainName(appDomainId);
 	Logger::DoLog(std::format(L"OctoProfiler::App domain creation started: {0}", appDomainName.value_or(L"<<no info>>")));
 	return S_OK;
 }
@@ -110,14 +110,14 @@ HRESULT __stdcall OctoProfiler::AppDomainShutdownFinished(AppDomainID appDomainI
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 {
-	auto assemblyName = nameResolver->ResolveAssemblyName(assemblyId);
+	auto assemblyName = name_resolver_->ResolveAssemblyName(assemblyId);
 	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadStarted: {0}", assemblyName.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
 {
-	auto assemblyName = nameResolver->ResolveAssemblyName(assemblyId);
+	auto assemblyName = name_resolver_->ResolveAssemblyName(assemblyId);
 	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadFinished: {0}", assemblyName.value_or(L"<<no info>>")));
 	return S_OK;
 }
@@ -184,7 +184,7 @@ HRESULT __stdcall OctoProfiler::FunctionUnloadStarted(FunctionID functionId)
 
 HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock)
 {
-	auto functionName = nameResolver->ResolveFunctionName(functionId);
+	auto functionName = name_resolver_->ResolveFunctionName(functionId);
 
 	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationStarted {0}", functionName.value_or(L"<<no info>>")));
 	return S_OK;
@@ -192,7 +192,7 @@ HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOO
 
 HRESULT __stdcall OctoProfiler::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
 {
-	auto functionName = nameResolver->ResolveFunctionName(functionId);
+	auto functionName = name_resolver_->ResolveFunctionName(functionId);
 
 	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationFinished {0}", functionName.value_or(L"<<no info>>")));
 	return S_OK;
@@ -221,13 +221,13 @@ HRESULT __stdcall OctoProfiler::JITInlining(FunctionID callerId, FunctionID call
 HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 {
 	DWORD win32ThreadId;
-	if (FAILED(pInfo->GetThreadInfo(threadId, &win32ThreadId)))
+	if (FAILED(p_info_->GetThreadInfo(threadId, &win32ThreadId)))
 	{
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
 
-	auto threadName = nameResolver->ResolveCurrentThreadName();
+	auto threadName = name_resolver_->ResolveCurrentThreadName();
 	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32ThreadId, threadId, threadName.value_or(L"<<no info>>")));
 	return S_OK;
 }
@@ -241,7 +241,7 @@ HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 HRESULT __stdcall OctoProfiler::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId)
 {
 	DWORD win32ThreadId;
-	if (FAILED(pInfo->GetThreadInfo(managedThreadId, &win32ThreadId)))
+	if (FAILED(p_info_->GetThreadInfo(managedThreadId, &win32ThreadId)))
 	{
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
@@ -358,15 +358,15 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
-	auto typeName = nameResolver->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
+	auto typeName = name_resolver_->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
 	SIZE_T bytesAllocated;
-	auto hr = pInfo->GetObjectSize2(objectId, &bytesAllocated);
+	auto hr = p_info_->GetObjectSize2(objectId, &bytesAllocated);
 	if (SUCCEEDED(hr))
 	{
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytesAllocated, typeName.value_or(L"<<no info>>")));
-		stackWalkMutex.lock();
-		hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(nameResolver.get()), nullptr, 0);
-		stackWalkMutex.unlock();
+		stack_walk_mutex_.lock();
+		hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(name_resolver_.get()), nullptr, 0);
+		stack_walk_mutex_.unlock();
 		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 		return S_OK;
 	}
@@ -390,22 +390,22 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	auto typeName = nameResolver->ResolveTypeNameByObjectId(thrownObjectId);
+	auto typeName = name_resolver_->ResolveTypeNameByObjectId(thrownObjectId);
 	ThreadID threadId;
-	auto hr = pInfo->GetCurrentThreadID(&threadId);
+	auto hr = p_info_->GetCurrentThreadID(&threadId);
 	if (FAILED(hr))
 	{
 		Logger::Error("Could not obtain current thread.");
 		return E_FAIL;
 	}
-	auto threadName = nameResolver->ResolveCurrentThreadName();
+	auto threadName = name_resolver_->ResolveCurrentThreadName();
 	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0} on thread {1},{2}",
 		typeName.value_or(L"<<no info>>"),
 		threadId,
 		threadName.value_or(L"<<no info>>")));
-	stackWalkMutex.lock();
-	hr = pInfo->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(nameResolver.get()), nullptr, 0);
-	stackWalkMutex.unlock();
+	stack_walk_mutex_.lock();
+	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(name_resolver_.get()), nullptr, 0);
+	stack_walk_mutex_.unlock();
 	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 	return S_OK;
 }
@@ -523,7 +523,7 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionFinished(void)
 
 HRESULT __stdcall OctoProfiler::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID)
 {
-	auto typeName = nameResolver->ResolveTypeNameByObjectId(objectID);
+	auto typeName = name_resolver_->ResolveTypeNameByObjectId(objectID);
 	Logger::DoLog(std::format(L"OctoProfiler::FinalizeableObjectQueued {0}", typeName.value_or(L"<<unknown>>")));
 	return S_OK;
 }
@@ -546,20 +546,20 @@ HRESULT __stdcall OctoProfiler::HandleDestroyed(GCHandleID handleId)
 HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData)
 {
 	Logger::DoLog("OctoProfiler::InitializeForAttach");
-	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&pInfo));
+	auto hr = pCorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&p_info_));
 	if (FAILED(hr))
 	{
 		return E_FAIL;
 	}
 	auto versionString = ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
-	hr = pInfo->SetEventMask2(COR_PRF_MONITOR_EXCEPTIONS | COR_PRF_MONITOR_GC, COR_PRF_HIGH_MONITOR_NONE);
+	hr = p_info_->SetEventMask2(COR_PRF_MONITOR_EXCEPTIONS | COR_PRF_MONITOR_GC, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::InitializeForAttach - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->nameResolver = std::make_unique<NameResolver>(pInfo);
+	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }

@@ -12,10 +12,10 @@ void Logger::DoLog(const std::string& _s)
 {
     auto now = std::chrono::high_resolution_clock::now();
     m.lock();
-    (*g_logger->m_os) << "[" << now.time_since_epoch() << "] ";
-    (*g_logger->m_os) << _s;
-    (*g_logger->m_os) << '\n';
-    g_logger->m_os->flush();
+    (*g_logger->os_) << "[" << now.time_since_epoch() << "] ";
+    (*g_logger->os_) << _s;
+    (*g_logger->os_) << '\n';
+    g_logger->os_->flush();
     m.unlock();
 }
 

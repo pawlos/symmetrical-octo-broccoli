@@ -7,10 +7,10 @@
 #include <mutex>
 
 class OctoProfiler : public ICorProfilerCallback3 {
-	std::string version = "v0.0.1";
-	CComQIPtr<ICorProfilerInfo5> pInfo;
-	std::unique_ptr<NameResolver> nameResolver {};
-	std::mutex stackWalkMutex{};
+	std::string version_ = "v0.0.1";
+	CComQIPtr<ICorProfilerInfo5> p_info_;
+	std::unique_ptr<NameResolver> name_resolver_ {};
+	std::mutex stack_walk_mutex_{};
 	std::optional<std::wstring> ResolveNetRuntimeVersion() const;
 public:
 	// Inherited via ICorProfilerCallback2

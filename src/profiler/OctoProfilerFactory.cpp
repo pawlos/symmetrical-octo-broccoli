@@ -6,7 +6,7 @@ HRESULT __stdcall OctoProfilerFactory::QueryInterface(REFIID riid, void** ppvObj
 	Logger::DoLog("OctoProfilerFactory::QueryInterface");
 	if (riid == CLSID_ClassFactoryGuid)
 	{
-		*ppvObject = &profiler;
+		*ppvObject = &profiler_;
 		this->AddRef();
 		return S_OK;
 	}
@@ -28,8 +28,8 @@ HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFII
 {
 	Logger::DoLog(std::format("OctoProfilerFactory::CreateInstance - {0}", FormatIID(riid)));
 
-	profiler = (this->m_doProfileEnterLeave ? static_cast<ICorProfilerCallback3*>(new OctoProfilerEnterLeave()) : new OctoProfiler());
-	*ppvObject = profiler;
+	profiler_ = (this->do_profile_enter_leave_ ? static_cast<ICorProfilerCallback3*>(new OctoProfilerEnterLeave()) : new OctoProfiler());
+	*ppvObject = profiler_;
 	return S_OK;
 }
 

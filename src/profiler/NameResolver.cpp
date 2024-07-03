@@ -14,17 +14,17 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 	ULONG32 pcTypeArgs;
 	ClassID typeArgs[10];
 	ThreadID threadId;
-	auto hr = pInfo->GetFunctionInfo2(functionId, frameInfo, &classId, &moduleId, &defToken, 10, &pcTypeArgs, typeArgs);
+	auto hr = profiler_info_->GetFunctionInfo2(functionId, frameInfo, &classId, &moduleId, &defToken, 10, &pcTypeArgs, typeArgs);
 	if (FAILED(hr))
 	{
 		return {};
 	}
 
-	hr = pInfo->GetCurrentThreadID(&threadId);
+	hr = profiler_info_->GetCurrentThreadID(&threadId);
 	auto threadName = this->ResolveCurrentThreadName();
 
 	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
-	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
+	hr = profiler_info_->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
@@ -41,7 +41,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 
 		if (SUCCEEDED(hr))
 		{
-			hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+			hr = profiler_info_->IsArrayClass(classId, &elementType, &baseClassId, &rank);
 			ClassID classToCheck = classId;
 			if (hr == S_OK)
 			{
@@ -62,7 +62,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	ClassID classId;
 	mdTypeDef defToken;
 
-	auto hr = pInfo->GetFunctionInfo(functionId, &classId, &moduleId, &defToken);
+	auto hr = profiler_info_->GetFunctionInfo(functionId, &classId, &moduleId, &defToken);
 	if (FAILED(hr))
 	{
 		return {};
@@ -74,7 +74,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 	}
 
 	auto imp = std::shared_ptr<IMetaDataImport>();
-	hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
+	hr = profiler_info_->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
 	if (SUCCEEDED(hr))
 	{
 		WCHAR functionName[255];
@@ -94,7 +94,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
 			CorElementType elementType;
 			ClassID baseClassId;
 			ULONG rank;
-			hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+			hr = profiler_info_->IsArrayClass(classId, &elementType, &baseClassId, &rank);
 			ClassID classToCheck = classId;
 			if (hr == S_OK)
 			{
@@ -115,7 +115,7 @@ std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assembl
 	ULONG outNameLen;
 	AppDomainID appDomainId;
 	ModuleID moduleId;
-	const auto hr = pInfo->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
+	const auto hr = profiler_info_->GetAssemblyInfo(assemblyId, 254, &outNameLen, name, &appDomainId, &moduleId);
 	if (SUCCEEDED(hr))
 		return std::wstring(name);
 	return {};
@@ -126,7 +126,7 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 	DWORD appDomainNameCount;
 	WCHAR appDomainName[255];
 	ProcessID processId;
-	auto hr = pInfo->GetAppDomainInfo(appDomainId, 255, &appDomainNameCount, appDomainName, &processId);
+	auto hr = profiler_info_->GetAppDomainInfo(appDomainId, 255, &appDomainNameCount, appDomainName, &processId);
 	if (FAILED(hr))
 	{
 		return {};
@@ -144,13 +144,13 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
 	ULONG rank;
 	ClassID classToCheck = classId;
 	bool isArray = false;
-	auto hr = pInfo->IsArrayClass(classToCheck, &elementType, &baseClassId, &rank);
+	auto hr = profiler_info_->IsArrayClass(classToCheck, &elementType, &baseClassId, &rank);
 	if (hr == S_OK)
 	{
 		classToCheck = baseClassId;
 		isArray = true;
 	}
-	hr = pInfo->GetClassIDInfo(classToCheck, &moduleId, &defToken);
+	hr = profiler_info_->GetClassIDInfo(classToCheck, &moduleId, &defToken);
 	if (SUCCEEDED(hr))
 	{
 		ULONG typedefnamesize;
@@ -173,14 +173,14 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 {
 	ModuleID moduleId;
 	mdTypeDef defToken;
-	auto hr = pInfo->GetClassIDInfo(
+	auto hr = profiler_info_->GetClassIDInfo(
 		classId,
 		&moduleId,
 		&defToken);
 	if (SUCCEEDED(hr))
 	{
 		IMetaDataImport* pIMDImport = nullptr;
-		hr = pInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(& pIMDImport));
+		hr = profiler_info_->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(& pIMDImport));
 		if (SUCCEEDED(hr))
 		{
 			ULONG typedefnamesize;
@@ -203,7 +203,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
 std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID objectId) const
 {
 	ClassID classId;
-	auto hr = pInfo->GetClassFromObject(objectId, &classId);
+	auto hr = profiler_info_->GetClassFromObject(objectId, &classId);
 	if (SUCCEEDED(hr))
 	{
 		return this->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
@@ -216,7 +216,7 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(Ob
 	CorElementType elementType;
 	ClassID baseClassId;
 	ULONG rank;
-	auto hr = pInfo->IsArrayClass(classId, &elementType, &baseClassId, &rank);
+	auto hr = profiler_info_->IsArrayClass(classId, &elementType, &baseClassId, &rank);
 	if (hr == S_OK)
 	{
 		auto name = this->ResolveTypeNameByClassId(baseClassId);
@@ -232,7 +232,7 @@ std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) c
 	AssemblyID assemblyId;
 	LPCBYTE baseLoadAddress;
 	ULONG size;
-	auto hr = pInfo->GetModuleInfo(moduleId, &baseLoadAddress, 1024, &size, moduleName, &assemblyId);
+	auto hr = profiler_info_->GetModuleInfo(moduleId, &baseLoadAddress, 1024, &size, moduleName, &assemblyId);
 	return std::wstring(moduleName);
 }
 
