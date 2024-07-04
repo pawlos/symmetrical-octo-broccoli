@@ -62,12 +62,12 @@ HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppv
 	return E_NOINTERFACE;
 }
 
-ULONG __stdcall OctoProfilerEnterLeave::AddRef(void)
+ULONG __stdcall OctoProfilerEnterLeave::AddRef()
 {
 	return 1;
 }
 
-ULONG __stdcall OctoProfilerEnterLeave::Release(void)
+ULONG __stdcall OctoProfilerEnterLeave::Release()
 {
 	return 0;
 }
@@ -133,7 +133,7 @@ std::optional<std::wstring> OctoProfilerEnterLeave::ResolveNetRuntimeVersion() c
 	return std::wstring(versionString);
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::Shutdown(void)
+HRESULT __stdcall OctoProfilerEnterLeave::Shutdown()
 {
 	Logger::DoLog("OctoProfilerEnterLeave::Prepare for shutdown...");
 	Logger::DoLog("OctoProfilerEnterLeave::Shutdown...");
@@ -275,7 +275,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::ThreadAssignedToOSThread(ThreadID mana
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RemotingClientInvocationStarted(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RemotingClientInvocationStarted()
 {
 	return E_NOTIMPL;
 }
@@ -290,7 +290,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::RemotingClientReceivingReply(GUID* pCo
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RemotingClientInvocationFinished(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RemotingClientInvocationFinished()
 {
 	return E_NOTIMPL;
 }
@@ -300,12 +300,12 @@ HRESULT __stdcall OctoProfilerEnterLeave::RemotingServerReceivingMessage(GUID* p
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RemotingServerInvocationStarted(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RemotingServerInvocationStarted()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RemotingServerInvocationReturned(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RemotingServerInvocationReturned()
 {
 	return E_NOTIMPL;
 }
@@ -330,22 +330,22 @@ HRESULT __stdcall OctoProfilerEnterLeave::RuntimeSuspendStarted(COR_PRF_SUSPEND_
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RuntimeSuspendFinished(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RuntimeSuspendFinished()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RuntimeSuspendAborted(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RuntimeSuspendAborted()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RuntimeResumeStarted(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RuntimeResumeStarted()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::RuntimeResumeFinished(void)
+HRESULT __stdcall OctoProfilerEnterLeave::RuntimeResumeFinished()
 {
 	return E_NOTIMPL;
 }
@@ -395,7 +395,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchFunctionEnter(FunctionI
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchFunctionLeave(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchFunctionLeave()
 {
 	return E_NOTIMPL;
 }
@@ -405,7 +405,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchFilterEnter(FunctionID 
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchFilterLeave(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchFilterLeave()
 {
 	return E_NOTIMPL;
 }
@@ -430,7 +430,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::ExceptionUnwindFunctionEnter(FunctionI
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionUnwindFunctionLeave(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionUnwindFunctionLeave()
 {
 	return E_NOTIMPL;
 }
@@ -440,7 +440,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::ExceptionUnwindFinallyEnter(FunctionID
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionUnwindFinallyLeave(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionUnwindFinallyLeave()
 {
 	return E_NOTIMPL;
 }
@@ -450,7 +450,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCatcherEnter(FunctionID funct
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCatcherLeave(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCatcherLeave()
 {
 	return E_NOTIMPL;
 }
@@ -465,12 +465,12 @@ HRESULT __stdcall OctoProfilerEnterLeave::COMClassicVTableDestroyed(ClassID wrap
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCLRCatcherFound(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCLRCatcherFound()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCLRCatcherExecute(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionCLRCatcherExecute()
 {
 	return E_NOTIMPL;
 }
@@ -490,7 +490,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::SurvivingReferences(ULONG cSurvivingOb
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::GarbageCollectionFinished(void)
+HRESULT __stdcall OctoProfilerEnterLeave::GarbageCollectionFinished()
 {
 	return E_NOTIMPL;
 }
@@ -520,12 +520,12 @@ HRESULT __stdcall OctoProfilerEnterLeave::InitializeForAttach(IUnknown* pCorProf
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ProfilerAttachComplete(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ProfilerAttachComplete()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ProfilerDetachSucceeded(void)
+HRESULT __stdcall OctoProfilerEnterLeave::ProfilerDetachSucceeded()
 {
 	return E_NOTIMPL;
 }

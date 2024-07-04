@@ -14,12 +14,12 @@ HRESULT __stdcall OctoProfilerFactory::QueryInterface(REFIID riid, void** ppvObj
 	return E_NOINTERFACE;
 }
 
-ULONG __stdcall OctoProfilerFactory::AddRef(void)
+ULONG __stdcall OctoProfilerFactory::AddRef()
 {
 	return 1;
 }
 
-ULONG __stdcall OctoProfilerFactory::Release(void)
+ULONG __stdcall OctoProfilerFactory::Release()
 {
 	return 0;
 }

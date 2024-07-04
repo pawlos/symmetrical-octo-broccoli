@@ -76,7 +76,7 @@ std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
 	return std::wstring(versionString);
 }
 
-HRESULT __stdcall OctoProfiler::Shutdown(void)
+HRESULT __stdcall OctoProfiler::Shutdown()
 {
 	std::condition_variable cv;
 	std::unique_lock lk(stack_walk_mutex_);
@@ -250,7 +250,7 @@ HRESULT __stdcall OctoProfiler::ThreadAssignedToOSThread(ThreadID managedThreadI
 	return S_OK;
 }
 
-HRESULT __stdcall OctoProfiler::RemotingClientInvocationStarted(void)
+HRESULT __stdcall OctoProfiler::RemotingClientInvocationStarted()
 {
 	return E_NOTIMPL;
 }
@@ -265,7 +265,7 @@ HRESULT __stdcall OctoProfiler::RemotingClientReceivingReply(GUID* pCookie, BOOL
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RemotingClientInvocationFinished(void)
+HRESULT __stdcall OctoProfiler::RemotingClientInvocationFinished()
 {
 	return E_NOTIMPL;
 }
@@ -275,12 +275,12 @@ HRESULT __stdcall OctoProfiler::RemotingServerReceivingMessage(GUID* pCookie, BO
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RemotingServerInvocationStarted(void)
+HRESULT __stdcall OctoProfiler::RemotingServerInvocationStarted()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RemotingServerInvocationReturned(void)
+HRESULT __stdcall OctoProfiler::RemotingServerInvocationReturned()
 {
 	return E_NOTIMPL;
 }
@@ -305,22 +305,22 @@ HRESULT __stdcall OctoProfiler::RuntimeSuspendStarted(COR_PRF_SUSPEND_REASON sus
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RuntimeSuspendFinished(void)
+HRESULT __stdcall OctoProfiler::RuntimeSuspendFinished()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RuntimeSuspendAborted(void)
+HRESULT __stdcall OctoProfiler::RuntimeSuspendAborted()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RuntimeResumeStarted(void)
+HRESULT __stdcall OctoProfiler::RuntimeResumeStarted()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::RuntimeResumeFinished(void)
+HRESULT __stdcall OctoProfiler::RuntimeResumeFinished()
 {
 	return E_NOTIMPL;
 }
@@ -415,7 +415,7 @@ HRESULT __stdcall OctoProfiler::ExceptionSearchFunctionEnter(FunctionID function
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionSearchFunctionLeave(void)
+HRESULT __stdcall OctoProfiler::ExceptionSearchFunctionLeave()
 {
 	return E_NOTIMPL;
 }
@@ -425,7 +425,7 @@ HRESULT __stdcall OctoProfiler::ExceptionSearchFilterEnter(FunctionID functionId
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionSearchFilterLeave(void)
+HRESULT __stdcall OctoProfiler::ExceptionSearchFilterLeave()
 {
 	return E_NOTIMPL;
 }
@@ -450,7 +450,7 @@ HRESULT __stdcall OctoProfiler::ExceptionUnwindFunctionEnter(FunctionID function
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionUnwindFunctionLeave(void)
+HRESULT __stdcall OctoProfiler::ExceptionUnwindFunctionLeave()
 {
 	return E_NOTIMPL;
 }
@@ -460,7 +460,7 @@ HRESULT __stdcall OctoProfiler::ExceptionUnwindFinallyEnter(FunctionID functionI
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionUnwindFinallyLeave(void)
+HRESULT __stdcall OctoProfiler::ExceptionUnwindFinallyLeave()
 {
 	return E_NOTIMPL;
 }
@@ -470,7 +470,7 @@ HRESULT __stdcall OctoProfiler::ExceptionCatcherEnter(FunctionID functionId, Obj
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionCatcherLeave(void)
+HRESULT __stdcall OctoProfiler::ExceptionCatcherLeave()
 {
 	return E_NOTIMPL;
 }
@@ -485,12 +485,12 @@ HRESULT __stdcall OctoProfiler::COMClassicVTableDestroyed(ClassID wrappedClassId
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionCLRCatcherFound(void)
+HRESULT __stdcall OctoProfiler::ExceptionCLRCatcherFound()
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionCLRCatcherExecute(void)
+HRESULT __stdcall OctoProfiler::ExceptionCLRCatcherExecute()
 {
 	return E_NOTIMPL;
 }
@@ -515,7 +515,7 @@ HRESULT __stdcall OctoProfiler::SurvivingReferences(ULONG cSurvivingObjectIDRang
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::GarbageCollectionFinished(void)
+HRESULT __stdcall OctoProfiler::GarbageCollectionFinished()
 {
 	Logger::DoLog("OctoProfiler::GarbageCollectionFinished");
 	return S_OK;
