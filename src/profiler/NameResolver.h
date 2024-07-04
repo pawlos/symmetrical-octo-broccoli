@@ -16,7 +16,7 @@ public:
 	std::optional<std::wstring> ResolveTypeNameByClassId(ClassID classId) const;
 	std::optional<std::wstring> ResolveTypeNameByObjectId(ObjectID objectId) const;
 	std::optional<std::wstring> ResolveTypeNameByObjectIdAndClassId(ObjectID objectId, ClassID classId) const;
-	std::optional<std::wstring> ResolveCurrentThreadName() const;
+	static std::optional<std::wstring> ResolveCurrentThreadName();
 private:
 	std::optional<std::wstring> ResolveTypeNameByClassIdWithExistingMetaData(ClassID classId, IMetaDataImport*) const;
 	ICorProfilerInfo5* profiler_info_;

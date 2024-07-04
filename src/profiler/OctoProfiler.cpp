@@ -227,7 +227,7 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 		return E_FAIL;
 	}
 
-	auto threadName = name_resolver_->ResolveCurrentThreadName();
+	auto threadName = NameResolver::ResolveCurrentThreadName();
 	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32ThreadId, threadId, threadName.value_or(L"<<no info>>")));
 	return S_OK;
 }
@@ -398,7 +398,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		Logger::Error("Could not obtain current thread.");
 		return E_FAIL;
 	}
-	auto threadName = name_resolver_->ResolveCurrentThreadName();
+	auto threadName = NameResolver::ResolveCurrentThreadName();
 	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0} on thread {1},{2}",
 		typeName.value_or(L"<<no info>>"),
 		threadId,

@@ -21,7 +21,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(Funct
 	}
 
 	hr = profiler_info_->GetCurrentThreadID(&threadId);
-	auto threadName = this->ResolveCurrentThreadName();
+	auto threadName = ResolveCurrentThreadName();
 
 	std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
 	hr = profiler_info_->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
@@ -236,7 +236,7 @@ std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) c
 	return std::wstring(moduleName);
 }
 
-std::optional<std::wstring> NameResolver::ResolveCurrentThreadName() const
+std::optional<std::wstring> NameResolver::ResolveCurrentThreadName()
 {
 	HANDLE thread = GetCurrentThread();
 	PWSTR threadDescription = nullptr;
