@@ -3,7 +3,7 @@
 
 static OctoProfilerFactory* factory;
 
-inline std::optional<std::string> GetEnv(const char* key)
+inline std::optional<std::string> get_env(const char* key)
 {
 	if (key == nullptr) {
 		throw std::invalid_argument("Null pointer passed as environment variable name");
@@ -12,8 +12,7 @@ inline std::optional<std::string> GetEnv(const char* key)
 		throw std::invalid_argument("Value requested for the empty-name environment variable");
 	}
 	char* buffer = nullptr;
-	auto err = _dupenv_s(&buffer, nullptr, key);
-	if (buffer == nullptr) {
+	if (_dupenv_s(&buffer, nullptr, key) != 0 || buffer == nullptr) {
 		return {};
 	}
 	return { std::string { buffer } };
@@ -34,13 +33,13 @@ BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 
 extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
 {
-	auto fileToLog = GetEnv("OCTO_PROFILER_FILE");
+	auto fileToLog = get_env("OCTO_PROFILER_FILE");
 	auto logger = fileToLog.has_value() ? static_cast<Logger *>(new FileLogger(fileToLog.value())) : static_cast<Logger *>(new StdOutLogger());
 	Logger::Initialize(logger);
 	Logger::DoLog(std::format("Log file: {0}", fileToLog.value_or("console")));
 	Logger::DoLog("OctoProfiler::DllGetClassObject");
 
-	auto doProfileEnterLeave = to_bool(GetEnv("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
+	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
 	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doProfileEnterLeave));
 
 	if (ppv == nullptr)

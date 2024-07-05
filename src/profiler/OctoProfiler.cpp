@@ -365,7 +365,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 	{
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytesAllocated, typeName.value_or(L"<<no info>>")));
 		stack_walk_mutex_.lock();
-		hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void *>(name_resolver_.get()), nullptr, 0);
+		hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
 		stack_walk_mutex_.unlock();
 		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 		return S_OK;
