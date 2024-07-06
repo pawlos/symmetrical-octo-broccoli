@@ -34,8 +34,8 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	{
 		return E_FAIL;
 	}
-	auto versionString = ResolveNetRuntimeVersion();
-	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
+	const auto version_string = ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"<<unknown>>")));
 	hr = p_info_->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_MONITOR_GC | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
@@ -88,8 +88,8 @@ HRESULT __stdcall OctoProfiler::Shutdown()
 
 HRESULT __stdcall OctoProfiler::AppDomainCreationStarted(AppDomainID appDomainId)
 {
-	auto appDomainName = name_resolver_->ResolveAppDomainName(appDomainId);
-	Logger::DoLog(std::format(L"OctoProfiler::App domain creation started: {0}", appDomainName.value_or(L"<<no info>>")));
+	const auto app_domain_name = name_resolver_->ResolveAppDomainName(appDomainId);
+	Logger::DoLog(std::format(L"OctoProfiler::App domain creation started: {0}", app_domain_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -110,15 +110,15 @@ HRESULT __stdcall OctoProfiler::AppDomainShutdownFinished(AppDomainID appDomainI
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
 {
-	auto assemblyName = name_resolver_->ResolveAssemblyName(assemblyId);
-	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadStarted: {0}", assemblyName.value_or(L"<<no info>>")));
+	const auto assembly_name = name_resolver_->ResolveAssemblyName(assemblyId);
+	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadStarted: {0}", assembly_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
 {
-	auto assemblyName = name_resolver_->ResolveAssemblyName(assemblyId);
-	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadFinished: {0}", assemblyName.value_or(L"<<no info>>")));
+	const auto assembly_name = name_resolver_->ResolveAssemblyName(assemblyId);
+	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadFinished: {0}", assembly_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -184,17 +184,17 @@ HRESULT __stdcall OctoProfiler::FunctionUnloadStarted(FunctionID functionId)
 
 HRESULT __stdcall OctoProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock)
 {
-	auto functionName = name_resolver_->ResolveFunctionName(functionId);
+	const auto function_name = name_resolver_->ResolveFunctionName(functionId);
 
-	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationStarted {0}", functionName.value_or(L"<<no info>>")));
+	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationStarted {0}", function_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
 {
-	auto functionName = name_resolver_->ResolveFunctionName(functionId);
+	const auto function_name = name_resolver_->ResolveFunctionName(functionId);
 
-	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationFinished {0}", functionName.value_or(L"<<no info>>")));
+	Logger::DoLog(std::format(L"OctoProfiler::JITCompilationFinished {0}", function_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -220,15 +220,15 @@ HRESULT __stdcall OctoProfiler::JITInlining(FunctionID callerId, FunctionID call
 
 HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 {
-	DWORD win32ThreadId;
-	if (FAILED(p_info_->GetThreadInfo(threadId, &win32ThreadId)))
+	DWORD win32_thread_id;
+	if (FAILED(p_info_->GetThreadInfo(threadId, &win32_thread_id)))
 	{
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
 
-	auto threadName = NameResolver::ResolveCurrentThreadName();
-	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32ThreadId, threadId, threadName.value_or(L"<<no info>>")));
+	const auto thread_name = NameResolver::ResolveCurrentThreadName();
+	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32_thread_id, threadId, thread_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
@@ -240,13 +240,13 @@ HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 
 HRESULT __stdcall OctoProfiler::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId)
 {
-	DWORD win32ThreadId;
-	if (FAILED(p_info_->GetThreadInfo(managedThreadId, &win32ThreadId)))
+	DWORD win32_thread_id;
+	if (FAILED(p_info_->GetThreadInfo(managedThreadId, &win32_thread_id)))
 	{
 		Logger::Error("Could not resolve thread ID");
 		return E_FAIL;
 	}
-	Logger::DoLog(std::format("OctoProfiler::ThreadAssignedToOSThread [{0}]", win32ThreadId));
+	Logger::DoLog(std::format("OctoProfiler::ThreadAssignedToOSThread [{0}]", win32_thread_id));
 	return S_OK;
 }
 
@@ -348,9 +348,9 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 	}
 	else
 	{
-		auto nameResolver = static_cast<NameResolver*>(clientData);
-		auto functionName = nameResolver->ResolveFunctionName(funcId);
-		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", functionName.value_or(L"<<no info>>"), ip));
+		const auto name_resolver = static_cast<NameResolver*>(clientData);
+		const auto function_name = name_resolver->ResolveFunctionName(funcId);
+		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", function_name.value_or(L"<<no info>>"), ip));
 	}
 
 	return S_OK;
@@ -358,12 +358,12 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 
 HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
-	auto typeName = name_resolver_->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
-	SIZE_T bytesAllocated;
-	auto hr = p_info_->GetObjectSize2(objectId, &bytesAllocated);
+	const auto type_name = name_resolver_->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
+	SIZE_T bytes_allocated;
+	auto hr = p_info_->GetObjectSize2(objectId, &bytes_allocated);
 	if (SUCCEEDED(hr))
 	{
-		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytesAllocated, typeName.value_or(L"<<no info>>")));
+		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytes_allocated, type_name.value_or(L"<<no info>>")));
 		stack_walk_mutex_.lock();
 		hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
 		stack_walk_mutex_.unlock();
@@ -390,19 +390,19 @@ HRESULT __stdcall OctoProfiler::RootReferences(ULONG cRootRefs, ObjectID rootRef
 
 HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 {
-	auto typeName = name_resolver_->ResolveTypeNameByObjectId(thrownObjectId);
-	ThreadID threadId;
-	auto hr = p_info_->GetCurrentThreadID(&threadId);
+	const auto type_name = name_resolver_->ResolveTypeNameByObjectId(thrownObjectId);
+	ThreadID thread_id;
+	auto hr = p_info_->GetCurrentThreadID(&thread_id);
 	if (FAILED(hr))
 	{
 		Logger::Error("Could not obtain current thread.");
 		return E_FAIL;
 	}
-	auto threadName = NameResolver::ResolveCurrentThreadName();
+	const auto thread_name = NameResolver::ResolveCurrentThreadName();
 	Logger::DoLog(std::format(L"OctoProfiler::ExceptionThrown {0} on thread {1},{2}",
-		typeName.value_or(L"<<no info>>"),
-		threadId,
-		threadName.value_or(L"<<no info>>")));
+		type_name.value_or(L"<<no info>>"),
+		thread_id,
+		thread_name.value_or(L"<<no info>>")));
 	stack_walk_mutex_.lock();
 	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(name_resolver_.get()), nullptr, 0);
 	stack_walk_mutex_.unlock();
@@ -505,8 +505,8 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL 
 	auto gen0 = generationCollected[COR_PRF_GC_GEN_0] ? "GEN0" : "";
 	auto gen1 = generationCollected[COR_PRF_GC_GEN_1] ? "GEN1" : "";
 	auto gen2 = generationCollected[COR_PRF_GC_GEN_2] ? "GEN2" : "";
-	auto genLoh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";
-	Logger::DoLog(std::format("OctoProfiler::GarbageCollectionStarted [{0}] [{1}] [{2}] [{3}]", gen0, gen1, gen2, genLoh));
+	auto gen_loh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";
+	Logger::DoLog(std::format("OctoProfiler::GarbageCollectionStarted [{0}] [{1}] [{2}] [{3}]", gen0, gen1, gen2, gen_loh));
 	return S_OK;
 }
 
@@ -523,8 +523,8 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionFinished()
 
 HRESULT __stdcall OctoProfiler::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID)
 {
-	auto typeName = name_resolver_->ResolveTypeNameByObjectId(objectID);
-	Logger::DoLog(std::format(L"OctoProfiler::FinalizeableObjectQueued {0}", typeName.value_or(L"<<unknown>>")));
+	const auto type_name = name_resolver_->ResolveTypeNameByObjectId(objectID);
+	Logger::DoLog(std::format(L"OctoProfiler::FinalizeableObjectQueued {0}", type_name.value_or(L"<<unknown>>")));
 	return S_OK;
 }
 
@@ -551,8 +551,8 @@ HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUn
 	{
 		return E_FAIL;
 	}
-	auto versionString = ResolveNetRuntimeVersion();
-	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
+	const auto version_string = ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"<<unknown>>")));
 	hr = p_info_->SetEventMask2(COR_PRF_MONITOR_EXCEPTIONS | COR_PRF_MONITOR_GC, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
