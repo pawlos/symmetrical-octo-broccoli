@@ -80,11 +80,15 @@ int main(int argc, char* argv[])
     ICLRRuntimeInfo *runtimeInfo = nullptr;
     ULONG retrievedNum{};
     hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrievedNum);
-    while (retrievedNum > 0)
+    while (retrievedNum > 0 && SUCCEEDED(hr))
     {
         WCHAR runtimeVersion[255];
         ULONG versionInfoLen;
         hr = runtimeInfo->GetVersionString(runtimeVersion, &versionInfoLen);
+        if (FAILED(hr))
+        {
+	        break;
+        }
         auto _version = std::wstring(runtimeVersion);
         const std::string version(_version.begin(), _version.end());
         std::cout << "Loaded runtime: " << version  << '\n';
