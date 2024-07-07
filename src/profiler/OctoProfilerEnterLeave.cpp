@@ -7,8 +7,8 @@ void FuncEnter(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameI
 	{
 		if (!functionNameDict.contains(funcId))
 		{
-			auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
-			auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
+			const auto name_resolver = reinterpret_cast<NameResolver*>(clientData);
+			const auto str = name_resolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
 			functionNameDict.emplace(funcId, str.value_or(L"<empty>"));
 		}
 		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", functionNameDict[funcId]));
@@ -36,8 +36,8 @@ void FuncTail(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameIn
 {
 	if (clientData != NULL)
 	{
-		auto nameResolver = reinterpret_cast<NameResolver*>(clientData);
-		auto str = nameResolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
+		const auto name_resolver = reinterpret_cast<NameResolver*>(clientData);
+		const auto str = name_resolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
 		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter(tail) {0}", str.value_or(L"<empty>")));
 	}
 	else
@@ -95,7 +95,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 		return E_FAIL;
 	}
 	this->name_resolver_ = std::make_shared<NameResolver>(profiler_info_);
-	this->profiler_info_->SetFunctionIDMapper2(&MapFunctionId, reinterpret_cast<void*>(name_resolver_.get()));
+	this->profiler_info_->SetFunctionIDMapper2(&MapFunctionId, name_resolver_.get());
 	this->profiler_info_->SetEnterLeaveFunctionHooks2(
 		FuncEnter,
 		FuncLeave,
@@ -415,12 +415,12 @@ HRESULT __stdcall OctoProfilerEnterLeave::ExceptionSearchCatcherFound(FunctionID
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionOSHandlerEnter(UINT_PTR __unused)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionOSHandlerEnter(UINT_PTR _unused)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfilerEnterLeave::ExceptionOSHandlerLeave(UINT_PTR __unused)
+HRESULT __stdcall OctoProfilerEnterLeave::ExceptionOSHandlerLeave(UINT_PTR _unused)
 {
 	return E_NOTIMPL;
 }
