@@ -367,6 +367,11 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID class
 		stack_walk_mutex_.lock();
 		hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
 		stack_walk_mutex_.unlock();
+		if (FAILED(hr))
+		{
+			Logger::Error("Could not obtain stack trace");
+			return E_FAIL;
+		}
 		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 		return S_OK;
 	}
@@ -404,8 +409,13 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		thread_id,
 		thread_name.value_or(L"<<no info>>")));
 	stack_walk_mutex_.lock();
-	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(name_resolver_.get()), nullptr, 0);
+	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
 	stack_walk_mutex_.unlock();
+	if (FAILED(hr))
+	{
+		Logger::Error("Could not obtain stack trace");
+		return E_FAIL;
+	}
 	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 	return S_OK;
 }
@@ -435,12 +445,12 @@ HRESULT __stdcall OctoProfiler::ExceptionSearchCatcherFound(FunctionID functionI
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionOSHandlerEnter(UINT_PTR __unused)
+HRESULT __stdcall OctoProfiler::ExceptionOSHandlerEnter(UINT_PTR _unused)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ExceptionOSHandlerLeave(UINT_PTR __unused)
+HRESULT __stdcall OctoProfiler::ExceptionOSHandlerLeave(UINT_PTR _unused)
 {
 	return E_NOTIMPL;
 }
