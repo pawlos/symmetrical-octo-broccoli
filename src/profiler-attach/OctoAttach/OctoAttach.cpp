@@ -6,16 +6,16 @@
 #pragma comment(lib, "mscoree.lib")
 #include <Shlwapi.h>
 
-void Error(const std::string& _s)
+void Error(const std::string& s)
 {
-    std::cerr << "\033[31m" << _s << "\033[0m";
+    std::cerr << "\033[31m" << s << "\033[0m";
     std::cerr << '\n';
     std::cerr.flush();
 }
 
-void Error(const std::wstring& _s)
+void Error(const std::wstring& ws)
 {
-    const std::string s(_s.begin(), _s.end());
+    const std::string s(ws.begin(), ws.end());
     Error(s);
 }
 
@@ -29,7 +29,7 @@ constexpr auto CLRErrorProfilerCouldNotBeAttached = -7;
 constexpr auto ErrorCouldNotGetProcessBitness = -8;
 constexpr auto ErrorProcessIs32Bit = -9;
 
-int main(int argc, char* argv[])
+int main(const int argc, char* argv[])
 {
     std::cout << "OctoAttach for .NET Framework!\n";
     int pid = 0;
@@ -50,14 +50,14 @@ int main(int argc, char* argv[])
         Error(std::format("Could not open process ID: {0}.", pid));
         return ErrorCouldNotOpenProcess;
     }
-    BOOL isWow64Process = false;
-    PBOOL pIsWow64Process = &isWow64Process;
-    if (!IsWow64Process(handle, pIsWow64Process))
+    BOOL is_wow64_process = false;
+    const PBOOL p_is_wow64_process = &is_wow64_process;
+    if (!IsWow64Process(handle, p_is_wow64_process))
     {
         Error("Could not obtain process bitness.");
         return ErrorCouldNotGetProcessBitness;
     }
-    if (isWow64Process)
+    if (is_wow64_process)
     {
         Error("Process is 32-bit. Currently only works with 64-bit processes.");
         return ErrorProcessIs32Bit;
@@ -78,25 +78,25 @@ int main(int argc, char* argv[])
         return CLRErrorNoInstalledRuntimesFound;
     }
     ICLRRuntimeInfo *runtimeInfo = nullptr;
-    ULONG retrievedNum{};
-    hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrievedNum);
-    while (retrievedNum > 0 && SUCCEEDED(hr))
+    ULONG retrieved_num{};
+    hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrieved_num);
+    while (retrieved_num > 0 && SUCCEEDED(hr))
     {
-        WCHAR runtimeVersion[255];
-        ULONG versionInfoLen;
-        hr = runtimeInfo->GetVersionString(runtimeVersion, &versionInfoLen);
+        WCHAR runtime_version[255];
+        ULONG version_info_len;
+        hr = runtimeInfo->GetVersionString(runtime_version, &version_info_len);
         if (FAILED(hr))
         {
 	        break;
         }
-        auto _version = std::wstring(runtimeVersion);
+        const auto _version = std::wstring(runtime_version);
         const std::string version(_version.begin(), _version.end());
         std::cout << "Loaded runtime: " << version  << '\n';
         if (runtimeInfo)
         {
             break;
         }
-        hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrievedNum);
+        hr = enumIterator->Next(1, reinterpret_cast<IUnknown**>(&runtimeInfo), &retrieved_num);
     }
 
     if (!runtimeInfo)
@@ -105,8 +105,8 @@ int main(int argc, char* argv[])
         return CLRErrorNoLoadedRuntimesFound;
     }
 
-    ICLRProfiling* clrProfiling = nullptr;
-    hr = runtimeInfo->GetInterface(CLSID_CLRProfiling, IID_ICLRProfiling, reinterpret_cast<LPVOID*>(&clrProfiling));
+    ICLRProfiling* clr_profiling = nullptr;
+    hr = runtimeInfo->GetInterface(CLSID_CLRProfiling, IID_ICLRProfiling, reinterpret_cast<LPVOID*>(&clr_profiling));
     if (FAILED(hr))
     {
         Error("Could not get CLRProfiling interface");
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
         return ErrorProfilerDllNotFound;
     }
 
-    hr = clrProfiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), nullptr, 0);
+    hr = clr_profiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), nullptr, 0);
     if (FAILED(hr))
     {
         Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
