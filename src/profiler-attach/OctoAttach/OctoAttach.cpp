@@ -123,12 +123,14 @@ int main(const int argc, char* argv[])
         return ErrorProfilerDllNotFound;
     }
 
-    hr = clr_profiling->AttachProfiler(pid, 2000, &CLSID_ProfilerCallback3, path.c_str(), nullptr, 0);
+    constexpr int max_wait_time = 2000;
+    hr = clr_profiling->AttachProfiler(pid, max_wait_time, &CLSID_ProfilerCallback3, path.c_str(), nullptr, 0);
     if (FAILED(hr))
     {
         Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
         return CLRErrorProfilerCouldNotBeAttached;
     }
+    std::cout << "Waiting on program to finish..." << '\n';
     WaitForSingleObject(handle, INFINITE);
     return 0;
 

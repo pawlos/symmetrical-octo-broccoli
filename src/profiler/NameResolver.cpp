@@ -218,13 +218,12 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID obj
 
 std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(ObjectID objectId, ClassID classId) const
 {
-    CorElementType elementType;
-    ClassID baseClassId;
+    CorElementType element_type;
+    ClassID base_class_id;
     ULONG rank;
-    auto hr = profiler_info_->IsArrayClass(classId, &elementType, &baseClassId, &rank);
-    if (hr == S_OK)
+    if (profiler_info_->IsArrayClass(classId, &element_type, &base_class_id, &rank) == S_OK)
     {
-        auto name = this->ResolveTypeNameByClassId(baseClassId);
+        auto name = this->ResolveTypeNameByClassId(base_class_id);
         if (!name) return name;
         return name.value() + L"[]";
     }
@@ -233,15 +232,15 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(Ob
 
 std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) const
 {
-    WCHAR moduleName[1026];
-    AssemblyID assemblyId;
-    LPCBYTE baseLoadAddress;
+    WCHAR module_name[1026];
+    AssemblyID assembly_id;
+    LPCBYTE base_load_address;
     ULONG size;
-    if (FAILED(profiler_info_->GetModuleInfo(moduleId, &baseLoadAddress, 1024, &size, moduleName, &assemblyId)))
+    if (FAILED(profiler_info_->GetModuleInfo(moduleId, &base_load_address, 1024, &size, module_name, &assembly_id)))
     {
         return {};
     }
-    return std::wstring(moduleName);
+    return std::wstring(module_name);
 }
 
 std::optional<std::wstring> NameResolver::ResolveCurrentThreadName()
