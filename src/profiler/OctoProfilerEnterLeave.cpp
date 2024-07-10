@@ -86,8 +86,8 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 	{
 		return E_FAIL;
 	}
-	auto versionString = ResolveNetRuntimeVersion();
-	Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Detected .NET {}", versionString.value_or(L"<<unknown>>")));
+	const auto version_string = ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Detected .NET {}", version_string.value_or(L"<<unknown>>")));
 	hr = profiler_info_->SetEventMask2(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_ENABLE_FRAME_INFO, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{

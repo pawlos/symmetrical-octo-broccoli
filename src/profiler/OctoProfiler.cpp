@@ -49,31 +49,31 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 
 std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
 {
-	USHORT clrRuntimeId{ 0 };
-	COR_PRF_RUNTIME_TYPE pRuntimeType{};
-	USHORT pMajorVersion{ 0 };
-	USHORT pMinorVersion{ 0 };
-	USHORT pBuildNumber{ 0 };
-	USHORT pQFEVersion{ 0 };
-	ULONG pVersionStringLen{ 0 };
-	WCHAR versionString[256];
+	USHORT clr_runtime_id{ 0 };
+	COR_PRF_RUNTIME_TYPE runtime_type{};
+	USHORT major_version{ 0 };
+	USHORT minor_version{ 0 };
+	USHORT build_number{ 0 };
+	USHORT qfe_version{ 0 };
+	ULONG version_string_len{ 0 };
+	WCHAR version_string[256];
 	auto hr = p_info_->GetRuntimeInformation(
-		&clrRuntimeId,
-		&pRuntimeType,
-		&pMajorVersion,
-		&pMinorVersion,
-		&pBuildNumber,
-		&pQFEVersion,
+		&clr_runtime_id,
+		&runtime_type,
+		&major_version,
+		&minor_version,
+		&build_number,
+		&qfe_version,
 		255,
-		&pVersionStringLen,
-		versionString);
+		&version_string_len,
+		version_string);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::ResolveNetRuntimeVersion - Error getting .NET information. HRESULT: {0:x}", hr));
 		return {};
 	}
 
-	return std::wstring(versionString);
+	return std::wstring(version_string);
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown()
