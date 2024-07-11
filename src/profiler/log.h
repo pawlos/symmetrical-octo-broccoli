@@ -7,7 +7,8 @@
 #include <fstream>
 #include <mutex>
 
-class Logger {
+class Logger
+{
 protected:
 	std::ostream* os_;
 public:
@@ -22,8 +23,8 @@ class FileLogger : public Logger
 {
     std::string filename_;
 public:
-    explicit FileLogger(const std::string& _s)
-        : filename_(_s)
+    explicit FileLogger(std::string s)
+        : filename_(std::move(s))
     {
         os_ = new std::ofstream(filename_.c_str());
     }
@@ -31,7 +32,7 @@ public:
     {
         if (os_)
         {
-            std::ofstream* of = dynamic_cast<std::ofstream*>(os_);
+            const auto of = dynamic_cast<std::ofstream*>(os_);
             of->close();
             delete os_;
         }
