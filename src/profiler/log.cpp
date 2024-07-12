@@ -8,36 +8,36 @@ void Logger::Initialize(Logger* instance)
     g_logger = instance;
 }
 
-void Logger::DoLog(const std::string& _s)
+void Logger::DoLog(const std::string& s)
 {
-    auto now = std::chrono::high_resolution_clock::now();
+	const auto now = std::chrono::high_resolution_clock::now();
     m.lock();
     (*g_logger->os_) << "[" << now.time_since_epoch() << "] ";
-    (*g_logger->os_) << _s;
+    (*g_logger->os_) << s;
     (*g_logger->os_) << '\n';
     g_logger->os_->flush();
     m.unlock();
 }
 
-void Logger::DoLog(const std::wstring& _s)
+void Logger::DoLog(const std::wstring& s)
 {
-    const std::string s(_s.begin(), _s.end());
-    Logger::DoLog(s);
+    const std::string log_string(s.begin(), s.end());
+    DoLog(log_string);
 }
 
-void Logger::Error(const std::string& _s)
+void Logger::Error(const std::string& s)
 {
-    auto now = std::chrono::high_resolution_clock::now();
+	const auto now = std::chrono::high_resolution_clock::now();
     std::cerr << "[" << now.time_since_epoch() << "] ";
-    std::cerr << "\033[31m" << _s << "\033[0m";
+    std::cerr << "\033[31m" << s << "\033[0m";
     std::cerr << '\n';
     std::cerr.flush();
 }
 
-void Logger::Error(const std::wstring& _s)
+void Logger::Error(const std::wstring& s)
 {
-    const std::string s(_s.begin(), _s.end());
-    Logger::DoLog(s);
+    const std::string log_string(s.begin(), s.end());
+    DoLog(log_string);
 }
 
 std::string FormatIID(REFIID guid)

@@ -10,13 +10,13 @@
 class Logger
 {
 protected:
-	std::ostream* os_;
+	std::ostream* os_ = nullptr;
 public:
     static void Initialize(Logger* instance);
-    static void DoLog(const std::string& _s);
-    static void DoLog(const std::wstring& _s);
-    static void Error(const std::string& _s);
-    static void Error(const std::wstring& _s);
+    static void DoLog(const std::string& s);
+    static void DoLog(const std::wstring& s);
+    static void Error(const std::string& s);
+    static void Error(const std::wstring& s);
 };
 
 class FileLogger : public Logger
