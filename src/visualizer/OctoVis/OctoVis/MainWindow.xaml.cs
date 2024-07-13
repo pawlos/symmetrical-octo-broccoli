@@ -23,9 +23,14 @@ public partial class MainWindow
     private void OpenLog_OnClick(object sender, RoutedEventArgs e)
     {
         string file = PickFile("Open log file", "Log files|*.txt");
-        Hide();
 
-        CreateProfilingWindow(file);
+        if (string.IsNullOrWhiteSpace(file))
+            return;
+
+        if (CreateProfilingWindow(file))
+        {
+            Hide();
+        }
     }
 
     private string PickFile(string title, string allowedExtension)
@@ -92,13 +97,13 @@ public partial class MainWindow
         CreateProfilingWindow(fileName);
     }
 
-    private static void CreateProfilingWindow(string fileName)
+    private static bool CreateProfilingWindow(string fileName)
     {
         var data = LogParser.ParseFile(fileName);
         if (data is null)
         {
             MessageBox.Show("Could not parse the log file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
+            return false;
         }
         IProfilingWindow? profilingWindow;
         if (data is PerformanceDataModel)
@@ -111,5 +116,6 @@ public partial class MainWindow
         }
         profilingWindow.SetModel(data);
         profilingWindow.Show();
+        return true;
     }
 }
