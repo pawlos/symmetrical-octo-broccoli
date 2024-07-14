@@ -27,16 +27,16 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
     {
         return {};
     }
-    auto threadName = ResolveCurrentThreadName();
+    const auto threadName = ResolveCurrentThreadName();
 
-    std::shared_ptr<IMetaDataImport> imp = std::shared_ptr<IMetaDataImport>();
+    auto imp = std::shared_ptr<IMetaDataImport>();
     hr = profiler_info_->GetModuleMetaData(module_id, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
     if (SUCCEEDED(hr))
     {
-        WCHAR functionName[255];
+        WCHAR function_name[255];
         hr = imp->GetMethodProps(def_token,
                                  nullptr,
-                                 functionName,
+                                 function_name,
                                  254,
                                  nullptr,
                                  nullptr,
@@ -48,14 +48,14 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
         if (SUCCEEDED(hr))
         {
             hr = profiler_info_->IsArrayClass(class_id, &element_type, &base_class_id, &rank);
-            ClassID classToCheck = class_id;
+            ClassID class_to_check = class_id;
             if (hr == S_OK)
             {
-                classToCheck = base_class_id;
+                class_to_check = base_class_id;
             }
-            auto className = this->ResolveTypeNameByClassId(classToCheck).value_or(L"<<empty>>");
-            auto moduleName = this->ResolveModuleName(module_id).value_or(L"");
-            return moduleName + L";" + className + L";" + std::wstring(functionName) + L";" + threadName.value_or(
+            const auto class_name = this->ResolveTypeNameByClassId(class_to_check).value_or(L"<<empty>>");
+            const auto module_name = this->ResolveModuleName(module_id).value_or(L"");
+            return module_name + L";" + class_name + L";" + std::wstring(function_name) + L";" + threadName.value_or(
                 std::format(L"{0}", thread_id));
         }
     }
