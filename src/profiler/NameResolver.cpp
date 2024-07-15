@@ -4,7 +4,7 @@
 
 
 std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
-    FunctionID functionId, COR_PRF_FRAME_INFO frameInfo) const
+	const FunctionID function_id, const COR_PRF_FRAME_INFO frame_info) const
 {
     ModuleID module_id;
     ClassID class_id;
@@ -15,7 +15,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
     ULONG32 pc_type_args;
     ClassID type_args[10];
     ThreadID thread_id;
-    auto hr = profiler_info_->GetFunctionInfo2(functionId, frameInfo, &class_id, &module_id, &def_token, 10,
+    auto hr = profiler_info_->GetFunctionInfo2(function_id, frame_info, &class_id, &module_id, &def_token, 10,
                                                &pc_type_args, type_args);
     if (FAILED(hr))
     {
@@ -63,13 +63,13 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
     return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functionId) const
+std::optional<std::wstring> NameResolver::ResolveFunctionName(const FunctionID function_id) const
 {
     ModuleID module_id;
     ClassID class_id;
     mdTypeDef def_token;
 
-    auto hr = profiler_info_->GetFunctionInfo(functionId, &class_id, &module_id, &def_token);
+    auto hr = profiler_info_->GetFunctionInfo(function_id, &class_id, &module_id, &def_token);
     if (FAILED(hr) || class_id == 0)
     {
         return {};
@@ -111,23 +111,23 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(FunctionID functio
     return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveAssemblyName(AssemblyID assemblyId) const
+std::optional<std::wstring> NameResolver::ResolveAssemblyName(const AssemblyID assembly_id) const
 {
     WCHAR name[255];
     ULONG out_name_len;
     AppDomainID app_domain_id;
     ModuleID module_id;
-    if (SUCCEEDED(profiler_info_->GetAssemblyInfo(assemblyId, 254, &out_name_len, name, &app_domain_id, &module_id)))
+    if (SUCCEEDED(profiler_info_->GetAssemblyInfo(assembly_id, 254, &out_name_len, name, &app_domain_id, &module_id)))
         return std::wstring(name);
     return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDomainId) const
+std::optional<std::wstring> NameResolver::ResolveAppDomainName(const AppDomainID app_domain_id) const
 {
     DWORD app_domain_name_count;
     WCHAR app_domain_name[255];
     ProcessID process_id;
-    auto hr = profiler_info_->GetAppDomainInfo(appDomainId, 255, &app_domain_name_count, app_domain_name, &process_id);
+    auto hr = profiler_info_->GetAppDomainInfo(app_domain_id, 255, &app_domain_name_count, app_domain_name, &process_id);
     if (FAILED(hr))
     {
         return {};
@@ -137,14 +137,14 @@ std::optional<std::wstring> NameResolver::ResolveAppDomainName(AppDomainID appDo
 }
 
 std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMetaData(
-    ClassID classId, IMetaDataImport* pIMDImport) const
+	const ClassID class_id, IMetaDataImport* pIMDImport) const
 {
     ModuleID moduleId;
     mdTypeDef defToken;
     CorElementType elementType;
     ClassID baseClassId;
     ULONG rank;
-    ClassID classToCheck = classId;
+    ClassID classToCheck = class_id;
     bool isArray = false;
     auto hr = profiler_info_->IsArrayClass(classToCheck, &elementType, &baseClassId, &rank);
     if (hr == S_OK)
@@ -172,12 +172,12 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassIdWithExistingMe
     return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID classId) const
+std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(const ClassID class_id) const
 {
     ModuleID moduleId;
     mdTypeDef defToken;
     auto hr = profiler_info_->GetClassIDInfo(
-        classId,
+        class_id,
         &moduleId,
         &defToken);
     if (SUCCEEDED(hr))
@@ -205,38 +205,38 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(ClassID class
     return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(ObjectID objectId) const
+std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectId(const ObjectID object_id) const
 {
-    ClassID classId;
-    auto hr = profiler_info_->GetClassFromObject(objectId, &classId);
+    ClassID class_id;
+    auto hr = profiler_info_->GetClassFromObject(object_id, &class_id);
     if (SUCCEEDED(hr))
     {
-        return this->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
+        return this->ResolveTypeNameByObjectIdAndClassId(object_id, class_id);
     }
     return {};
 }
 
-std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(ObjectID objectId, ClassID classId) const
+std::optional<std::wstring> NameResolver::ResolveTypeNameByObjectIdAndClassId(ObjectID object_id, const ClassID class_id) const
 {
     CorElementType element_type;
     ClassID base_class_id;
     ULONG rank;
-    if (profiler_info_->IsArrayClass(classId, &element_type, &base_class_id, &rank) == S_OK)
+    if (profiler_info_->IsArrayClass(class_id, &element_type, &base_class_id, &rank) == S_OK)
     {
         auto name = this->ResolveTypeNameByClassId(base_class_id);
         if (!name) return name;
         return name.value() + L"[]";
     }
-    return this->ResolveTypeNameByClassId(classId);
+    return this->ResolveTypeNameByClassId(class_id);
 }
 
-std::optional<std::wstring> NameResolver::ResolveModuleName(ModuleID moduleId) const
+std::optional<std::wstring> NameResolver::ResolveModuleName(const ModuleID module_id) const
 {
     WCHAR module_name[1026];
     AssemblyID assembly_id;
     LPCBYTE base_load_address;
     ULONG size;
-    if (FAILED(profiler_info_->GetModuleInfo(moduleId, &base_load_address, 1024, &size, module_name, &assembly_id)))
+    if (FAILED(profiler_info_->GetModuleInfo(module_id, &base_load_address, 1024, &size, module_name, &assembly_id)))
     {
         return {};
     }

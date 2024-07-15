@@ -64,7 +64,7 @@ public:
 	HRESULT __stdcall RuntimeThreadSuspended(ThreadID threadId) override;
 	HRESULT __stdcall RuntimeThreadResumed(ThreadID threadId) override;
 	HRESULT __stdcall MovedReferences(ULONG cMovedObjectIDRanges, ObjectID oldObjectIDRangeStart[], ObjectID newObjectIDRangeStart[], ULONG cObjectIDRangeLength[]) override;
-	HRESULT __stdcall ObjectAllocated(ObjectID objectId, ClassID classId) override;
+	HRESULT __stdcall ObjectAllocated(ObjectID object_id, ClassID class_id) override;
 	HRESULT __stdcall ObjectsAllocatedByClass(ULONG cClassCount, ClassID classIds[], ULONG cObjects[]) override;
 	HRESULT __stdcall ObjectReferences(ObjectID objectId, ClassID classId, ULONG cObjectRefs, ObjectID objectRefIds[]) override;
 	HRESULT __stdcall RootReferences(ULONG cRootRefs, ObjectID rootRefIds[]) override;

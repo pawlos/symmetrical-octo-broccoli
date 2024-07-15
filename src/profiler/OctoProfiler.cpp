@@ -356,22 +356,17 @@ HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAM
 	return S_OK;
 }
 
-HRESULT __stdcall OctoProfiler::ObjectAllocated(ObjectID objectId, ClassID classId)
+HRESULT __stdcall OctoProfiler::ObjectAllocated(const ObjectID object_id, const ClassID class_id)
 {
-	const auto type_name = name_resolver_->ResolveTypeNameByObjectIdAndClassId(objectId, classId);
+	const auto type_name = name_resolver_->ResolveTypeNameByObjectIdAndClassId(object_id, class_id);
 	SIZE_T bytes_allocated;
-	auto hr = p_info_->GetObjectSize2(objectId, &bytes_allocated);
+	auto hr = p_info_->GetObjectSize2(object_id, &bytes_allocated);
 	if (SUCCEEDED(hr))
 	{
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytes_allocated, type_name.value_or(L"<<no info>>")));
 		stack_walk_mutex_.lock();
-		hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
+		hr = p_info_->DoStackSnapshot(0, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
 		stack_walk_mutex_.unlock();
-		if (FAILED(hr))
-		{
-			Logger::Error("Could not obtain stack trace");
-			return E_FAIL;
-		}
 		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 		return S_OK;
 	}
@@ -409,13 +404,8 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		thread_id,
 		thread_name.value_or(L"<<no info>>")));
 	stack_walk_mutex_.lock();
-	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
+	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(name_resolver_.get()), nullptr, 0);
 	stack_walk_mutex_.unlock();
-	if (FAILED(hr))
-	{
-		Logger::Error("Could not obtain stack trace");
-		return E_FAIL;
-	}
 	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 	return S_OK;
 }
