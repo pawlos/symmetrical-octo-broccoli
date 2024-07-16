@@ -33,10 +33,11 @@ BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 
 extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
 {
-	auto fileToLog = get_env("OCTO_PROFILER_FILE");
-	auto logger = fileToLog.has_value() ? static_cast<Logger *>(new FileLogger(fileToLog.value())) : static_cast<Logger *>(new StdOutLogger());
-	Logger::Initialize(logger);
-	Logger::DoLog(std::format("Log file: {0}", fileToLog.value_or("console")));
+	const auto file_to_log = get_env("OCTO_PROFILER_FILE");
+	const auto include_ts = to_bool(get_env("OCTO_LOGGER_INCLUDE_TS").value_or("true"));
+	const auto logger = file_to_log.has_value() ? static_cast<Logger *>(new FileLogger(file_to_log.value(), include_ts)) : static_cast<Logger *>(new StdOutLogger());
+	Logger::initialize(logger);
+	Logger::DoLog(std::format("Log file: {0}", file_to_log.value_or("console")));
 	Logger::DoLog("OctoProfiler::DllGetClassObject");
 
 	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));

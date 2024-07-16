@@ -3,16 +3,19 @@
 
 std::mutex m;
 static Logger* g_logger;
-void Logger::Initialize(Logger* instance)
+void Logger::initialize(Logger* instance)
 {
     g_logger = instance;
 }
 
 void Logger::DoLog(const std::string& s)
 {
-	const auto now = std::chrono::high_resolution_clock::now();
     m.lock();
-    (*g_logger->os_) << "[" << now.time_since_epoch() << "] ";
+    if (g_logger->include_timestamp_)
+    {
+        const auto now = std::chrono::high_resolution_clock::now();
+        (*g_logger->os_) << "[" << now.time_since_epoch() << "] ";
+    }
     (*g_logger->os_) << s;
     (*g_logger->os_) << '\n';
     g_logger->os_->flush();
@@ -27,8 +30,11 @@ void Logger::DoLog(const std::wstring& s)
 
 void Logger::Error(const std::string& s)
 {
-	const auto now = std::chrono::high_resolution_clock::now();
-    std::cerr << "[" << now.time_since_epoch() << "] ";
+    if (g_logger->include_timestamp_)
+    {
+        const auto now = std::chrono::high_resolution_clock::now();
+        std::cerr << "[" << now.time_since_epoch() << "] ";
+    }
     std::cerr << "\033[31m" << s << "\033[0m";
     std::cerr << '\n';
     std::cerr.flush();
