@@ -340,16 +340,16 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall StackSnapshotInfo(FunctionID funcId, UINT_PTR ip, COR_PRF_FRAME_INFO frameInfo, ULONG32 contextSize, BYTE context[], void* clientData)
+HRESULT __stdcall StackSnapshotInfo(const FunctionID func_id, UINT_PTR ip, const COR_PRF_FRAME_INFO frame_info, ULONG32 contextSize, BYTE context[], void* clientData)
 {
-	if (!funcId)
+	if (!func_id)
 	{
 		Logger::DoLog(std::format("OctoProfiler::Native frame {0:x}", ip));
 	}
 	else
 	{
 		const auto name_resolver = static_cast<NameResolver*>(clientData);
-		const auto function_name = name_resolver->ResolveFunctionName(funcId);
+		const auto function_name = name_resolver->ResolveFunctionNameWithFrameInfo(func_id, frame_info);
 		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", function_name.value_or(L"<<no info>>"), ip));
 	}
 
