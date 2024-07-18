@@ -90,7 +90,7 @@ public:
 	HRESULT __stdcall GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason) override;
 	HRESULT __stdcall SurvivingReferences(ULONG cSurvivingObjectIDRanges, ObjectID objectIDRangeStart[], ULONG cObjectIDRangeLength[]) override;
 	HRESULT __stdcall GarbageCollectionFinished() override;
-	HRESULT __stdcall FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID) override;
+	HRESULT __stdcall FinalizeableObjectQueued(DWORD finalizer_flags, ObjectID object_id) override;
 	HRESULT __stdcall RootReferences2(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[], COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[]) override;
 	HRESULT __stdcall HandleCreated(GCHandleID handleId, ObjectID initialObjectId) override;
 	HRESULT __stdcall HandleDestroyed(GCHandleID handleId) override;

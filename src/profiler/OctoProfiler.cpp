@@ -404,7 +404,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		thread_id,
 		thread_name.value_or(L"<<no info>>")));
 	stack_walk_mutex_.lock();
-	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, reinterpret_cast<void*>(name_resolver_.get()), nullptr, 0);
+	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
 	stack_walk_mutex_.unlock();
 	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
 	return S_OK;
@@ -521,9 +521,9 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionFinished()
 	return S_OK;
 }
 
-HRESULT __stdcall OctoProfiler::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID)
+HRESULT __stdcall OctoProfiler::FinalizeableObjectQueued(DWORD finalizer_flags, const ObjectID object_id)
 {
-	const auto type_name = name_resolver_->ResolveTypeNameByObjectId(objectID);
+	const auto type_name = name_resolver_->ResolveTypeNameByObjectId(object_id);
 	Logger::DoLog(std::format(L"OctoProfiler::FinalizeableObjectQueued {0}", type_name.value_or(L"<<unknown>>")));
 	return S_OK;
 }
