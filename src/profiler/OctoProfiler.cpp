@@ -495,9 +495,10 @@ HRESULT __stdcall OctoProfiler::ExceptionCLRCatcherExecute()
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR name[])
+HRESULT __stdcall OctoProfiler::ThreadNameChanged(ThreadID thread_id, ULONG cch_name, WCHAR name[])
 {
-	return E_NOTIMPL;
+	Logger::DoLog(std::format(L"OctoProfiler::ThreadNameChanged {0:X};{1}", thread_id, std::wstring(name)));
+	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)

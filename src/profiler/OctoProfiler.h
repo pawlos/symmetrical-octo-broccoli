@@ -86,7 +86,7 @@ public:
 	HRESULT __stdcall COMClassicVTableDestroyed(ClassID wrappedClassId, REFGUID implementedIID, void* pVTable) override;
 	HRESULT __stdcall ExceptionCLRCatcherFound() override;
 	HRESULT __stdcall ExceptionCLRCatcherExecute() override;
-	HRESULT __stdcall ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR name[]) override;
+	HRESULT __stdcall ThreadNameChanged(ThreadID thread_id, ULONG cch_name, WCHAR name[]) override;
 	HRESULT __stdcall GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason) override;
 	HRESULT __stdcall SurvivingReferences(ULONG cSurvivingObjectIDRanges, ObjectID objectIDRangeStart[], ULONG cObjectIDRangeLength[]) override;
 	HRESULT __stdcall GarbageCollectionFinished() override;
