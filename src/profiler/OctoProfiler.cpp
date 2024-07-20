@@ -108,51 +108,51 @@ HRESULT __stdcall OctoProfiler::AppDomainShutdownFinished(AppDomainID appDomainI
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(AssemblyID assemblyId)
+HRESULT __stdcall OctoProfiler::AssemblyLoadStarted(const AssemblyID assembly_id)
 {
-	const auto assembly_name = name_resolver_->ResolveAssemblyName(assemblyId);
+	const auto assembly_name = name_resolver_->ResolveAssemblyName(assembly_id);
 	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadStarted: {0}", assembly_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
-HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus)
+HRESULT __stdcall OctoProfiler::AssemblyLoadFinished(const AssemblyID assembly_id, HRESULT hrStatus)
 {
-	const auto assembly_name = name_resolver_->ResolveAssemblyName(assemblyId);
+	const auto assembly_name = name_resolver_->ResolveAssemblyName(assembly_id);
 	Logger::DoLog(std::format(L"OctoProfiler::AssemblyLoadFinished: {0}", assembly_name.value_or(L"<<no info>>")));
 	return S_OK;
 }
 
-HRESULT __stdcall OctoProfiler::AssemblyUnloadStarted(AssemblyID assemblyId)
+HRESULT __stdcall OctoProfiler::AssemblyUnloadStarted(AssemblyID assembly_id)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::AssemblyUnloadFinished(AssemblyID assemblyId, HRESULT hrStatus)
+HRESULT __stdcall OctoProfiler::AssemblyUnloadFinished(AssemblyID assembly_id, HRESULT hrStatus)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ModuleLoadStarted(ModuleID moduleId)
+HRESULT __stdcall OctoProfiler::ModuleLoadStarted(ModuleID module_id)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ModuleLoadFinished(ModuleID moduleId, HRESULT hrStatus)
+HRESULT __stdcall OctoProfiler::ModuleLoadFinished(ModuleID module_id, HRESULT hrStatus)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ModuleUnloadStarted(ModuleID moduleId)
+HRESULT __stdcall OctoProfiler::ModuleUnloadStarted(ModuleID module_id)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ModuleUnloadFinished(ModuleID moduleId, HRESULT hrStatus)
+HRESULT __stdcall OctoProfiler::ModuleUnloadFinished(ModuleID module_id, HRESULT hrStatus)
 {
 	return E_NOTIMPL;
 }
 
-HRESULT __stdcall OctoProfiler::ModuleAttachedToAssembly(ModuleID moduleId, AssemblyID AssemblyId)
+HRESULT __stdcall OctoProfiler::ModuleAttachedToAssembly(ModuleID module_id, AssemblyID assembly_id)
 {
 	return E_NOTIMPL;
 }
