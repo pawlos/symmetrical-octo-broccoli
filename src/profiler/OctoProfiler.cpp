@@ -6,7 +6,7 @@ HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 		riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", FormatIID(riid)));
+		Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 		*ppvObject = this;
 		this->AddRef();
 		return S_OK;
