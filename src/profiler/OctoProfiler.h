@@ -11,7 +11,6 @@ class OctoProfiler : public ICorProfilerCallback3 {
 	CComQIPtr<ICorProfilerInfo5> p_info_;
 	std::unique_ptr<NameResolver> name_resolver_ {};
 	std::mutex stack_walk_mutex_{};
-	std::optional<std::wstring> ResolveNetRuntimeVersion() const;
 public:
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
