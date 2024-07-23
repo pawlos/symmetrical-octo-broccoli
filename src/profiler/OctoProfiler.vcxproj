@@ -158,6 +158,7 @@
     <ClInclude Include="OctoProfiler.h" />
     <ClInclude Include="OctoProfilerEnterLeave.h" />
     <ClInclude Include="OctoProfilerFactory.h" />
+    <ClInclude Include="OctoSink.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OctoProfiler.def" />
