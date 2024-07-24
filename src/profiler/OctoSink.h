@@ -9,4 +9,6 @@ public:
 	virtual ~octo_sink() = default;
 	virtual void sync_profiling_start_info(std::string& net_version_detected) = 0;
 	virtual void sync_exception_occured(std::string& exception, std::vector<std::string>& stack_trace) = 0;
+	virtual void sync_memory_allocated(std::string& allocated_type, long bytes_allocated) = 0;
+	virtual void sync_gc_occured(std::string& gc_type) = 0;
 };
