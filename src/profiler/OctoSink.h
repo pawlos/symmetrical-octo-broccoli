@@ -12,5 +12,6 @@ public:
 	virtual void sync_memory_allocated(std::string& allocated_type, long bytes_allocated) = 0;
 	virtual void sync_gc_occured(std::string& gc_type) = 0;
 	virtual void sync_thread_created(std::string& thread_id) = 0;
+	virtual void sync_started() = 0;
 	virtual void sync_finished() = 0;
 };
