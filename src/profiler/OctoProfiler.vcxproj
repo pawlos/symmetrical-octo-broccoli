@@ -148,12 +148,14 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="log.h" />
+    <ClCompile Include="namedpipe_octo_sink.cpp" />
     <ClCompile Include="NameResolver.cpp" />
     <ClCompile Include="OctoProfiler.cpp" />
     <ClCompile Include="OctoProfilerEnterLeave.cpp" />
     <ClCompile Include="OctoProfilerFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="namedpipe_octo_sink.h" />
     <ClInclude Include="NameResolver.h" />
     <ClInclude Include="OctoProfiler.h" />
     <ClInclude Include="OctoProfilerEnterLeave.h" />

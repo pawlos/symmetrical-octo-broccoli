@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+constexpr int octo_sync_started = 0x00;
+constexpr int octo_sync_finished = 0xFF;
 // class that allows sending profiler data to certain sinks like file, pipe, EventLog, elastic etc.
 class octo_sink
 {
