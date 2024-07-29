@@ -7,6 +7,7 @@ constexpr int octo_exception = 0x01;
 constexpr int octo_memory_alloc = 0x02;
 constexpr int octo_gc = 0x03;
 constexpr int octo_new_thread = 0x04;
+constexpr int octo_thread_destroyed = 0x05;
 constexpr int octo_sync_finished = 0xFF;
 // class that allows sending profiler data to certain sinks like file, pipe, EventLog, elastic etc.
 class octo_sink
