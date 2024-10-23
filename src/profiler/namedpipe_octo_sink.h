@@ -5,7 +5,7 @@
 class namedpipe_octo_sink : public octo_sink
 {
 private:
-	std::string_view pipe_name_ = "\\.\octo_sink";
+	std::string_view pipe_name_ = "\\\\.\\octo_sink";
 	HANDLE named_pipe;
 	void send(int command);
 public:

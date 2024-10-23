@@ -7,7 +7,6 @@ class OctoProfilerFactory : public IClassFactory
 {
 public:
 	OctoProfilerFactory(bool doProfileEnterLeave) : do_profile_enter_leave_(doProfileEnterLeave) {}
-private:
 	ICorProfilerCallback3* profiler_ = nullptr;
 	bool do_profile_enter_leave_ = false;
 	// Inherited via IClassFactory

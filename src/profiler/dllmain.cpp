@@ -1,7 +1,7 @@
 #include "OctoProfilerFactory.h"
 #include "log.h"
 
-static OctoProfilerFactory* factory;
+static OctoProfilerFactory* factory = nullptr;
 
 inline static std::optional<std::string> get_env(const char* key)
 {
@@ -39,19 +39,27 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	const auto logger = file_to_log.has_value() ? static_cast<Logger *>(new FileLogger(file_to_log.value(), include_ts)) : static_cast<Logger *>(new StdOutLogger());
 	Logger::initialize(logger);
 	Logger::DoLog(std::format("Log file: {0}", file_to_log.value_or("console")));
-	Logger::DoLog("OctoProfiler::DllGetClassObject");
+	Logger::DoLog(std::format("OctoProfiler::DllGetClassObject {0} {1}", format_iid(rclsid), format_iid(riid)));
 
 	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
 	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doProfileEnterLeave));
 
+	auto hr = E_FAIL;
 	if (ppv == nullptr)
 	{
-		return E_FAIL;
+		return hr;
+	}
+	
+	static constexpr GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+	if (riid == CLSID_ClassFactoryGuid)
+	{
+		factory = new (std::nothrow) OctoProfilerFactory(doProfileEnterLeave);
+		if (factory)
+		{
+			factory->AddRef();
+			hr = factory->QueryInterface(rclsid, ppv);			
+		}
 	}
 
-	factory = new OctoProfilerFactory(doProfileEnterLeave);
-
-	*ppv = factory;
-
-	return S_OK;
+	return hr;
 }

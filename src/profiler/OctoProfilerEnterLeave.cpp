@@ -48,11 +48,11 @@ void FuncTail(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameIn
 
 HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppvObject)
 {
+	Logger::DoLog(std::format("OctoProfilerEnterLeave::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 	if (riid == IID_ICorProfilerCallback3 ||
 		riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog(std::format("OctoProfilerEnterLeave::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 		*ppvObject = this;
 		this->AddRef();
 		return S_OK;

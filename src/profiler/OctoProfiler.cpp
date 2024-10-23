@@ -2,13 +2,12 @@
 
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
+	Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 	if (riid == IID_ICorProfilerCallback3 ||
 		riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 		*ppvObject = this;
-		this->AddRef();
 		return S_OK;
 	}
 
@@ -27,8 +26,13 @@ ULONG __stdcall OctoProfiler::Release()
 }
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
-{
+{	
 	Logger::DoLog(std::format("OctoProfiler::Initialize started...{0}", this->version_));
+	if (!pICorProfilerInfoUnk) 
+	{
+		Logger::Error("pICorProfilerInfoUnk is null");
+		return S_OK;
+	}
 	auto hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo5, reinterpret_cast<void**>(&p_info_));
 	if (FAILED(hr))
 	{

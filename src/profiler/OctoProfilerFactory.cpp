@@ -1,13 +1,14 @@
 #include "OctoProfilerFactory.h"
 
 HRESULT __stdcall OctoProfilerFactory::QueryInterface(REFIID riid, void** ppvObject)
-{
-	static constexpr GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
-	Logger::DoLog("OctoProfilerFactory::QueryInterface");
-	if (riid == CLSID_ClassFactoryGuid)
+{	
+	Logger::DoLog(std::format("OctoProfilerFactory::QueryInterface - {0}", format_iid(riid)));	
+	static constexpr GUID Profiler_GUID = { 0x10B46309, 0xC972, 0x4F33, {0xB5,0xAB,0x5E,0x6E,0x3E,0xBA,0x2B,0x1A } };
+	if (riid == Profiler_GUID)
 	{
-		*ppvObject = &profiler_;
-		this->AddRef();
+		
+		*ppvObject = this;
+		//profiler_->AddRef();	
 		return S_OK;
 	}
 	*ppvObject = nullptr;
@@ -25,12 +26,21 @@ ULONG __stdcall OctoProfilerFactory::Release()
 }
 
 HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
-{
+{	
 	Logger::DoLog(std::format("OctoProfilerFactory::CreateInstance - {0}", format_iid(riid)));
 
-	profiler_ = (this->do_profile_enter_leave_ ? static_cast<ICorProfilerCallback3*>(new OctoProfilerEnterLeave()) : new OctoProfiler());
-	*ppvObject = profiler_;
-	return S_OK;
+	if (riid == IID_ICorProfilerCallback2 ||
+		riid == IID_ICorProfilerCallback3)
+	{
+		profiler_ = (this->do_profile_enter_leave_ ? static_cast<ICorProfilerCallback3*>(
+		new (std::nothrow) OctoProfilerEnterLeave()) : new (std::nothrow) OctoProfiler());
+		profiler_->AddRef();
+		*ppvObject = profiler_;
+		return S_OK;
+	}
+
+	*ppvObject = this;	
+	return S_OK;	
 }
 
 HRESULT __stdcall OctoProfilerFactory::LockServer(BOOL fLock)

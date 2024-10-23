@@ -77,8 +77,8 @@ public partial class MainWindow
                     ["DOTNET_EnableDiagnostics"] = "1",
                     ["COR_ENABLE_PROFILING"] = "1",
                     ["CORECLR_ENABLE_PROFILING"] = "1",
-                    ["COR_PROFILER"] = "{8A8CC829-CCF2-49FE-BBAE-0F022228071A}",
-                    ["CORECLR_PROFILER"] = "{8A8CC829-CCF2-49FE-BBAE-0F022228071A}",
+                    ["COR_PROFILER"] = "{10B46309-C972-4F33-B5AB-5E6E3EBA2B1A}",
+                    ["CORECLR_PROFILER"] = "{10B46309-C972-4F33-B5AB-5E6E3EBA2B1A}",
                     ["COR_PROFILER_PATH"] = _profilerFile,
                     ["CORECLR_PROFILER_PATH_64"] = _profilerFile,
                     ["OCTO_PROFILER_FILE"] = fileName,
@@ -87,7 +87,7 @@ public partial class MainWindow
         };
         if (profileType)
         {
-            p.StartInfo.EnvironmentVariables.Add("OCTO_MONITOR_ENTERLEAVE", "1");
+            p.StartInfo.EnvironmentVariables.Add("OCTO_MONITOR_ENTERLEAVE", "true");
         }
 
         Hide();
