@@ -52,7 +52,7 @@ HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppv
 		riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog(std::format("OctoProfilerEnterLeave::QueryInterface - ProfilerCallback {0}", FormatIID(riid)));
+		Logger::DoLog(std::format("OctoProfilerEnterLeave::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 		*ppvObject = this;
 		this->AddRef();
 		return S_OK;
@@ -86,15 +86,16 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 	{
 		return E_FAIL;
 	}
-	const auto version_string = ResolveNetRuntimeVersion();
-	Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Detected .NET {}", version_string.value_or(L"<<unknown>>")));
+	this->name_resolver_ = std::make_shared<NameResolver>(profiler_info_);
+	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
 	hr = profiler_info_->SetEventMask2(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_ENABLE_FRAME_INFO, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfilerEnterLeave::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->name_resolver_ = std::make_shared<NameResolver>(profiler_info_);
+
 	this->profiler_info_->SetFunctionIDMapper2(&MapFunctionId, name_resolver_.get());
 	this->profiler_info_->SetEnterLeaveFunctionHooks2(
 		FuncEnter,
@@ -102,35 +103,6 @@ HRESULT __stdcall OctoProfilerEnterLeave::Initialize(IUnknown* pICorProfilerInfo
 		FuncTail);
 	Logger::DoLog("OctoProfilerEnterLeave::Initialize initialized...");
 	return S_OK;
-}
-
-std::optional<std::wstring> OctoProfilerEnterLeave::ResolveNetRuntimeVersion() const
-{
-	USHORT clr_runtime_id{ 0 };
-	COR_PRF_RUNTIME_TYPE runtime_type{};
-	USHORT major_version{ 0 };
-	USHORT minor_version{ 0 };
-	USHORT build_number{ 0 };
-	USHORT qfe_version{ 0 };
-	ULONG version_string_len{ 0 };
-	WCHAR version_string[256];
-	auto hr = profiler_info_->GetRuntimeInformation(
-		&clr_runtime_id,
-		&runtime_type,
-		&major_version,
-		&minor_version,
-		&build_number,
-		&qfe_version,
-		255,
-		&version_string_len,
-		version_string);
-	if (FAILED(hr))
-	{
-		Logger::Error(std::format("OctoProfiler::ResolveNetRuntimeVersion - Error getting .NET information. HRESULT: {0:x}", hr));
-		return {};
-	}
-
-	return std::wstring(version_string);
 }
 
 HRESULT __stdcall OctoProfilerEnterLeave::Shutdown()

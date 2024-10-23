@@ -253,3 +253,31 @@ std::optional<std::wstring> NameResolver::ResolveCurrentThreadName()
     }
     return {};
 }
+
+std::optional<std::wstring> NameResolver::ResolveNetRuntimeVersion()
+{
+    USHORT clr_runtime_id{ 0 };
+    COR_PRF_RUNTIME_TYPE runtime_type{};
+    USHORT major_version{ 0 };
+    USHORT minor_version{ 0 };
+    USHORT build_number{ 0 };
+    USHORT qfe_version{ 0 };
+    ULONG version_string_len{ 0 };
+    WCHAR version_string[256];
+    auto hr = profiler_info_->GetRuntimeInformation(
+        &clr_runtime_id,
+        &runtime_type,
+        &major_version,
+        &minor_version,
+        &build_number,
+        &qfe_version,
+        255,
+        &version_string_len,
+        version_string);
+    if (FAILED(hr))
+    {
+        return {};
+    }
+
+    return std::wstring(version_string);
+}

@@ -16,6 +16,7 @@ public:
 	std::optional<std::wstring> ResolveTypeNameByClassId(ClassID class_id) const;
 	std::optional<std::wstring> ResolveTypeNameByObjectId(ObjectID object_id) const;
 	std::optional<std::wstring> ResolveTypeNameByObjectIdAndClassId(ObjectID object_id, ClassID class_id) const;
+	std::optional<std::wstring> ResolveNetRuntimeVersion();
 	static std::optional<std::wstring> ResolveCurrentThreadName();
 private:
 	std::optional<std::wstring> ResolveTypeNameByClassIdWithExistingMetaData(ClassID class_id, IMetaDataImport*) const;

@@ -6,7 +6,7 @@ HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 		riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback)
 	{
-		Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", FormatIID(riid)));
+		Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
 		*ppvObject = this;
 		this->AddRef();
 		return S_OK;
@@ -34,46 +34,18 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	{
 		return E_FAIL;
 	}
-	const auto version_string = ResolveNetRuntimeVersion();
-	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"<<unknown>>")));
+	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
+	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
 	hr = p_info_->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_MONITOR_GC | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
+
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
-}
-
-std::optional<std::wstring> OctoProfiler::ResolveNetRuntimeVersion() const
-{
-	USHORT clr_runtime_id{ 0 };
-	COR_PRF_RUNTIME_TYPE runtime_type{};
-	USHORT major_version{ 0 };
-	USHORT minor_version{ 0 };
-	USHORT build_number{ 0 };
-	USHORT qfe_version{ 0 };
-	ULONG version_string_len{ 0 };
-	WCHAR version_string[256];
-	auto hr = p_info_->GetRuntimeInformation(
-		&clr_runtime_id,
-		&runtime_type,
-		&major_version,
-		&minor_version,
-		&build_number,
-		&qfe_version,
-		255,
-		&version_string_len,
-		version_string);
-	if (FAILED(hr))
-	{
-		Logger::Error(std::format("OctoProfiler::ResolveNetRuntimeVersion - Error getting .NET information. HRESULT: {0:x}", hr));
-		return {};
-	}
-
-	return std::wstring(version_string);
 }
 
 HRESULT __stdcall OctoProfiler::Shutdown()
@@ -552,15 +524,16 @@ HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUn
 	{
 		return E_FAIL;
 	}
-	const auto version_string = ResolveNetRuntimeVersion();
-	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"<<unknown>>")));
+	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
+	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
+	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
 	hr = p_info_->SetEventMask2(COR_PRF_MONITOR_EXCEPTIONS | COR_PRF_MONITOR_GC, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::InitializeForAttach - Error setting the event mask. HRESULT: {0:x}", hr));
 		return E_FAIL;
 	}
-	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
+
 	Logger::DoLog("OctoProfiler::Initialize initialized...");
 	return S_OK;
 }

@@ -50,4 +50,4 @@ public:
     }
 };
 
-std::string FormatIID(REFIID guid);
+std::string format_iid(REFIID guid);
