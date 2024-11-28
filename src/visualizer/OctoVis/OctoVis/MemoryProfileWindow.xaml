@@ -47,10 +47,7 @@
                                         Title="{Binding TimelineTitle}"
                                         YAxes="{Binding TimelineYAxis}"
                                         XAxes="{Binding TimelineXAxis}"
-                                        Sections="{Binding Sections}"
-                                        TooltipPosition="Center"
-                                        TooltipTextSize="12"
-                                        TooltipFindingStrategy="CompareOnlyX">
+                                        Sections="{Binding Sections}">
                     </lvc:CartesianChart>
                     <lvc:PieChart Grid.Row="3" DataContext="{Binding .}"
                                   Series="{Binding MemoryByType}"

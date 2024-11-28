@@ -77,25 +77,34 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 new ColumnSeries<ObservablePoint>
                 {
                     Values = data.MemoryData.GroupBy(x => GroupSamples(x, settings))
-                        .Select(x => new ObservablePoint(x.Key, ParseData(x.Sum(y => y.Value), settings))),
+                        .Select(x => new ObservablePoint(x.Key, ParseData(x.Sum(y => y.Value), settings)))
+                        .ToArray(),
                     Fill = new SolidColorPaint(SKColors.CornflowerBlue),
-                    ScalesYAt = 0
+                    ScalesYAt = 0,
+                    XToolTipLabelFormatter = null,
+                    YToolTipLabelFormatter = null,
                 },
                 new LineSeries<ObservablePoint>
                 {
                     Values = data.TotalMemoryData.GroupBy(x => GroupSamples(x, settings))
-                        .Select(x => new ObservablePoint(x.Key, ParseData(x.Max(y => y.Value), settings))),
+                        .Select(x => new ObservablePoint(x.Key, ParseData(x.Max(y => y.Value), settings)))
+                        .ToArray(),
                     Stroke = new SolidColorPaint(SKColors.ForestGreen),
                     Fill = null,
                     GeometrySize = 0,
-                    ScalesYAt = 1
+                    ScalesYAt = 1,
+                    XToolTipLabelFormatter = null,
+                    YToolTipLabelFormatter = null,
                 },
                 new ScatterSeries<ObservablePoint, RoundedRectangleGeometry>
                 {
                     Values = data.ExceptionData.GroupBy(x => GroupSamples(x, settings))
-                        .Select(x => new ObservablePoint(x.Key, 10)),
-                    XToolTipLabelFormatter = point => data.ExceptionsInfo[point.Model!.X!.Value].ExceptionType,
-                    YToolTipLabelFormatter = point => data.ExceptionsInfo[point.Model!.X!.Value].ExceptionType,
+                        .Select(x => new ObservablePoint(x.Key, 10))
+                        .ToArray(),
+                    XToolTipLabelFormatter = point => data.ExceptionsInfo[
+                        Sample(point.Model!.X!.Value, settings.TimelineXAxis)].ExceptionType,
+                    YToolTipLabelFormatter = point => data.ExceptionsInfo[
+                        Sample(point.Model!.X!.Value, settings.TimelineXAxis)].ExceptionType,
                     Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
                 },
             ]
@@ -109,7 +118,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                 Fill = new SolidColorPaint { Color = SKColors.Orange.WithAlpha(80) },
                 Stroke = new SolidColorPaint { Color = SKColors.Orange, StrokeThickness = 3 },
                 Label = "GC",
-                LabelSize = 200
+                LabelSize = 200,
             });
         sections = sections.Append(new RectangularSection
         {
@@ -219,6 +228,11 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
     private static double GroupSamples(DataPoint x, SettingsDataModel settings)
     {
         return Sample(x.Time, settings.TimelineXAxis);
+    }
+
+    private static double Sample(double time, SettingsDataModel.TimeSize size)
+    {
+        return Math.Round(time * 1000);
     }
 
     private static double Sample(ulong time, SettingsDataModel.TimeSize size)
