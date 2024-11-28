@@ -49,7 +49,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	{
 		return hr;
 	}
-	
+
 	static constexpr GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
 	if (riid == CLSID_ClassFactoryGuid)
 	{
@@ -57,7 +57,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 		if (factory)
 		{
 			factory->AddRef();
-			hr = factory->QueryInterface(rclsid, ppv);			
+			hr = factory->QueryInterface(rclsid, ppv);
 		}
 	}
 
