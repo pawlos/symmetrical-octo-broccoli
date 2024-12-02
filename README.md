@@ -1,12 +1,12 @@
 # symmetrical-octo-broccoli
-Experimental .NET Profiler &amp; Debugger
+Build an .NET Profiler
 
 <p align="center">
 <img src="img/logo.jpeg" alt="Octo Profiler" />
 </center>
 
 # What is this #
-An attempt to create (or at least gather some knowledge how to) build profiler and/or debugger for .NET.
+An attempt to create (or at least gather some knowledge how to) build profiler ~and/or debugger~ for .NET.
 This project was create as an entry into #100commitow competition.
 
 > [!NOTE]
@@ -97,11 +97,3 @@ Issues found during development:
 
 It can be debugged with a native debugger. Setting a breakpoint at DllGetClassObject (`bp OctoProfiler!DllGetClassObject`) or `OctoProfiler::Initialize` (`bp OctoProfiler!OctoProfiler::Initialize`).
 
-## Debugger ##
-
-On hold for the moment. Working on the profiler part.
-
-Minimum plan:
-- [ ] starting a binary
-- [ ] attaching
-- [ ] setting a breakpoint
