@@ -26,9 +26,9 @@ ULONG __stdcall OctoProfiler::Release()
 }
 
 HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
-{	
+{
 	Logger::DoLog(std::format("OctoProfiler::Initialize started...{0}", this->version_));
-	if (!pICorProfilerInfoUnk) 
+	if (!pICorProfilerInfoUnk)
 	{
 		Logger::Error("pICorProfilerInfoUnk is null");
 		return S_OK;

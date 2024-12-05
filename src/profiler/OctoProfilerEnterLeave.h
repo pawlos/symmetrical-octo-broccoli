@@ -3,7 +3,6 @@
 #include "corprof.h"
 #include "log.h"
 #include "atlbase.h"
-#include <format>
 #include "NameResolver.h"
 
 class OctoProfilerEnterLeave : public ICorProfilerCallback3
