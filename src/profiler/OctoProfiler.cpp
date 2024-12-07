@@ -41,7 +41,14 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
 	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
-	hr = p_info_->SetEventMask2(COR_PRF_ALL | COR_PRF_MONITOR_ALL | COR_PRF_MONITOR_GC | COR_PRF_ENABLE_STACK_SNAPSHOT | COR_PRF_MONITOR_THREADS, COR_PRF_HIGH_MONITOR_NONE);
+	hr = p_info_->SetEventMask2(
+		COR_PRF_ALL |
+		COR_PRF_MONITOR_ALL |
+		COR_PRF_MONITOR_GC |
+		COR_PRF_ENABLE_STACK_SNAPSHOT |
+		COR_PRF_ENABLE_FRAME_INFO |
+		COR_PRF_MONITOR_THREADS,
+		COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::Initialize - Error setting the event mask. HRESULT: {0:x}", hr));
@@ -56,6 +63,7 @@ HRESULT __stdcall OctoProfiler::Shutdown()
 {
 	std::condition_variable cv;
 	std::unique_lock lk(stack_walk_mutex_);
+	std::cout << "OctoProfiler::Application has stopped. Prepare to shutdown profiler.";
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	cv.wait_for(lk, std::chrono::seconds(20));
 	Logger::DoLog("OctoProfiler::Shutdown...");
@@ -531,7 +539,7 @@ HRESULT __stdcall OctoProfiler::InitializeForAttach(IUnknown* pCorProfilerInfoUn
 	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
 	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
-	hr = p_info_->SetEventMask2(COR_PRF_MONITOR_EXCEPTIONS | COR_PRF_MONITOR_GC, COR_PRF_HIGH_MONITOR_NONE);
+	hr = p_info_->SetEventMask2(COR_PRF_ALLOWABLE_AFTER_ATTACH, COR_PRF_HIGH_MONITOR_NONE);
 	if (FAILED(hr))
 	{
 		Logger::Error(std::format("OctoProfiler::InitializeForAttach - Error setting the event mask. HRESULT: {0:x}", hr));
