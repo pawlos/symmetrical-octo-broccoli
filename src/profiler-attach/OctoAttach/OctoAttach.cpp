@@ -113,7 +113,7 @@ int main(const int argc, char* argv[])
         return CLRErrorNoProfilingInterface;
     }
 
-    static constexpr GUID CLSID_ProfilerCallback3 = { 0x4FD2ED52, 0x7731, 0x4b8d, { 0x94, 0x69, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
+    static constexpr GUID CLSID_ProfilerCallback3 = { 0x10B46309, 0xC972, 0x4F33, { 0xB5, 0xAB, 0x5E, 0x6E, 0x3E, 0xBA, 0x2B, 0x1A } };
 
     std::wstring path = L".\\OctoProfiler.dll";
 
