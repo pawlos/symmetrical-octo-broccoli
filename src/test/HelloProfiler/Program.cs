@@ -3,7 +3,7 @@
 using HelloProfiler;
 
 bool waitForKey = args.Contains("--wait");
-Console.WriteLine("Profile test program - start");
+Console.WriteLine($"Profile test program - start {GetCurrentPid()}");
 WaitForAKey(waitForKey);
 
 Console.WriteLine("Profiler - GC collect test");
@@ -100,4 +100,9 @@ async Task Function3()
 {
     await Task.Delay(200);
     Console.WriteLine("Hello, Profiler");
+}
+
+int GetCurrentPid()
+{
+    return System.Diagnostics.Process.GetCurrentProcess().Id;
 }
