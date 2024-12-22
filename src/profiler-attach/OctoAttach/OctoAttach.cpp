@@ -113,7 +113,7 @@ int main(const int argc, char* argv[])
         return CLRErrorNoProfilingInterface;
     }
 
-    static constexpr GUID CLSID_ProfilerCallback3 = { 0x10B46309, 0xC972, 0x4F33, { 0xB5, 0xAB, 0x5E, 0x6E, 0x3E, 0xBA, 0x2B, 0x1A } };
+    static constexpr GUID CLSID_Profiler = { 0x10B46309, 0xC972, 0x4F33, { 0xB5, 0xAB, 0x03, 0xD2, 0xCC, 0x30, 0x86, 0xC5 } };
 
     std::wstring path = L".\\OctoProfiler.dll";
 
@@ -124,7 +124,7 @@ int main(const int argc, char* argv[])
     }
 
     constexpr int max_wait_time = 2000;
-    hr = clr_profiling->AttachProfiler(pid, max_wait_time, &CLSID_ProfilerCallback3, path.c_str(), nullptr, 0);
+    hr = clr_profiling->AttachProfiler(pid, max_wait_time, &CLSID_Profiler, path.c_str(), nullptr, 0);
     if (FAILED(hr))
     {
         Error(std::format("Could not attach profiler. Hr = {0:X}", hr));
