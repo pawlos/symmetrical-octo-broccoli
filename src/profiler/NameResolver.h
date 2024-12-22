@@ -7,7 +7,9 @@
 class NameResolver
 {
 public:
-	NameResolver(ICorProfilerInfo5* profiler_info): profiler_info_(profiler_info) {}
+	NameResolver(ICorProfilerInfo5* profiler_info, const bool debug_info = false): profiler_info_(profiler_info),
+	                                                                         debug_info_(debug_info) {}
+
 	std::optional<std::wstring> ResolveFunctionName(FunctionID function_id) const;
 	std::optional<std::wstring> ResolveFunctionNameWithFrameInfo(FunctionID function_id, COR_PRF_FRAME_INFO frame_info) const;
 	std::optional<std::wstring> ResolveAssemblyName(AssemblyID assembly_id) const;
@@ -19,7 +21,9 @@ public:
 	std::optional<std::wstring> ResolveNetRuntimeVersion();
 	static std::optional<std::wstring> ResolveCurrentThreadName();
 private:
+	std::optional<std::wstring> empty_or_error_msg(std::wstring error_msg) const;
 	std::optional<std::wstring> ResolveTypeNameByClassIdWithExistingMetaData(ClassID class_id, IMetaDataImport*) const;
 	ICorProfilerInfo5* profiler_info_;
+	bool debug_info_;
 };
 

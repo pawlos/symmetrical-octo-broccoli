@@ -2,6 +2,11 @@
 #include <memory>
 #include <format>
 
+std::optional<std::wstring> NameResolver::empty_or_error_msg(std::wstring error_msg) const
+{
+    return !this->debug_info_ ? std::nullopt : std::optional(error_msg);
+}
+
 
 std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
 	const FunctionID function_id, const COR_PRF_FRAME_INFO frame_info) const
@@ -70,9 +75,14 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(const FunctionID f
     mdTypeDef def_token;
 
     auto hr = profiler_info_->GetFunctionInfo(function_id, &class_id, &module_id, &def_token);
-    if (FAILED(hr) || class_id == 0)
+    if (FAILED(hr))
     {
-        return {};
+        return empty_or_error_msg(L"<<Error in GetFunctionInfo>>");
+    }
+
+    if (class_id == 0)
+    {
+        return empty_or_error_msg(std::format(L"<<Error in GetFunctionInfo; class_id={0}, module_id={1}, def_token={2}>>", class_id, module_id, def_token));
     }
 
     auto imp = std::shared_ptr<IMetaDataImport>();
@@ -108,7 +118,7 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(const FunctionID f
         }
     }
 
-    return {};
+    return !this->debug_info_ ? nullptr : L"<<Error in GetModuleMetaData>>";
 }
 
 std::optional<std::wstring> NameResolver::ResolveAssemblyName(const AssemblyID assembly_id) const
