@@ -73,7 +73,7 @@ public class LogParser : IParser
                 var (threadName, method, @class, module, isTailCall) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
                 threadName = string.IsNullOrEmpty(threadName) ? "Main thread" : threadName;
-                entries.Add(new EnterExitEntry(threadName, module, @class, module, isTailCall, ticks));
+				entries.Add(new EnterExitEntry(threadName, module, @class, method, isTailCall, ticks));
             }
             else if (line.Contains("OctoProfilerEnterLeave::Detected"))
             {
