@@ -43,7 +43,7 @@ void Logger::Error(const std::string& s)
 void Logger::Error(const std::wstring& s)
 {
     const std::string log_string(s.begin(), s.end());
-    DoLog(log_string);
+    Error(log_string);
 }
 
 std::string format_iid(REFIID guid)
