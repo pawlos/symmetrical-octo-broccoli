@@ -215,7 +215,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         {
             SettingsDataModel.DataSize.Bytes => data,
             SettingsDataModel.DataSize.KiloBytes => data / 1024,
-            SettingsDataModel.DataSize.MegaBytes => data / (1024 * 1014),
+            SettingsDataModel.DataSize.MegaBytes => data / (1024 * 1024),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
