@@ -61,11 +61,9 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 
 HRESULT __stdcall OctoProfiler::Shutdown()
 {
-	std::condition_variable cv;
-	std::unique_lock lk(stack_walk_mutex_);
 	std::cout << "OctoProfiler::Application has stopped. Prepare to shutdown profiler.";
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
-	cv.wait_for(lk, std::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 	Logger::DoLog("OctoProfiler::Shutdown...");
 	return S_OK;
 }
