@@ -12,6 +12,7 @@ public class LogParser : IParser
         string Class,
         string MethodName,
         bool IsTailCall,
+        bool IsEnter,
         ulong Ticks);
 
     public record ThreadPerfInfo(
@@ -24,9 +25,9 @@ public class LogParser : IParser
         string Class,
         string MethodName,
         bool TailCall,
-        ulong StartTime,
-        ulong? EndTime)
+        ulong StartTime)
     {
+        public ulong? EndTime { get; set; }
         public ulong Duration => EndTime.HasValue ? EndTime.Value - StartTime : 0;
 
         public readonly List<EnterExitEntryStacked> Children = [];
@@ -73,7 +74,8 @@ public class LogParser : IParser
                 var (threadName, method, @class, module, isTailCall) = ParseEnterLeave(line);
                 if (IsStelemRefMethod(method)) continue;
                 threadName = string.IsNullOrEmpty(threadName) ? "Main thread" : threadName;
-				entries.Add(new EnterExitEntry(threadName, module, @class, method, isTailCall, ticks));
+                var isEnter = line.Contains("OctoProfilerEnterLeave::Enter");
+                entries.Add(new EnterExitEntry(threadName, module, @class, method, isTailCall, isEnter, ticks));
             }
             else if (line.Contains("OctoProfilerEnterLeave::Detected"))
             {
@@ -92,8 +94,7 @@ public class LogParser : IParser
 
     private static EnterExitEntryStacked CreateTopNode(ulong startTicks)
     {
-        return new EnterExitEntryStacked(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks,
-            null);
+        return new EnterExitEntryStacked(string.Empty, string.Empty, string.Empty, string.Empty, false, startTicks);
     }
 
     bool IsStelemRefMethod(string method)
@@ -107,9 +108,43 @@ public class LogParser : IParser
         var entriesGroupedByThread = entries.GroupBy(x => x.ThreadName)
             .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Ticks).ToList());
 
-        var list = new List<EnterExitEntryStacked>();
+        var roots = new List<EnterExitEntryStacked>();
 
-        return list;
+        foreach (var (threadName, threadEntries) in entriesGroupedByThread)
+        {
+            var threadRoot = new EnterExitEntryStacked(
+                threadName, string.Empty, string.Empty, threadName, false, threadEntries[0].Ticks);
+            roots.Add(threadRoot);
+
+            var stack = new Stack<EnterExitEntryStacked>();
+            stack.Push(threadRoot);
+
+            foreach (var entry in threadEntries)
+            {
+                if (entry.IsEnter || entry.IsTailCall)
+                {
+                    var node = new EnterExitEntryStacked(
+                        entry.ThreadName, entry.Module, entry.Class, entry.MethodName,
+                        entry.IsTailCall, entry.Ticks);
+                    stack.Peek().Children.Add(node);
+                    stack.Push(node);
+                }
+                else
+                {
+                    // Exit: close the matching frame
+                    if (stack.Count > 1)
+                    {
+                        var node = stack.Pop();
+                        node.EndTime = entry.Ticks;
+                    }
+                }
+            }
+
+            // Close any frames still open (e.g. profiler detached before method returned)
+            threadRoot.EndTime = parent.EndTime;
+        }
+
+        return roots;
     }
 
     private (string ThreadName, string method, string @class, string module, bool tailCall) ParseEnterLeave(string line)

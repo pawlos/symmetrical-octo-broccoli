@@ -1,17 +1,34 @@
 #include "OctoProfilerEnterLeave.h"
 #include <map>
+#include <shared_mutex>
 std::map<FunctionID, std::wstring> functionNameDict;
+std::shared_mutex functionNameDictMutex;
+
+static std::wstring GetOrResolveFunctionName(FunctionID funcId, NameResolver* name_resolver, COR_PRF_FRAME_INFO frameInfo)
+{
+	{
+		std::shared_lock readLock(functionNameDictMutex);
+		auto it = functionNameDict.find(funcId);
+		if (it != functionNameDict.end())
+			return it->second;
+	}
+	// Resolve the name outside the lock — it may call into the CLR
+	auto resolved = name_resolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo).value_or(L"<empty>");
+	{
+		std::unique_lock writeLock(functionNameDictMutex);
+		// try_emplace is a no-op if another thread already inserted while we were resolving
+		functionNameDict.try_emplace(funcId, resolved);
+	}
+	return resolved;
+}
+
 void FuncEnter(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameInfo, COR_PRF_FUNCTION_ARGUMENT_INFO *argInfo)
 {
 	if (clientData != NULL)
 	{
-		if (!functionNameDict.contains(funcId))
-		{
-			const auto name_resolver = reinterpret_cast<NameResolver*>(clientData);
-			const auto str = name_resolver->ResolveFunctionNameWithFrameInfo(funcId, frameInfo);
-			functionNameDict.emplace(funcId, str.value_or(L"<empty>"));
-		}
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", functionNameDict[funcId]));
+		const auto name_resolver = reinterpret_cast<NameResolver*>(clientData);
+		const auto name = GetOrResolveFunctionName(funcId, name_resolver, frameInfo);
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Enter {0}", name));
 	}
 	else
 	{
@@ -23,8 +40,11 @@ void FuncLeave(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO frameI
 {
 	if (clientData != NULL)
 	{
-		std::wstring str = functionNameDict[funcId];
-		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", str));
+		std::shared_lock readLock(functionNameDictMutex);
+		auto it = functionNameDict.find(funcId);
+		std::wstring name = (it != functionNameDict.end()) ? it->second : std::format(L"<unknown:{:x}>", funcId);
+		readLock.unlock();
+		Logger::DoLog(std::format(L"OctoProfilerEnterLeave::Exit {0}", name));
 	}
 	else
 	{
