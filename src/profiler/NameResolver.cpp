@@ -34,9 +34,9 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
     }
     const auto thread_name = ResolveCurrentThreadName();
 
-    auto imp = std::shared_ptr<IMetaDataImport>();
+    IMetaDataImport* imp = nullptr;
     hr = profiler_info_->GetModuleMetaData(module_id, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(hr) && imp != nullptr)
     {
         WCHAR function_name[255];
         hr = imp->GetMethodProps(def_token,
@@ -49,6 +49,8 @@ std::optional<std::wstring> NameResolver::ResolveFunctionNameWithFrameInfo(
                                  nullptr,
                                  nullptr,
                                  nullptr);
+
+        imp->Release();
 
         if (SUCCEEDED(hr))
         {
@@ -85,9 +87,9 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(const FunctionID f
         return empty_or_error_msg(std::format(L"<<Error in GetFunctionInfo; class_id={0}, module_id={1}, def_token={2}>>", class_id, module_id, def_token));
     }
 
-    auto imp = std::shared_ptr<IMetaDataImport>();
+    IMetaDataImport* imp = nullptr;
     hr = profiler_info_->GetModuleMetaData(module_id, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&imp));
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(hr) && imp != nullptr)
     {
         WCHAR functionName[255];
         hr = imp->GetMethodProps(def_token,
@@ -100,6 +102,8 @@ std::optional<std::wstring> NameResolver::ResolveFunctionName(const FunctionID f
                                  nullptr,
                                  nullptr,
                                  nullptr);
+
+        imp->Release();
 
         if (SUCCEEDED(hr))
         {
@@ -195,18 +199,20 @@ std::optional<std::wstring> NameResolver::ResolveTypeNameByClassId(const ClassID
         IMetaDataImport* pIMDImport = nullptr;
         hr = profiler_info_->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport,
                                                reinterpret_cast<IUnknown**>(&pIMDImport));
-        if (SUCCEEDED(hr))
+        if (SUCCEEDED(hr) && pIMDImport != nullptr)
         {
             ULONG typedefnamesize;
             DWORD typedefflags;
             mdToken extends;
             WCHAR typeName[512];
-            if (SUCCEEDED(pIMDImport->GetTypeDefProps(defToken,
+            const bool resolved = SUCCEEDED(pIMDImport->GetTypeDefProps(defToken,
                                              typeName,
                                              510,
                                              &typedefnamesize,
                                              &typedefflags,
-                                             &extends)))
+                                             &extends));
+            pIMDImport->Release();
+            if (resolved)
             {
                 return std::wstring(typeName);
             }

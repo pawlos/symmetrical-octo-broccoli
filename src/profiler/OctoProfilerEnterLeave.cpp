@@ -84,12 +84,15 @@ HRESULT __stdcall OctoProfilerEnterLeave::QueryInterface(REFIID riid, void** ppv
 
 ULONG __stdcall OctoProfilerEnterLeave::AddRef()
 {
-	return 1;
+	return ++ref_count_;
 }
 
 ULONG __stdcall OctoProfilerEnterLeave::Release()
 {
-	return 0;
+	const ULONG count = --ref_count_;
+	if (count == 0)
+		delete this;
+	return count;
 }
 
 UINT_PTR __stdcall MapFunctionId(FunctionID funcId, void *clientData, BOOL* pbHookFunction)

@@ -4,12 +4,14 @@
 #include "log.h"
 #include "atlbase.h"
 #include "NameResolver.h"
+#include <atomic>
 
 class OctoProfilerEnterLeave : public ICorProfilerCallback3
 {
 	std::string version_ = "v0.0.2";
 	CComQIPtr<ICorProfilerInfo5> profiler_info_;
 	std::shared_ptr<NameResolver> name_resolver_{};
+	std::atomic<ULONG> ref_count_{ 0 };
 public:
 	// Inherited via ICorProfilerCallback3
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;

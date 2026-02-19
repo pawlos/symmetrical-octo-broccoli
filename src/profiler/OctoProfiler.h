@@ -4,6 +4,7 @@
 #include "atlbase.h"
 #include "log.h"
 #include "NameResolver.h"
+#include <atomic>
 #include <mutex>
 
 class OctoProfiler : public ICorProfilerCallback3 {
@@ -11,6 +12,7 @@ class OctoProfiler : public ICorProfilerCallback3 {
 	CComQIPtr<ICorProfilerInfo5> p_info_;
 	std::unique_ptr<NameResolver> name_resolver_ {};
 	std::mutex stack_walk_mutex_{};
+	std::atomic<ULONG> ref_count_{ 0 };
 public:
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;

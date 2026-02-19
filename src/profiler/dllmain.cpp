@@ -15,7 +15,9 @@ inline static std::optional<std::string> get_env(const char* key)
 	if (_dupenv_s(&buffer, nullptr, key) != 0 || buffer == nullptr) {
 		return {};
 	}
-	return { std::string { buffer } };
+	std::string result { buffer };
+	free(buffer);
+	return result;
 }
 
 inline static bool to_bool(const std::string& str)
