@@ -4,16 +4,20 @@
 #include "atlbase.h"
 #include "log.h"
 #include "NameResolver.h"
+#include "OctoSink.h"
 #include <atomic>
+#include <memory>
 #include <mutex>
 
 class OctoProfiler : public ICorProfilerCallback3 {
 	std::string version_ = "v0.0.1";
 	CComQIPtr<ICorProfilerInfo5> p_info_;
 	std::unique_ptr<NameResolver> name_resolver_ {};
+	std::unique_ptr<octo_sink> sink_;
 	std::mutex stack_walk_mutex_{};
 	std::atomic<ULONG> ref_count_{ 0 };
 public:
+	explicit OctoProfiler(octo_sink* sink = nullptr) : sink_(sink) {}
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef() override;

@@ -1,4 +1,5 @@
 #include "OctoProfilerFactory.h"
+#include "namedpipe_octo_sink.h"
 
 HRESULT __stdcall OctoProfilerFactory::QueryInterface(REFIID riid, void** ppvObject)
 {
@@ -32,8 +33,9 @@ HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFII
 	if (riid == IID_ICorProfilerCallback2 ||
 		riid == IID_ICorProfilerCallback3)
 	{
+		octo_sink* sink = use_pipe_ ? new namedpipe_octo_sink() : nullptr;
 		profiler_ = (this->do_profile_enter_leave_ ? static_cast<ICorProfilerCallback3*>(
-		new (std::nothrow) OctoProfilerEnterLeave()) : new (std::nothrow) OctoProfiler());
+		new (std::nothrow) OctoProfilerEnterLeave()) : new (std::nothrow) OctoProfiler(sink));
 		profiler_->AddRef();
 		*ppvObject = profiler_;
 		return S_OK;

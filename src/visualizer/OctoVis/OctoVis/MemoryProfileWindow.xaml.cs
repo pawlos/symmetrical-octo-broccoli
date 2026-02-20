@@ -17,6 +17,11 @@ public partial class MemoryProfileWindow : Window, IProfilingWindow
         InitializeComponent();
     }
 
+    public void UpdateModel(ProfilerDataModel model)
+    {
+        SetModel(model);
+    }
+
     public void SetModel(IDataModel model)
     {
         _settings = new SettingsDataModel

@@ -57,16 +57,19 @@ public partial class MainWindow
             return;
         }
 
-        var result = MessageBox.Show("Profile for memory?", "Profile type?", MessageBoxButton.YesNo);
+        var memResult = MessageBox.Show("Profile for memory?", "Profile type?", MessageBoxButton.YesNo);
+        var profileType = memResult == MessageBoxResult.No;
 
-        var profileType = result == MessageBoxResult.No;
-        var fileName = $"{Guid.NewGuid().ToString()}.txt";
+        var pipeResult = MessageBox.Show("Use real-time pipe mode?", "Transport mode?", MessageBoxButton.YesNo);
+        var usePipe = pipeResult == MessageBoxResult.Yes;
+
         var program = PickFile("Open application to profile", "Program|*.exe");
         if (string.IsNullOrWhiteSpace(program))
         {
             MessageBox.Show("Could not find program exe.");
             return;
         }
+
         var p = new Process
         {
             StartInfo =
@@ -81,20 +84,42 @@ public partial class MainWindow
                     ["CORECLR_PROFILER"] = "{10B46309-C972-4F33-B5AB-5E6E3EBA2B1A}",
                     ["COR_PROFILER_PATH"] = _profilerFile,
                     ["CORECLR_PROFILER_PATH_64"] = _profilerFile,
-                    ["OCTO_PROFILER_FILE"] = fileName,
                 }
             }
         };
+
         if (profileType)
         {
             p.StartInfo.EnvironmentVariables.Add("OCTO_MONITOR_ENTERLEAVE", "true");
         }
 
-        Hide();
-        p.Start();
+        if (usePipe)
+        {
+            p.StartInfo.EnvironmentVariables.Add("OCTO_USE_PIPE", "true");
+            Hide();
+            p.Start();
+            await ConnectPipeAndShowWindowAsync(p);
+        }
+        else
+        {
+            var fileName = $"{Guid.NewGuid()}.txt";
+            p.StartInfo.EnvironmentVariables.Add("OCTO_PROFILER_FILE", fileName);
+            Hide();
+            p.Start();
+            await p.WaitForExitAsync();
+            CreateProfilingWindow(fileName);
+        }
+    }
 
-        await p.WaitForExitAsync();
-        CreateProfilingWindow(fileName);
+    private async Task ConnectPipeAndShowWindowAsync(Process process)
+    {
+        var parser = new BinaryPipeParser();
+        var window = new MemoryProfileWindow();
+        window.Show();
+
+        parser.ModelUpdated += model => Dispatcher.Invoke(() => window.UpdateModel(model));
+        await parser.ConnectAndReadAsync("octo_sink", CancellationToken.None);
+        await process.WaitForExitAsync();
     }
 
     private static bool CreateProfilingWindow(string fileName)

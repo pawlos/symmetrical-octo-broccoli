@@ -1,5 +1,10 @@
 #include "OctoProfiler.h"
 
+struct StackWalkContext {
+	NameResolver* resolver;
+	std::vector<std::string>* frames; // nullptr = log-only mode
+};
+
 HRESULT __stdcall OctoProfiler::QueryInterface(REFIID riid, void** ppvObject)
 {
 	Logger::DoLog(std::format("OctoProfiler::QueryInterface - ProfilerCallback {0}", format_iid(riid)));
@@ -45,6 +50,12 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
 	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
+	if (sink_)
+	{
+		const auto& vs = version_string.value_or(L"unknown");
+		std::string net_ver_str(vs.begin(), vs.end());
+		sink_->sync_profiling_start_info(net_ver_str);
+	}
 	hr = p_info_->SetEventMask2(
 		COR_PRF_ALL |
 		COR_PRF_MONITOR_ALL |
@@ -69,6 +80,7 @@ HRESULT __stdcall OctoProfiler::Shutdown()
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	std::this_thread::sleep_for(std::chrono::seconds(5));
 	Logger::DoLog("OctoProfiler::Shutdown...");
+	if (sink_) sink_->sync_finished();
 	return S_OK;
 }
 
@@ -215,12 +227,23 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 
 	const auto thread_name = NameResolver::ResolveCurrentThreadName();
 	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32_thread_id, threadId, thread_name.value_or(L"<<no info>>")));
+	if (sink_)
+	{
+		std::string name_str(thread_name.value_or(L"").begin(), thread_name.value_or(L"").end());
+		auto formatted = std::format("{},{},{}", win32_thread_id, threadId, name_str);
+		sink_->sync_thread_created(formatted);
+	}
 	return S_OK;
 }
 
 HRESULT __stdcall OctoProfiler::ThreadDestroyed(ThreadID threadId)
 {
 	Logger::DoLog(std::format("OctoProfiler::ThreadDestroyed {0}", threadId));
+	if (sink_)
+	{
+		auto thread_id_str = std::format("{}", threadId);
+		sink_->sync_thread_destroyed(thread_id_str);
+	}
 	return S_OK;
 }
 
@@ -328,15 +351,23 @@ HRESULT __stdcall OctoProfiler::MovedReferences(ULONG cMovedObjectIDRanges, Obje
 
 HRESULT __stdcall StackSnapshotInfo(const FunctionID func_id, UINT_PTR ip, const COR_PRF_FRAME_INFO frame_info, ULONG32 contextSize, BYTE context[], void* clientData)
 {
+	const auto ctx = static_cast<StackWalkContext*>(clientData);
 	if (!func_id)
 	{
 		Logger::DoLog(std::format("OctoProfiler::Native frame {0:x}", ip));
+		if (ctx->frames)
+			ctx->frames->push_back(std::format("native;{0:x}", ip));
 	}
 	else
 	{
-		const auto name_resolver = static_cast<NameResolver*>(clientData);
-		const auto function_name = name_resolver->ResolveFunctionNameWithFrameInfo(func_id, frame_info);
+		const auto function_name = ctx->resolver->ResolveFunctionNameWithFrameInfo(func_id, frame_info);
 		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", function_name.value_or(L"<<no info>>"), ip));
+		if (ctx->frames)
+		{
+			const auto& fn = function_name.value_or(L"<<no info>>");
+			std::string fn_str(fn.begin(), fn.end());
+			ctx->frames->push_back(std::format("managed;{0};{1:x}", fn_str, ip));
+		}
 	}
 
 	return S_OK;
@@ -350,10 +381,18 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(const ObjectID object_id, const 
 	if (SUCCEEDED(hr))
 	{
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytes_allocated, type_name.value_or(L"<<no info>>")));
+		std::vector<std::string> frames;
+		StackWalkContext ctx { name_resolver_.get(), sink_ ? &frames : nullptr };
 		stack_walk_mutex_.lock();
-		hr = p_info_->DoStackSnapshot(0, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
+		hr = p_info_->DoStackSnapshot(0, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, &ctx, nullptr, 0);
 		stack_walk_mutex_.unlock();
 		Logger::DoLog("OctoProfiler::DoStackSnapshot end");
+		if (sink_)
+		{
+			const auto& tn = type_name.value_or(L"<<no info>>");
+			std::string type_str(tn.begin(), tn.end());
+			sink_->sync_memory_allocated(type_str, static_cast<long>(bytes_allocated), frames);
+		}
 		return S_OK;
 	}
 	return E_FAIL;
@@ -389,10 +428,21 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		type_name.value_or(L"<<no info>>"),
 		thread_id,
 		thread_name.value_or(L"<<no info>>")));
+	std::vector<std::string> frames;
+	StackWalkContext ctx { name_resolver_.get(), sink_ ? &frames : nullptr };
 	stack_walk_mutex_.lock();
-	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, name_resolver_.get(), nullptr, 0);
+	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, &ctx, nullptr, 0);
 	stack_walk_mutex_.unlock();
 	Logger::DoLog("OctoProfiler::DoStackSnapshot end");
+	if (sink_)
+	{
+		const auto& tn = type_name.value_or(L"<<no info>>");
+		std::string exc_str(tn.begin(), tn.end());
+		std::string thread_id_str = std::format("{}", thread_id);
+		const auto& tname = thread_name.value_or(L"");
+		std::string thread_name_str(tname.begin(), tname.end());
+		sink_->sync_exception_occured(exc_str, thread_id_str, thread_name_str, frames);
+	}
 	return S_OK;
 }
 
@@ -494,6 +544,21 @@ HRESULT __stdcall OctoProfiler::GarbageCollectionStarted(int cGenerations, BOOL 
 	auto gen2 = generationCollected[COR_PRF_GC_GEN_2] ? "GEN2" : "";
 	auto gen_loh = generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP] ? "Large Object Heap" : "";
 	Logger::DoLog(std::format("OctoProfiler::GarbageCollectionStarted [{0}] [{1}] [{2}] [{3}]", gen0, gen1, gen2, gen_loh));
+	if (sink_)
+	{
+		std::vector<std::string> active_gens;
+		if (generationCollected[COR_PRF_GC_GEN_0]) active_gens.push_back("GEN0");
+		if (generationCollected[COR_PRF_GC_GEN_1]) active_gens.push_back("GEN1");
+		if (generationCollected[COR_PRF_GC_GEN_2]) active_gens.push_back("GEN2");
+		if (generationCollected[COR_PRF_GC_LARGE_OBJECT_HEAP]) active_gens.push_back("LOH");
+		std::string gc_type_str;
+		for (size_t i = 0; i < active_gens.size(); ++i)
+		{
+			if (i > 0) gc_type_str += ",";
+			gc_type_str += active_gens[i];
+		}
+		sink_->sync_gc_occured(gc_type_str);
+	}
 	return S_OK;
 }
 
