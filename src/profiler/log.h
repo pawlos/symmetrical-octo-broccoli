@@ -50,4 +50,18 @@ public:
     }
 };
 
+class NullLogger : public Logger
+{
+    struct NullBuf : public std::streambuf {
+        int overflow(int c) override { return c; }
+    } null_buf_;
+    std::ostream null_stream_;
+public:
+    NullLogger() : null_stream_(&null_buf_)
+    {
+        os_ = &null_stream_;
+        include_timestamp_ = false;
+    }
+};
+
 std::string format_iid(REFIID guid);

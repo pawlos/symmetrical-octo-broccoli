@@ -38,15 +38,20 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 {
 	const auto file_to_log = get_env("OCTO_PROFILER_FILE");
 	const auto include_ts = to_bool(get_env("OCTO_LOGGER_INCLUDE_TS").value_or("true"));
-	const auto logger = file_to_log.has_value() ? static_cast<Logger *>(new FileLogger(file_to_log.value(), include_ts)) : static_cast<Logger *>(new StdOutLogger());
+	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
+	auto usePipe = to_bool(get_env("OCTO_USE_PIPE").value_or("false"));
+
+	Logger* logger;
+	if (file_to_log.has_value())
+		logger = new FileLogger(file_to_log.value(), include_ts);
+	else if (usePipe)
+		logger = new NullLogger();
+	else
+		logger = new StdOutLogger();
 	Logger::initialize(logger);
 	Logger::DoLog(std::format("Log file: {0}", file_to_log.value_or("console")));
 	Logger::DoLog(std::format("OctoProfiler::DllGetClassObject {0} {1}", format_iid(rclsid), format_iid(riid)));
-
-	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
 	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doProfileEnterLeave));
-
-	auto usePipe = to_bool(get_env("OCTO_USE_PIPE").value_or("false"));
 	Logger::DoLog(std::format("OctoProfiler::UsePipe: {0}", usePipe));
 
 	auto hr = E_FAIL;

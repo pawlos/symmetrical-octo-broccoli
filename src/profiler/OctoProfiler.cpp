@@ -229,7 +229,8 @@ HRESULT __stdcall OctoProfiler::ThreadCreated(ThreadID threadId)
 	Logger::DoLog(std::format(L"OctoProfiler::ThreadCreated [{0},{1},{2}]", win32_thread_id, threadId, thread_name.value_or(L"<<no info>>")));
 	if (sink_)
 	{
-		std::string name_str(thread_name.value_or(L"").begin(), thread_name.value_or(L"").end());
+		const auto& name_val = thread_name.value_or(L"");
+		std::string name_str(name_val.begin(), name_val.end());
 		auto formatted = std::format("{},{},{}", win32_thread_id, threadId, name_str);
 		sink_->sync_thread_created(formatted);
 	}
