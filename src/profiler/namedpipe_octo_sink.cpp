@@ -72,6 +72,7 @@ void namedpipe_octo_sink::sync_started()
 
 void namedpipe_octo_sink::sync_finished()
 {
+	std::lock_guard lock(write_mutex_);
 	if (named_pipe_ != INVALID_HANDLE_VALUE)
 	{
 		send_frame(static_cast<uint8_t>(octo_sync_finished));
@@ -83,6 +84,7 @@ void namedpipe_octo_sink::sync_finished()
 
 void namedpipe_octo_sink::sync_profiling_start_info(std::string& net_version_detected)
 {
+	std::lock_guard lock(write_mutex_);
 	std::string profiler_version = "v0.0.1";
 	send_frame(static_cast<uint8_t>(octo_sync_started));
 	write_string(profiler_version);
@@ -95,6 +97,7 @@ void namedpipe_octo_sink::sync_exception_occured(
 	std::string& thread_name,
 	std::vector<std::string>& frames)
 {
+	std::lock_guard lock(write_mutex_);
 	send_frame(static_cast<uint8_t>(octo_exception));
 	write_string(exception);
 	write_string(thread_id);
@@ -110,6 +113,7 @@ void namedpipe_octo_sink::sync_memory_allocated(
 	long bytes_allocated,
 	std::vector<std::string>& frames)
 {
+	std::lock_guard lock(write_mutex_);
 	send_frame(static_cast<uint8_t>(octo_memory_alloc));
 	write_string(allocated_type);
 	write_uint64(static_cast<uint64_t>(bytes_allocated));
@@ -121,18 +125,21 @@ void namedpipe_octo_sink::sync_memory_allocated(
 
 void namedpipe_octo_sink::sync_gc_occured(std::string& gc_type)
 {
+	std::lock_guard lock(write_mutex_);
 	send_frame(static_cast<uint8_t>(octo_gc));
 	write_string(gc_type);
 }
 
 void namedpipe_octo_sink::sync_thread_created(std::string& thread_info)
 {
+	std::lock_guard lock(write_mutex_);
 	send_frame(static_cast<uint8_t>(octo_new_thread));
 	write_string(thread_info);
 }
 
 void namedpipe_octo_sink::sync_thread_destroyed(std::string& thread_id)
 {
+	std::lock_guard lock(write_mutex_);
 	send_frame(static_cast<uint8_t>(octo_thread_destroyed));
 	write_string(thread_id);
 }

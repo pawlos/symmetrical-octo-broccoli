@@ -1,0 +1,18 @@
+<Window x:Class="OctoVis.CollectionProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Collecting Profiler Data" Height="160" Width="350"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ProgressBar Grid.Row="0" Height="20" IsIndeterminate="True" />
+        <TextBlock Grid.Row="1" x:Name="EventCountText" Text="Collected 0 events..."
+                   Margin="0,12,0,0" HorizontalAlignment="Center" FontSize="14" />
+        <Button Grid.Row="2" Content="Stop Collection" Click="StopButton_OnClick"
+                Margin="0,12,0,0" Padding="16,4" HorizontalAlignment="Center" />
+    </Grid>
+</Window>

@@ -16,6 +16,7 @@ public class BinaryPipeParser
     private const byte CmdSyncFinished = 0xFF;
 
     public event Action<ProfilerDataModel>? ModelUpdated;
+    public event Action<int>? ProgressUpdated;
 
     public async Task ConnectAndReadAsync(string pipeName, CancellationToken ct)
     {
@@ -25,6 +26,7 @@ public class BinaryPipeParser
         var model = new ProfilerDataModel();
         ulong startTicks = 0;
         uint totalMemory = 0;
+        var eventCount = 0;
 
         try
         {
@@ -70,7 +72,8 @@ public class BinaryPipeParser
                         break;
                 }
 
-                ModelUpdated?.Invoke(model);
+                eventCount++;
+                ProgressUpdated?.Invoke(eventCount);
             }
         }
         catch (OperationCanceledException) { }

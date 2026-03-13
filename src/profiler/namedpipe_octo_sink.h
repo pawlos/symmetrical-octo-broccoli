@@ -2,11 +2,13 @@
 #include "OctoSink.h"
 #include "Windows.h"
 #include <cstdint>
+#include <mutex>
 
 class namedpipe_octo_sink : public octo_sink
 {
 private:
 	HANDLE named_pipe_ = INVALID_HANDLE_VALUE;
+	std::mutex write_mutex_;
 	void write_bytes(const void* data, DWORD size);
 	void write_uint8(uint8_t value);
 	void write_uint32(uint32_t value);

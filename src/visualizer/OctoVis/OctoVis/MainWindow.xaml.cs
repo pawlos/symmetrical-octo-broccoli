@@ -113,13 +113,29 @@ public partial class MainWindow
 
     private async Task ConnectPipeAndShowWindowAsync(Process process)
     {
-        var parser = new BinaryPipeParser();
-        var window = new MemoryProfileWindow();
-        window.Show();
+        var cts = new CancellationTokenSource();
+        var progressWindow = new CollectionProgressWindow(cts);
+        progressWindow.Show();
 
-        parser.ModelUpdated += model => Dispatcher.Invoke(() => window.UpdateModel(model));
-        await parser.ConnectAndReadAsync("octo_sink", CancellationToken.None);
+        var parser = new BinaryPipeParser();
+
+        parser.ProgressUpdated += count =>
+            Dispatcher.BeginInvoke(() => progressWindow.UpdateEventCount(count));
+
+        ProfilerDataModel? finalModel = null;
+        parser.ModelUpdated += model => finalModel = model;
+
+        await parser.ConnectAndReadAsync("octo_sink", cts.Token);
         await process.WaitForExitAsync();
+
+        progressWindow.Close();
+
+        if (finalModel != null)
+        {
+            var window = new MemoryProfileWindow();
+            window.SetModel(finalModel);
+            window.Show();
+        }
     }
 
     private static bool CreateProfilingWindow(string fileName)
