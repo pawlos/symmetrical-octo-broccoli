@@ -94,6 +94,8 @@ public class StackTraceControl : FrameworkElement
 
     private void RenderNode(DrawingContext dc, FlameGraphNode node, double x, double width, int depth, double elementHeight)
     {
+        if (width < 1.0) return;
+
         var y = ActualHeight - (depth + 1) * elementHeight;
         var rect = new Rect(x, y, width, elementHeight);
 

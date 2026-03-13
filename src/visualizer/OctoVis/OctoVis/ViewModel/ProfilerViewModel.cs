@@ -73,6 +73,12 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         ProfilerDataModel data,
         SettingsDataModel settings)
     {
+        var exceptionsByBucket = data.ExceptionsInfo
+            .GroupBy(x => Sample(x.Key, settings.TimelineXAxis))
+            .ToDictionary(
+                g => g.Key,
+                g => string.Join(", ", g.Select(x => x.Value.ExceptionType).Distinct()));
+
         var profilerViewModel = new ProfilerViewModel
         {
             Timeline =
@@ -104,10 +110,10 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
                     Values = data.ExceptionData.GroupBy(x => GroupSamples(x, settings))
                         .Select(x => new ObservablePoint(x.Key, 10))
                         .ToArray(),
-                    XToolTipLabelFormatter = point => data.ExceptionsInfo[
-                        Sample(point.Model!.X!.Value, settings.TimelineXAxis)].ExceptionType,
-                    YToolTipLabelFormatter = point => data.ExceptionsInfo[
-                        Sample(point.Model!.X!.Value, settings.TimelineXAxis)].ExceptionType,
+                    XToolTipLabelFormatter = point =>
+                        exceptionsByBucket.TryGetValue(point.Model!.X!.Value, out var name) ? name : "Exception",
+                    YToolTipLabelFormatter = point =>
+                        exceptionsByBucket.TryGetValue(point.Model!.X!.Value, out var name) ? name : "Exception",
                     Fill = new SolidColorPaint(SKColor.Parse("FF0000"))
                 },
             ]
@@ -235,16 +241,16 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
 
     private static double Sample(double time, SettingsDataModel.TimeSize size)
     {
-        return Math.Round(time * 1000);
+        return Sample((ulong)time, size);
     }
 
     private static double Sample(ulong time, SettingsDataModel.TimeSize size)
     {
         return size switch
         {
-            SettingsDataModel.TimeSize.Millisecond => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalMilliseconds, 4),
-            SettingsDataModel.TimeSize.Second => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalSeconds, 4),
-            SettingsDataModel.TimeSize.Minute => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalMinutes, 4),
+            SettingsDataModel.TimeSize.Millisecond => Math.Floor(TimeSpan.FromMicroseconds((long)time).TotalMilliseconds),
+            SettingsDataModel.TimeSize.Second => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalSeconds, 1),
+            SettingsDataModel.TimeSize.Minute => Math.Round(TimeSpan.FromMicroseconds((long)time).TotalMinutes, 1),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
