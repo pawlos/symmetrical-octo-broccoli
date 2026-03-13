@@ -35,7 +35,7 @@ HRESULT __stdcall OctoProfilerFactory::CreateInstance(IUnknown* pUnkOuter, REFII
 	{
 		octo_sink* sink = use_pipe_ ? new namedpipe_octo_sink() : nullptr;
 		profiler_ = (this->do_profile_enter_leave_ ? static_cast<ICorProfilerCallback3*>(
-		new (std::nothrow) OctoProfilerEnterLeave()) : new (std::nothrow) OctoProfiler(sink));
+		new (std::nothrow) OctoProfilerEnterLeave()) : new (std::nothrow) OctoProfiler(sink, sample_rate_));
 		profiler_->AddRef();
 		*ppvObject = profiler_;
 		return S_OK;

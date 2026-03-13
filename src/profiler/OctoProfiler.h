@@ -16,8 +16,11 @@ class OctoProfiler : public ICorProfilerCallback3 {
 	std::unique_ptr<octo_sink> sink_;
 	std::mutex stack_walk_mutex_{};
 	std::atomic<ULONG> ref_count_{ 0 };
+	uint32_t sample_rate_ = 10;
+	std::atomic<uint32_t> alloc_counter_{ 0 };
 public:
-	explicit OctoProfiler(octo_sink* sink = nullptr) : sink_(sink) {}
+	explicit OctoProfiler(octo_sink* sink = nullptr, uint32_t sample_rate = 10)
+		: sink_(sink), sample_rate_(sample_rate) {}
 	// Inherited via ICorProfilerCallback2
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef() override;

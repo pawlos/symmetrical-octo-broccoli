@@ -28,6 +28,12 @@ inline static bool to_bool(const std::string& str)
 	return b;
 }
 
+inline static uint32_t parse_sample_rate(const std::string& str)
+{
+	auto val = static_cast<uint32_t>(atoi(str.c_str()));
+	return val < 1 ? 10 : val;
+}
+
 BOOL DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 	return TRUE;
@@ -40,6 +46,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	const auto include_ts = to_bool(get_env("OCTO_LOGGER_INCLUDE_TS").value_or("true"));
 	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
 	auto usePipe = to_bool(get_env("OCTO_USE_PIPE").value_or("false"));
+	auto sampleRate = parse_sample_rate(get_env("OCTO_SAMPLE_RATE").value_or("10"));
 
 	Logger* logger;
 	if (file_to_log.has_value())
@@ -53,6 +60,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	Logger::DoLog(std::format("OctoProfiler::DllGetClassObject {0} {1}", format_iid(rclsid), format_iid(riid)));
 	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doProfileEnterLeave));
 	Logger::DoLog(std::format("OctoProfiler::UsePipe: {0}", usePipe));
+	Logger::DoLog(std::format("OctoProfiler::SampleRate: {0}", sampleRate));
 
 	auto hr = E_FAIL;
 	if (ppv == nullptr)
@@ -63,7 +71,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	static constexpr GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
 	if (riid == CLSID_ClassFactoryGuid)
 	{
-		factory = new (std::nothrow) OctoProfilerFactory(doProfileEnterLeave, usePipe);
+		factory = new (std::nothrow) OctoProfilerFactory(doProfileEnterLeave, usePipe, sampleRate);
 		if (factory)
 		{
 			factory->AddRef();

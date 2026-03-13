@@ -376,6 +376,9 @@ HRESULT __stdcall StackSnapshotInfo(const FunctionID func_id, UINT_PTR ip, const
 
 HRESULT __stdcall OctoProfiler::ObjectAllocated(const ObjectID object_id, const ClassID class_id)
 {
+	if (sample_rate_ > 1 && (++alloc_counter_ % sample_rate_) != 0)
+		return S_OK;
+
 	const auto type_name = name_resolver_->ResolveTypeNameByObjectIdAndClassId(object_id, class_id);
 	SIZE_T bytes_allocated;
 	auto hr = p_info_->GetObjectSize2(object_id, &bytes_allocated);
