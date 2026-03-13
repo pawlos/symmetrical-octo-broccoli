@@ -62,12 +62,12 @@ public class StackTraceControl : FrameworkElement
 
     public static readonly DependencyProperty StackFramesProperty
         = DependencyProperty.Register(
-            nameof(StackFrames), typeof(List<List<ProfilerDataModel.StackFrame>>), typeof(StackTraceControl),
-            new PropertyMetadata(default(List<List<ProfilerDataModel.StackFrame>>)));
+            nameof(StackFrames), typeof(FlameGraphNode), typeof(StackTraceControl),
+            new PropertyMetadata(null, (d, _) => ((StackTraceControl)d).InvalidateVisual()));
 
-    public List<List<ProfilerDataModel.StackFrame>> StackFrames
+    public FlameGraphNode? StackFrames
     {
-        get => (List<List<ProfilerDataModel.StackFrame>>)GetValue(StackFramesProperty);
+        get => (FlameGraphNode?)GetValue(StackFramesProperty);
         set => SetValue(StackFramesProperty, value);
     }
 
@@ -78,44 +78,60 @@ public class StackTraceControl : FrameworkElement
         drawingContext.DrawRectangle(_transparentBrush,
             new Pen(Brushes.Transparent, 0.0), new Rect(0, 0, ActualWidth, ActualHeight));
 
+        var root = StackFrames;
+        if (root is null || root.SampleCount == 0) return;
+
         var elementHeight = 20 * Zoom;
+        var childX = 0.0;
 
-        foreach (var (idx, stack) in StackFrames.Where(x=>x.Count > 0).Index())
+        foreach (var child in root.Children)
         {
-            var posY = ActualHeight - elementHeight;
-            int i = 0;
-            foreach (var info in stack)
-            {
-                var brush = GetBrush(i);
-                var size = ActualWidth / StackFrames.Count;
-                var rect = new Rect(
-                    new Point(idx * size, posY),
-                    new Point((idx + 1) * size, posY + elementHeight));
-                drawingContext.PushClip(new RectangleGeometry(rect));
-                drawingContext.DrawRectangle(brush,
-                    new Pen(_transparentBrush, 2.0),
-                    rect);
-                _tooltipsCoords.Add(new RectTooltip(rect, info.FrameInfo));
+            var childWidth = ActualWidth * child.SampleCount / root.SampleCount;
+            RenderNode(drawingContext, child, childX, childWidth, 0, elementHeight);
+            childX += childWidth;
+        }
+    }
 
-                if (idx < 1 || StackFrames.ElementAt(idx - 1).ElementAtOrDefault(i)?.FrameInfo != info.FrameInfo)
-                {
-                    var ft = new FormattedText(
-                        info.FrameInfo,
-                        CultureInfo.CurrentCulture,
-                        FlowDirection.LeftToRight,
-                        _typeface,
-                        12 * Zoom,
-                        GetFontColor,
-                        null,
-                        TextFormattingMode.Display,
-                        72);
-                    drawingContext.DrawText(ft, new Point(idx * size, posY));
-                }
+    private void RenderNode(DrawingContext dc, FlameGraphNode node, double x, double width, int depth, double elementHeight)
+    {
+        var y = ActualHeight - (depth + 1) * elementHeight;
+        var rect = new Rect(x, y, width, elementHeight);
 
-                posY -= elementHeight;
-                drawingContext.Pop();
-                i++;
-            }
+        var brush = GetBrush(depth);
+        dc.PushClip(new RectangleGeometry(rect));
+        dc.DrawRectangle(brush, new Pen(_transparentBrush, 1.0), rect);
+
+        var label = node.Frame?.FrameInfo ?? string.Empty;
+        _tooltipsCoords.Add(new RectTooltip(rect, $"{label} ({node.SampleCount} sample{(node.SampleCount != 1 ? "s" : "")})"));
+
+        if (width > 40 && !string.IsNullOrEmpty(label))
+        {
+            var ft = new FormattedText(
+                label,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                _typeface,
+                12 * Zoom,
+                GetFontColor,
+                null,
+                TextFormattingMode.Display,
+                72);
+            ft.MaxTextWidth = Math.Max(1, width - 4);
+            ft.MaxTextHeight = elementHeight;
+            ft.Trimming = TextTrimming.CharacterEllipsis;
+            dc.DrawText(ft, new Point(x + 2, y));
+        }
+
+        dc.Pop();
+
+        if (node.SampleCount == 0) return;
+
+        var childX = x;
+        foreach (var child in node.Children)
+        {
+            var childWidth = width * child.SampleCount / node.SampleCount;
+            RenderNode(dc, child, childX, childWidth, depth + 1, elementHeight);
+            childX += childWidth;
         }
     }
 

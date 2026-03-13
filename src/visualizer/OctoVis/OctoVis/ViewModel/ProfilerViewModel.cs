@@ -14,7 +14,10 @@ namespace OctoVis.ViewModel;
 
 public sealed class ProfilerViewModel : INotifyPropertyChanged
 {
-    public record TypeAllocationsEntry(string Name, double TotalAllocations, uint Count, uint UniqueStackTraces, List<List<ProfilerDataModel.StackFrame>> StackFrames);
+    public record TypeAllocationsEntry(string Name, double TotalAllocations, uint Count, uint UniqueStackTraces, List<List<ProfilerDataModel.StackFrame>> StackFrames)
+    {
+        public FlameGraphNode FlameGraph => FlameGraphNode.BuildTree(StackFrames);
+    }
     public record ExceptionTable(string Name, string ThreadName, int Count);
 
     public LabelVisual TimelineTitle { get; set; } = new LabelVisual
