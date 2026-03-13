@@ -149,6 +149,7 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         profilerViewModel.TotalGcTime = data.TotalGcTime.ToString();
         profilerViewModel.TotalTime = data.TotalTime.ToString();
         profilerViewModel.NetVersion = data.NetVersion;
+        profilerViewModel.SampleRate = data.SampleRate;
         profilerViewModel.LogParsed = true;
         profilerViewModel.LogNotParsed = false;
 
@@ -217,6 +218,11 @@ public sealed class ProfilerViewModel : INotifyPropertyChanged
         return profilerViewModel;
     }
     public string NetVersion { get; set; } = string.Empty;
+    public uint SampleRate { get; set; } = 1;
+    public string SampleRateDisplay => SampleRate <= 1 ? "None (full capture)" : $"1:{SampleRate}";
+    public string SampleRateTooltip => SampleRate <= 1
+        ? "All allocation events were captured."
+        : $"Only every {SampleRate}th allocation event was recorded. Memory values are approximate.";
 
     private static double ParseData(double data, SettingsDataModel settings)
     {

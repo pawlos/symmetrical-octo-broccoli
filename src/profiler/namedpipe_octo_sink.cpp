@@ -82,13 +82,14 @@ void namedpipe_octo_sink::sync_finished()
 	}
 }
 
-void namedpipe_octo_sink::sync_profiling_start_info(std::string& net_version_detected)
+void namedpipe_octo_sink::sync_profiling_start_info(std::string& net_version_detected, uint32_t sample_rate)
 {
 	std::lock_guard lock(write_mutex_);
 	std::string profiler_version = "v0.0.1";
 	send_frame(static_cast<uint8_t>(octo_sync_started));
 	write_string(profiler_version);
 	write_string(net_version_detected);
+	write_uint32(sample_rate);
 }
 
 void namedpipe_octo_sink::sync_exception_occured(

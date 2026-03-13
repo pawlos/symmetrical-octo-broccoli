@@ -50,11 +50,12 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
 	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
+	Logger::DoLog(std::format("OctoProfiler::SampleRate {0}", sample_rate_));
 	if (sink_)
 	{
 		const auto& vs = version_string.value_or(L"unknown");
 		std::string net_ver_str(vs.begin(), vs.end());
-		sink_->sync_profiling_start_info(net_ver_str);
+		sink_->sync_profiling_start_info(net_ver_str, sample_rate_);
 	}
 	hr = p_info_->SetEventMask2(
 		COR_PRF_ALL |

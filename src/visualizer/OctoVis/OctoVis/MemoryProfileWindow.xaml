@@ -33,13 +33,18 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Label Content="Total time:" />
                         <Label Grid.Column="0" Grid.Row="1" Content="Total GC time:" />
-                        <Label Grid.Column="0" Grid.Row="2" Content=".NET version:"></Label>
+                        <Label Grid.Column="0" Grid.Row="2" Content=".NET version:" />
+                        <Label Grid.Column="0" Grid.Row="3" Content="Sampling:"
+                               ToolTip="{Binding SampleRateTooltip}" />
                         <Label Grid.Column="1" Grid.Row="0" Content="{Binding TotalTime}" />
                         <Label Grid.Column="1" Grid.Row="1" Content="{Binding TotalGcTime}" />
                         <Label Grid.Column="1" Grid.Row="2" Content="{Binding NetVersion}" />
+                        <Label Grid.Column="1" Grid.Row="3" Content="{Binding SampleRateDisplay}"
+                               ToolTip="{Binding SampleRateTooltip}" />
                     </Grid>
                     <lvc:CartesianChart Series="{Binding Timeline}"
                                         ZoomMode="X"

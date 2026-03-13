@@ -34,4 +34,6 @@ public class ProfilerDataModel : IDataModel
     public TimeSpan TotalGcTime { get; set; }
 
     public string NetVersion { get; set; } = string.Empty;
+
+    public uint SampleRate { get; set; } = 1;
 }

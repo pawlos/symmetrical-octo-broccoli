@@ -21,7 +21,7 @@ public:
 	~namedpipe_octo_sink() override;
 	void sync_started() override;
 	void sync_finished() override;
-	void sync_profiling_start_info(std::string& net_version_detected) override;
+	void sync_profiling_start_info(std::string& net_version_detected, uint32_t sample_rate) override;
 	void sync_exception_occured(std::string& exception, std::string& thread_id, std::string& thread_name, std::vector<std::string>& frames) override;
 	void sync_memory_allocated(std::string& allocated_type, long bytes_allocated, std::vector<std::string>& frames) override;
 	void sync_gc_occured(std::string& gc_type) override;

@@ -14,7 +14,7 @@ class octo_sink
 {
 public:
 	virtual ~octo_sink() = default;
-	virtual void sync_profiling_start_info(std::string& net_version_detected) = 0;
+	virtual void sync_profiling_start_info(std::string& net_version_detected, uint32_t sample_rate) = 0;
 	virtual void sync_exception_occured(std::string& exception, std::string& thread_id, std::string& thread_name, std::vector<std::string>& frames) = 0;
 	virtual void sync_memory_allocated(std::string& allocated_type, long bytes_allocated, std::vector<std::string>& frames) = 0;
 	virtual void sync_gc_occured(std::string& gc_type) = 0;

@@ -49,6 +49,7 @@ public class BinaryPipeParser
                     case CmdSyncStarted:
                         _ = await ReadStringAsync(pipe, ct); // profiler version
                         model.NetVersion = await ReadStringAsync(pipe, ct);
+                        model.SampleRate = await ReadUInt32Async(pipe, ct);
                         break;
 
                     case CmdException:

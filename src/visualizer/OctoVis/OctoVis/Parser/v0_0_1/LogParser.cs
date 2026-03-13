@@ -26,6 +26,12 @@ public class LogParser : IParser
                 var match = Regex.Match(line, @"\[[^ ]+\] OctoProfiler::Detected (.+)");
                 model.NetVersion = match.Groups[1].Value;
             }
+            else if (line.Contains("OctoProfiler::SampleRate"))
+            {
+                var match = Regex.Match(line, @"OctoProfiler::SampleRate (\d+)");
+                if (match.Success && uint.TryParse(match.Groups[1].Value, out var rate))
+                    model.SampleRate = rate;
+            }
             else if (line.Contains("OctoProfiler::ObjectAllocated"))
             {
                 totalMemoryAllocated = ParseMemoryAllocationPart(startTicks, stream, line, totalMemoryAllocated, model);
