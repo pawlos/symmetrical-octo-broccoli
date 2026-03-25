@@ -12,6 +12,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Text="{Binding Name}"></TextBlock>
-        <control:StackTraceControl StackFrames="{Binding FlameGraph}" Grid.Row="1" />
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <control:StackTraceControl StackFrames="{Binding FlameGraph}" />
+        </ScrollViewer>
     </Grid>
 </Window>
