@@ -84,6 +84,7 @@ public partial class MainWindow
                     ["CORECLR_PROFILER"] = "{10B46309-C972-4F33-B5AB-5E6E3EBA2B1A}",
                     ["COR_PROFILER_PATH"] = _profilerFile,
                     ["CORECLR_PROFILER_PATH_64"] = _profilerFile,
+                    ["OCTO_RESOLVE_NATIVE"] = "true",
                 }
             }
         };

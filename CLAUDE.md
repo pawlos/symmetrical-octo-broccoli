@@ -38,6 +38,7 @@ The batch script sets the required environment variables (`COR_ENABLE_PROFILING`
 | `OCTO_MONITOR_ENTERLEAVE` | `true` → use `OctoProfilerEnterLeave` (performance mode); omit for memory/event mode |
 | `OCTO_LOGGER_INCLUDE_TS` | `true`/`false` — include nanosecond timestamps in log lines |
 | `OCTO_SAMPLE_RATE` | Record every N-th allocation (default `10`; set to `1` for no sampling) |
+| `OCTO_RESOLVE_NATIVE` | `true`/`false` — resolve native frame addresses to function names via DbgHelp (default `false`) |
 
 ## Architecture
 

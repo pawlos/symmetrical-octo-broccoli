@@ -8,6 +8,7 @@ SET COR_PROFILER_PATH=.\x64\Release\OctoProfiler.dll
 SET CORECLR_PROFILER_PATH_64=.\x64\Release\OctoProfiler.dll
 SET OCTO_PROFILER_FILE=log.txt
 SET OCTO_LOGGER_INCLUDE_TS=true
+SET OCTO_RESOLVE_NATIVE=true
 SET TEST_PROGRAM=..\test\HelloProfiler\bin\Debug\net8.0\HelloProfiler.exe
 IF "%1" == "ENTERLEAVE" (
     SET OCTO_MONITOR_ENTERLEAVE=true

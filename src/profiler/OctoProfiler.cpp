@@ -2,6 +2,7 @@
 
 struct StackWalkContext {
 	NameResolver* resolver;
+	NativeSymbolResolver* native_resolver; // nullptr = hex-only mode
 	std::vector<std::string>* frames; // nullptr = log-only mode
 };
 
@@ -48,6 +49,15 @@ HRESULT __stdcall OctoProfiler::Initialize(IUnknown* pICorProfilerInfoUnk)
 		return E_FAIL;
 	}
 	this->name_resolver_ = std::make_unique<NameResolver>(p_info_);
+	if (resolve_native_)
+	{
+		native_resolver_ = std::make_unique<NativeSymbolResolver>();
+		if (!native_resolver_->Initialize())
+		{
+			Logger::Error("OctoProfiler::Failed to initialize native symbol resolver");
+			native_resolver_.reset();
+		}
+	}
 	const auto version_string = name_resolver_->ResolveNetRuntimeVersion();
 	Logger::DoLog(std::format(L"OctoProfiler::Detected .NET {}", version_string.value_or(L"Error getting .NET information")));
 	Logger::DoLog(std::format("OctoProfiler::SampleRate {0}", sample_rate_));
@@ -81,6 +91,7 @@ HRESULT __stdcall OctoProfiler::Shutdown()
 	Logger::DoLog("OctoProfiler::Prepare for shutdown...");
 	std::this_thread::sleep_for(std::chrono::seconds(5));
 	Logger::DoLog("OctoProfiler::Shutdown...");
+	if (native_resolver_) native_resolver_->Cleanup();
 	if (sink_) sink_->sync_finished();
 	return S_OK;
 }
@@ -356,19 +367,53 @@ HRESULT __stdcall StackSnapshotInfo(const FunctionID func_id, UINT_PTR ip, const
 	const auto ctx = static_cast<StackWalkContext*>(clientData);
 	if (!func_id)
 	{
-		Logger::DoLog(std::format("OctoProfiler::Native frame {0:x}", ip));
-		if (ctx->frames)
-			ctx->frames->push_back(std::format("native;{0:x}", ip));
+		std::optional<std::string> resolved;
+		if (ctx->native_resolver)
+			resolved = ctx->native_resolver->ResolveAddress(ip);
+
+		if (resolved.has_value())
+		{
+			Logger::DoLog(std::format("OctoProfiler::Native frame {} ({:x})", resolved.value(), ip));
+			if (ctx->frames)
+				ctx->frames->push_back(std::format("native;{}", resolved.value()));
+		}
+		else
+		{
+			Logger::DoLog(std::format("OctoProfiler::Native frame {0:x}", ip));
+			if (ctx->frames)
+				ctx->frames->push_back(std::format("native;{0:x}", ip));
+		}
 	}
 	else
 	{
 		const auto function_name = ctx->resolver->ResolveFunctionNameWithFrameInfo(func_id, frame_info);
-		Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", function_name.value_or(L"<<no info>>"), ip));
-		if (ctx->frames)
+		if (function_name.has_value())
 		{
-			const auto& fn = function_name.value_or(L"<<no info>>");
-			std::string fn_str(fn.begin(), fn.end());
-			ctx->frames->push_back(std::format("managed;{0};{1:x}", fn_str, ip));
+			Logger::DoLog(std::format(L"OctoProfiler::Managed frame {0} {1:x}", function_name.value(), ip));
+			if (ctx->frames)
+			{
+				std::string fn_str(function_name.value().begin(), function_name.value().end());
+				ctx->frames->push_back(std::format("managed;{0};{1:x}", fn_str, ip));
+			}
+		}
+		else
+		{
+			std::optional<std::string> resolved;
+			if (ctx->native_resolver)
+				resolved = ctx->native_resolver->ResolveAddress(ip);
+
+			if (resolved.has_value())
+			{
+				Logger::DoLog(std::format("OctoProfiler::Managed frame {} ({:x})", resolved.value(), ip));
+				if (ctx->frames)
+					ctx->frames->push_back(std::format("managed;{0};{1:x}", resolved.value(), ip));
+			}
+			else
+			{
+				Logger::DoLog(std::format(L"OctoProfiler::Managed frame <<no info>> {0:x}", ip));
+				if (ctx->frames)
+					ctx->frames->push_back(std::format("managed;<<no info>>;{0:x}", ip));
+			}
 		}
 	}
 
@@ -387,7 +432,7 @@ HRESULT __stdcall OctoProfiler::ObjectAllocated(const ObjectID object_id, const 
 	{
 		Logger::DoLog(std::format(L"OctoProfiler::ObjectAllocated {0} [B] for {1}", bytes_allocated, type_name.value_or(L"<<no info>>")));
 		std::vector<std::string> frames;
-		StackWalkContext ctx { name_resolver_.get(), sink_ ? &frames : nullptr };
+		StackWalkContext ctx { name_resolver_.get(), native_resolver_.get(), sink_ ? &frames : nullptr };
 		stack_walk_mutex_.lock();
 		hr = p_info_->DoStackSnapshot(0, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, &ctx, nullptr, 0);
 		stack_walk_mutex_.unlock();
@@ -434,7 +479,7 @@ HRESULT __stdcall OctoProfiler::ExceptionThrown(ObjectID thrownObjectId)
 		thread_id,
 		thread_name.value_or(L"<<no info>>")));
 	std::vector<std::string> frames;
-	StackWalkContext ctx { name_resolver_.get(), sink_ ? &frames : nullptr };
+	StackWalkContext ctx { name_resolver_.get(), native_resolver_.get(), sink_ ? &frames : nullptr };
 	stack_walk_mutex_.lock();
 	hr = p_info_->DoStackSnapshot(NULL, &StackSnapshotInfo, COR_PRF_SNAPSHOT_DEFAULT, &ctx, nullptr, 0);
 	stack_walk_mutex_.unlock();

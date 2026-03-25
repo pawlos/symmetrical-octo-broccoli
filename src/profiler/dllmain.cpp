@@ -47,6 +47,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	auto doProfileEnterLeave = to_bool(get_env("OCTO_MONITOR_ENTERLEAVE").value_or("false"));
 	auto usePipe = to_bool(get_env("OCTO_USE_PIPE").value_or("false"));
 	auto sampleRate = parse_sample_rate(get_env("OCTO_SAMPLE_RATE").value_or("10"));
+	auto resolveNative = to_bool(get_env("OCTO_RESOLVE_NATIVE").value_or("false"));
 
 	Logger* logger;
 	if (file_to_log.has_value())
@@ -61,6 +62,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	Logger::DoLog(std::format("OctoProfiler::MonitorEnterLeave: {0}", doProfileEnterLeave));
 	Logger::DoLog(std::format("OctoProfiler::UsePipe: {0}", usePipe));
 	Logger::DoLog(std::format("OctoProfiler::SampleRate: {0}", sampleRate));
+	Logger::DoLog(std::format("OctoProfiler::ResolveNative: {0}", resolveNative));
 
 	auto hr = E_FAIL;
 	if (ppv == nullptr)
@@ -71,7 +73,7 @@ extern "C" HRESULT STDMETHODCALLTYPE DllGetClassObject(_In_ REFCLSID rclsid, _In
 	static constexpr GUID CLSID_ClassFactoryGuid = { 0x00000001, 0x0000, 0x0000, { 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
 	if (riid == CLSID_ClassFactoryGuid)
 	{
-		factory = new (std::nothrow) OctoProfilerFactory(doProfileEnterLeave, usePipe, sampleRate);
+		factory = new (std::nothrow) OctoProfilerFactory(doProfileEnterLeave, usePipe, sampleRate, resolveNative);
 		if (factory)
 		{
 			factory->AddRef();

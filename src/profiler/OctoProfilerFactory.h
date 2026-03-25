@@ -6,12 +6,13 @@
 class OctoProfilerFactory : public IClassFactory
 {
 public:
-	OctoProfilerFactory(bool doProfileEnterLeave, bool usePipe, uint32_t sampleRate = 10)
-		: do_profile_enter_leave_(doProfileEnterLeave), use_pipe_(usePipe), sample_rate_(sampleRate) {}
+	OctoProfilerFactory(bool doProfileEnterLeave, bool usePipe, uint32_t sampleRate = 10, bool resolveNative = false)
+		: do_profile_enter_leave_(doProfileEnterLeave), use_pipe_(usePipe), sample_rate_(sampleRate), resolve_native_(resolveNative) {}
 	ICorProfilerCallback3* profiler_ = nullptr;
 	bool do_profile_enter_leave_ = false;
 	bool use_pipe_ = false;
 	uint32_t sample_rate_ = 10;
+	bool resolve_native_ = false;
 	// Inherited via IClassFactory
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
 	ULONG __stdcall AddRef() override;

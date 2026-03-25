@@ -119,7 +119,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>CorGuids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CorGuids.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>OctoProfiler.def</ModuleDefinitionFile>
       <Version>0.1</Version>
     </Link>
@@ -140,7 +140,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>OctoProfiler.def</ModuleDefinitionFile>
-      <AdditionalDependencies>CorGuids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CorGuids.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>0.1</Version>
     </Link>
   </ItemDefinitionGroup>
@@ -150,6 +150,7 @@
     <ClCompile Include="log.h" />
     <ClCompile Include="namedpipe_octo_sink.cpp" />
     <ClCompile Include="NameResolver.cpp" />
+    <ClCompile Include="NativeSymbolResolver.cpp" />
     <ClCompile Include="OctoProfiler.cpp" />
     <ClCompile Include="OctoProfilerEnterLeave.cpp" />
     <ClCompile Include="OctoProfilerFactory.cpp" />
@@ -157,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="namedpipe_octo_sink.h" />
     <ClInclude Include="NameResolver.h" />
+    <ClInclude Include="NativeSymbolResolver.h" />
     <ClInclude Include="OctoProfiler.h" />
     <ClInclude Include="OctoProfilerEnterLeave.h" />
     <ClInclude Include="OctoProfilerFactory.h" />
